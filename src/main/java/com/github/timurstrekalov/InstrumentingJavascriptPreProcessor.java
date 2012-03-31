@@ -1,10 +1,8 @@
 package com.github.timurstrekalov;
 
-import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
-
-import java.util.*;
-import java.util.regex.Pattern;
-
+import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -13,14 +11,22 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import net.sourceforge.htmlunit.corejs.javascript.Node;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
+import net.sourceforge.htmlunit.corejs.javascript.Token;
 import net.sourceforge.htmlunit.corejs.javascript.ast.AstNode;
 import net.sourceforge.htmlunit.corejs.javascript.ast.AstRoot;
 import net.sourceforge.htmlunit.corejs.javascript.ast.NodeVisitor;
 import net.sourceforge.htmlunit.corejs.javascript.ast.VariableDeclaration;
+import org.apache.commons.io.IOUtils;
 
-import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
 class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
@@ -75,7 +81,11 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
         buf.append(tree);
 
-        System.out.println(buf);
+        try {
+            IOUtils.write(buf, new FileOutputStream(new File(sourceName).getName() + "-instrumented.js"));
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
 
         return buf.toString();
     }
@@ -117,16 +127,21 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
             final int type = node.getType();
             final int parentType = parent.getType();
 
+            System.out.println(Token.typeToName(type));
+            System.out.println(Token.typeToName(parentType));
+
             return (type == FUNCTION && (parentType == SCRIPT || parentType == BLOCK))
                     || (type == EXPR_RESULT || type == EXPR_VOID)
-                    || (type == VAR && node.getClass() == VariableDeclaration.class);
+                    || (type == VAR && node.getClass() == VariableDeclaration.class && parentType != FOR)
+                    || type == CONTINUE
+                    || type == BREAK;
         }
 
         private Node newInstrumentationSnippetFor(final AstNode node) {
             final int lineNr = node.getLineno();
             executableLines.put(lineNr, node.getLength());
-            final String code = String.format("_COV[%d]++;%d", lineNr, node.getLength());
-            return new Parser().parse(code, "injected", 0);
+
+            return new Parser().parse(String.format("_COV[%d]++;", lineNr), "injected", 0);
         }
 
     }

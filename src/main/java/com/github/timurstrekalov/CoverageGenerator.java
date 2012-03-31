@@ -1,24 +1,20 @@
 package com.github.timurstrekalov;
 
-import java.io.*;
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.regex.Pattern;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
-
-import org.apache.commons.io.IOUtils;
-
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import org.apache.commons.lang.StringUtils;
+import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
+import org.apache.commons.io.IOUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class CoverageGenerator {
 
@@ -52,6 +48,48 @@ public class CoverageGenerator {
         }
     }
 
+    private static void writeHead(final PrintWriter out) {
+        out.println("<head>");
+        out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">");
+        out.println("<title>Coverage</title>");
+        out.println("<style>");
+
+        out.println("    table {");
+        out.println("        border-collapse: collapse;");
+        out.println("    }");
+
+        out.println("    th, td, pre {");
+        out.println("        font-size: 14px;");
+        out.println("        font-weight: normal;");
+        out.println("        font-family: Courier New;");
+        out.println("    }");
+
+        out.println("    th, td.coverage {");
+        out.println("         padding: 0 8px;");
+        out.println("         border-radius: 8px;");
+        out.println("    }");
+
+        out.println("    td {");
+        out.println("         padding-left: 20px;");
+        out.println("    }");
+
+        out.println("    tr.covered td.coverage {");
+        out.println("         background-color: lightgreen;");
+        out.println("    }");
+
+        out.println("    tr.not-covered td.coverage {");
+        out.println("         background-color: lightpink;");
+        out.println("    }");
+
+        out.println("    span.reserved {");
+        out.println("        color: #000080;");
+        out.println("        font-weight: bold;");
+        out.println("    }");
+
+        out.println("</style>");
+        out.println("</head>");
+    }
+
     private void runTest(final URI test) throws IOException {
         final WebClient client = localClient.get();
         client.setIncorrectnessListener(quietIncorrectnessListener);
@@ -74,63 +112,37 @@ public class CoverageGenerator {
 
                 out.println("<!DOCTYPE html");
                 out.println("<html>");
-                out.println("<head>");
-                out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">");
-                out.println("<title>Coverage</title>");
-                out.println("<style>");
-
-                out.println("    th, td, pre {");
-                out.println("        font-size: 14px;");
-                out.println("        font-weight: normal;");
-                out.println("        font-family: Courier New;");
-                out.println("    }");
-
-                out.println("    th {");
-                out.println("         padding: 0 8px;");
-                out.println("    }");
-
-                out.println("    td {");
-                out.println("         padding-left: 20px;");
-                out.println("    }");
-
-                out.println("    tr.covered th {");
-                out.println("         background-color: lightgreen;");
-                out.println("    }");
-
-                out.println("    tr.notcovered th {");
-                out.println("         background-color: lightpink;");
-                out.println("    }");
-
-                out.println("    span.reserved {");
-                out.println("        color: #000080;");
-                out.println("        font-weight: bold;");
-                out.println("    }");
-
-                out.println("</style>");
-                out.println("</head>");
+                writeHead(out);
                 out.println("<body>");
-                out.println("<table style=\"border-collapse: collapse;\">");
+                out.println("<table>");
 
                 final Scanner in = new Scanner(entry.getValue());
                 final Map<Integer, Integer> lineLengths = preProcessor.getExecutableLines();
-                Double lastCoverageEntry = null;
+                System.out.println(lineLengths);
 
-                for (int lineNr = 1; in.hasNext(); lineNr++) {
+                for (int lineNr = 1, lengthCountdown = 0; in.hasNext(); lineNr++) {
                     final String line = in.nextLine();
 
                     final Double coverageEntry = (Double) cov.get(lineNr);
                     final int coverage;
 
-                    if (coverageEntry != null) {
-                        coverage = coverageEntry.intValue();
-                        lastCoverageEntry = coverageEntry;
+                    if (coverageEntry == null) {
+                        final int lineLength = line.trim().length();
+
+                        if (lengthCountdown > 0 && lineLength > 0) {
+                            lengthCountdown -= lineLength;
+                            coverage = -1;
+                        } else if (!lineLengths.containsKey(lineNr)) {
+                            coverage = -1;
+                        } else {
+                            coverage = 0;
+                        }
                     } else {
-                        coverage = lastCoverageEntry == null ? 0 : lastCoverageEntry.intValue();
+                        coverage = coverageEntry.intValue();
+                        lengthCountdown = lineLengths.get(lineNr);
                     }
 
-                    System.out.println(lineLengths.get(lineNr));
-
-                    padAndWrite(out, line, coverage);
+                    padAndWrite(out, lineNr, line, coverage);
                 }
 
                 out.println("</table>");
@@ -142,14 +154,32 @@ public class CoverageGenerator {
         }
     }
 
-    private static void padAndWrite(final PrintWriter out, final String line, final int coverage) {
-        final String cssClass = coverage > 0 ? "covered" : "notcovered";
+    private static void padAndWrite(final PrintWriter out, final int lineNr, final String line, final int coverage) {
+        final String cssClass;
+
+        if (coverage == -1) {
+            cssClass = "";
+        } else if (coverage > 0) {
+            cssClass = "covered";
+        } else {
+            cssClass = "not-covered";
+        }
+
         final String styledLine = reservedKeywordsPattern.matcher(line).replaceAll("<span class=\"reserved\">$1</span>");
 
-        out.printf("<tr class=\"%s\">%n" +
-                   "    <th>%d</th>%n" +
-                   "    <td><pre>%s</pre></td>%n" +
-                   "</tr>%n", cssClass, coverage, styledLine);
+        if (coverage > -1) {
+            out.printf("<tr class=\"%s\">%n" +
+                       "    <th>%d</th>%n" +
+                       "    <td class=\"coverage\">%d</td>%n" +
+                       "    <td><pre>%s</pre></td>%n" +
+                       "</tr>%n", cssClass, lineNr, coverage, styledLine);
+        } else {
+            out.printf("<tr>%n" +
+                       "    <th>%d</th>%n" +
+                       "    <td class=\"coverage\"></td>%n" +
+                       "    <td><pre>%s</pre></td>%n" +
+                       "</tr>%n", lineNr, styledLine);
+        }
     }
 
     public void setIgnorePatterns(final List<String> ignorePatterns) {
