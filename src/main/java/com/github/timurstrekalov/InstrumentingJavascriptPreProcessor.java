@@ -132,23 +132,26 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
                     || type == TRY
                     || type == THROW
                     || type == CASE
-                    || (type == IF && parentType != IF)
+                    || type == IF
+                    || type == EXPR_RESULT
+                    || type == EXPR_VOID
+                    || type == RETURN
                     || (type == FUNCTION && (parentType == SCRIPT || parentType == BLOCK))
-                    || (type == EXPR_RESULT || type == EXPR_VOID)
                     || (type == VAR && node.getClass() == VariableDeclaration.class && parentType != FOR);
         }
 
         private void addInstrumentationSnippetFor(final AstNode node) {
             final AstNode parent = node.getParent();
 
-            if (node.getType() == CASE) {
-                /**
-                 * 'switch' statement cases are special in the sense that their children are not actually their children,
-                 * meaning the children have a reference to their parent, but the parent only has a List of all its
-                 * children, so we can't just addChildBefore() like we do for all other cases.
-                 *
-                 * They do, however, retain a list of all statements per each case.
-                 */
+            final int type = node.getType();
+            final int parentType = parent.getType();
+
+            if (type == CASE) {
+                // 'switch' statement cases are special in the sense that their children are not actually their children,
+                // meaning the children have a reference to their parent, but the parent only has a List of all its
+                // children, so we can't just addChildBefore() like we do for all other cases.
+                //
+                // They do, however, retain a list of all statements per each case.
                 final SwitchCase switchCase = (SwitchCase) node;
                 final List<AstNode> newStatements = Lists.newArrayList();
 
@@ -161,12 +164,28 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
                 }
 
                 switchCase.setStatements(newStatements);
-            } else if (parent.getType() != CASE) {
-                final int lineNr = node.getLineno();
+            } else if (type == IF && parentType == IF) {
+                flattenElseIf((IfStatement) node, (IfStatement) parent);
+            } else {
+                if (parentType != CASE) {
+                    final int lineNr = node.getLineno();
 
-                executableLines.put(lineNr, node.getLength());
-                parent.addChildBefore(newInstrumentationNode(lineNr), node);
+                    executableLines.put(lineNr, node.getLength());
+                    parent.addChildBefore(newInstrumentationNode(lineNr), node);
+                }
             }
+        }
+
+        private void flattenElseIf(final IfStatement elseIfStatement, final IfStatement ifStatement) {
+            final Scope scope = new Scope();
+            scope.addChild(elseIfStatement);
+
+            ifStatement.setElsePart(scope);
+
+            final int lineNr = elseIfStatement.getLineno();
+
+            executableLines.put(lineNr, elseIfStatement.getLength());
+            scope.addChildBefore(newInstrumentationNode(lineNr), elseIfStatement);
         }
 
     }
