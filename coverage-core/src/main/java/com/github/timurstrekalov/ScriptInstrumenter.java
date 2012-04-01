@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
-class ScriptInstrumentor implements ScriptPreProcessor {
+class ScriptInstrumenter implements ScriptPreProcessor {
 
     private final String coverageVariableName;
     private final String initializingCode;
@@ -34,7 +34,7 @@ class ScriptInstrumentor implements ScriptPreProcessor {
 
     private final List<Pattern> ignorePatterns;
 
-    public ScriptInstrumentor(
+    public ScriptInstrumenter(
             final String coverageVariableName,
             final List<String> ignorePatterns,
             final File outputDir,

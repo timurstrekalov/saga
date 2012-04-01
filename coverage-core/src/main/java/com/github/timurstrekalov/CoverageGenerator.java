@@ -105,10 +105,10 @@ public class CoverageGenerator {
     private void runTest(final URL test) throws IOException {
         final WebClient client = localClient.get();
 
-        final ScriptInstrumentor instrumentor = new ScriptInstrumentor(
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(
                 coverageVariableName, ignorePatterns, outputDir, outputInstrumentedFiles);
 
-        client.setScriptPreProcessor(instrumentor);
+        client.setScriptPreProcessor(instrumenter);
 
         final Page page = client.getPage(test);
 
@@ -123,7 +123,7 @@ public class CoverageGenerator {
             final NativeObject coverageData = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
                     .getJavaScriptResult();
 
-            createPerFileReports(testName, instrumentor, stats, coverageData);
+            createPerFileReports(testName, instrumenter, stats, coverageData);
 
             stringTemplateGroup.getInstanceOf("perRunStatistics")
                     .add("stats", stats)
@@ -133,11 +133,11 @@ public class CoverageGenerator {
 
     private void createPerFileReports(
             final String testName,
-            final ScriptInstrumentor instrumentor,
+            final ScriptInstrumenter instrumenter,
             final PerRunStatistics stats,
             final NativeObject coverageData) throws IOException {
 
-        for (final ScriptData data : instrumentor.getScriptDataList()) {
+        for (final ScriptData data : instrumenter.getScriptDataList()) {
             final Scanner in = new Scanner(data.getSourceCode());
             final List<LineCoverage> lines = Lists.newLinkedList();
 

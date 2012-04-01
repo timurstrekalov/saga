@@ -45,6 +45,10 @@ class ScriptData {
         return statementsWithLengths.get(lineNr);
     }
 
+    /**
+     * For inline scripts, first statement's line number might not be 1 (it will be the actual line number in the
+     * HTML)
+     */
     public Integer getLineNumberOfFirstStatement() {
         return getLineNumbersOfAllStatements().iterator().next();
     }
