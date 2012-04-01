@@ -58,6 +58,10 @@ public class CoverageGenerator {
         out.println("        border-collapse: collapse;");
         out.println("    }");
 
+        out.println("    th div, td div {");
+        out.println("        text-align: center;");
+        out.println("    }");
+
         out.println("    th, td, pre {");
         out.println("        font-size: 14px;");
         out.println("        font-weight: normal;");
@@ -118,7 +122,6 @@ public class CoverageGenerator {
 
                 final Scanner in = new Scanner(entry.getValue());
                 final Map<Integer, Integer> lineLengths = preProcessor.getExecutableLines();
-                System.out.println(lineLengths);
 
                 for (int lineNr = 1, lengthCountdown = 0; in.hasNext(); lineNr++) {
                     final String line = in.nextLine();
@@ -169,14 +172,14 @@ public class CoverageGenerator {
 
         if (coverage > -1) {
             out.printf("<tr class=\"%s\">%n" +
-                       "    <th>%d</th>%n" +
-                       "    <td class=\"coverage\">%d</td>%n" +
+                       "    <th><div>%d</div></th>%n" +
+                       "    <td class=\"coverage\"><div>%d</div></td>%n" +
                        "    <td><pre>%s</pre></td>%n" +
                        "</tr>%n", cssClass, lineNr, coverage, styledLine);
         } else {
             out.printf("<tr>%n" +
-                       "    <th>%d</th>%n" +
-                       "    <td class=\"coverage\"></td>%n" +
+                       "    <th><div>%d</div></th>%n" +
+                       "    <td class=\"coverage\"><div></div></td>%n" +
                        "    <td><pre>%s</pre></td>%n" +
                        "</tr>%n", lineNr, styledLine);
         }

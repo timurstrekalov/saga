@@ -5,17 +5,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import net.sourceforge.htmlunit.corejs.javascript.Node;
+import com.google.common.collect.*;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
-import net.sourceforge.htmlunit.corejs.javascript.Token;
-import net.sourceforge.htmlunit.corejs.javascript.ast.AstNode;
-import net.sourceforge.htmlunit.corejs.javascript.ast.AstRoot;
-import net.sourceforge.htmlunit.corejs.javascript.ast.NodeVisitor;
-import net.sourceforge.htmlunit.corejs.javascript.ast.VariableDeclaration;
+import net.sourceforge.htmlunit.corejs.javascript.ast.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -90,6 +82,10 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
         return buf.toString();
     }
 
+    private static AstNode newInstrumentationNode(final int lineNr) {
+        return (AstNode) (new Parser().parse(String.format("_COV[%d]++;", lineNr), "injected", 0).getFirstChild());
+    }
+
     private boolean shouldIgnore(final String sourceName) {
         return Iterables.any(ignorePatterns, new Predicate<Pattern>() {
             @Override
@@ -112,7 +108,7 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
         @Override
         public boolean visit(final AstNode node) {
             if (isExecutableBlock(node)) {
-                node.getParent().addChildBefore(newInstrumentationSnippetFor(node), node);
+                addInstrumentationSnippetFor(node);
             }
 
             return true;
@@ -127,21 +123,50 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
             final int type = node.getType();
             final int parentType = parent.getType();
 
-            System.out.println(Token.typeToName(type));
-            System.out.println(Token.typeToName(parentType));
-
-            return (type == FUNCTION && (parentType == SCRIPT || parentType == BLOCK))
-                    || (type == EXPR_RESULT || type == EXPR_VOID)
-                    || (type == VAR && node.getClass() == VariableDeclaration.class && parentType != FOR)
+            return type == SWITCH
+                    || type == FOR
+                    || type == DO
+                    || type == WHILE
                     || type == CONTINUE
-                    || type == BREAK;
+                    || type == BREAK
+                    || type == TRY
+                    || type == THROW
+                    || type == CASE
+                    || (type == IF && parentType != IF)
+                    || (type == FUNCTION && (parentType == SCRIPT || parentType == BLOCK))
+                    || (type == EXPR_RESULT || type == EXPR_VOID)
+                    || (type == VAR && node.getClass() == VariableDeclaration.class && parentType != FOR);
         }
 
-        private Node newInstrumentationSnippetFor(final AstNode node) {
-            final int lineNr = node.getLineno();
-            executableLines.put(lineNr, node.getLength());
+        private void addInstrumentationSnippetFor(final AstNode node) {
+            final AstNode parent = node.getParent();
 
-            return new Parser().parse(String.format("_COV[%d]++;", lineNr), "injected", 0);
+            if (node.getType() == CASE) {
+                /**
+                 * 'switch' statement cases are special in the sense that their children are not actually their children,
+                 * meaning the children have a reference to their parent, but the parent only has a List of all its
+                 * children, so we can't just addChildBefore() like we do for all other cases.
+                 *
+                 * They do, however, retain a list of all statements per each case.
+                 */
+                final SwitchCase switchCase = (SwitchCase) node;
+                final List<AstNode> newStatements = Lists.newArrayList();
+
+                for (final AstNode statement : switchCase.getStatements()) {
+                    final int lineNr = statement.getLineno();
+                    executableLines.put(lineNr, node.getLength());
+
+                    newStatements.add(newInstrumentationNode(lineNr));
+                    newStatements.add(statement);
+                }
+
+                switchCase.setStatements(newStatements);
+            } else if (parent.getType() != CASE) {
+                final int lineNr = node.getLineno();
+
+                executableLines.put(lineNr, node.getLength());
+                parent.addChildBefore(newInstrumentationNode(lineNr), node);
+            }
         }
 
     }
