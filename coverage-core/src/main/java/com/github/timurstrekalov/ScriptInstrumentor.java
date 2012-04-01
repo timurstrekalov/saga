@@ -5,7 +5,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.*;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
 import net.sourceforge.htmlunit.corejs.javascript.ast.*;
@@ -14,14 +17,12 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
-class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
+class ScriptInstrumentor implements ScriptPreProcessor {
 
     private final String coverageVariableName;
     private final String initializingCode;
@@ -29,14 +30,11 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
     private final File outputDir;
     private final boolean outputInstrumentedFiles;
 
-    private final Map<Integer, Integer> executableLines = Maps.newTreeMap();
-    private final Map<String, String> sourceCodeMap = new HashMap<String, String>();
+    private final List<ScriptData> scriptDataList = Lists.newLinkedList();
 
     private final List<Pattern> ignorePatterns;
 
-    private boolean coverageObjectInitialized;
-
-    public InstrumentingJavascriptPreProcessor(
+    public ScriptInstrumentor(
             final String coverageVariableName,
             final List<String> ignorePatterns,
             final File outputDir,
@@ -69,20 +67,21 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
             return sourceCode;
         }
 
-        sourceCodeMap.put(sourceName, sourceCode);
+        final ScriptData data = new ScriptData(sourceName, sourceCode);
+        scriptDataList.add(data);
 
         final AstRoot root = new Parser().parse(sourceCode, sourceName, lineNumber);
-        root.visit(new InstrumentingVisitor());
+        root.visit(new InstrumentingVisitor(data));
 
         final String treeSource = root.toSource();
         final StringBuilder buf = new StringBuilder(
                 initializingCode.length() +
-                executableLines.size() * arrayInitializer.length() +
+                data.getNumberOfStatements() * arrayInitializer.length() +
                 treeSource.length());
 
         buf.append(initializingCode);
 
-        for (final Integer i : executableLines.keySet()) {
+        for (final Integer i : data.getLineNumbersOfAllStatements()) {
             buf.append(String.format(arrayInitializer, i));
         }
 
@@ -135,15 +134,17 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
         });
     }
 
-    public Map<String, String> getSourceCodeMap() {
-        return sourceCodeMap;
-    }
-
-    public Map<Integer, Integer> getExecutableLines() {
-        return executableLines;
+    public List<ScriptData> getScriptDataList() {
+        return scriptDataList;
     }
 
     private class InstrumentingVisitor implements NodeVisitor {
+
+        private final ScriptData data;
+
+        public InstrumentingVisitor(final ScriptData data) {
+            this.data = data;
+        }
 
         @Override
         public boolean visit(final AstNode node) {
@@ -194,7 +195,7 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
                 if (parentType != CASE) {
                     final int lineNr = node.getLineno();
 
-                    executableLines.put(lineNr, node.getLength());
+                    data.addExecutableLine(lineNr, node.getLength());
                     parent.addChildBefore(newInstrumentationNode(lineNr), node);
                 }
             }
@@ -212,7 +213,7 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
             for (final AstNode statement : switchCase.getStatements()) {
                 final int lineNr = statement.getLineno();
-                executableLines.put(lineNr, switchCase.getLength());
+                data.addExecutableLine(lineNr, switchCase.getLength());
 
                 newStatements.add(newInstrumentationNode(lineNr));
                 newStatements.add(statement);
@@ -260,7 +261,7 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
             final int lineNr = elseIfStatement.getLineno();
 
-            executableLines.put(lineNr, elseIfStatement.getLength());
+            data.addExecutableLine(lineNr, elseIfStatement.getLength());
             scope.addChildBefore(newInstrumentationNode(lineNr), elseIfStatement);
         }
 

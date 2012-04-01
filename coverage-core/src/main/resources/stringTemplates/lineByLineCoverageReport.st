@@ -1,16 +1,32 @@
-coverageReport(lines) ::= <<
+lineByLineCoverageReport(lines, stats) ::= <<
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Coverage</title>
+<title>Coverage report for $stats.name$</title>
 <style>
     body {
         padding: 18px 10px;
         margin: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    h1 {
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding-left: 10px;
+    }
+
+    h2 {
+        font-size: 14px;
+        font-weight: normal;
+        margin: 0;
+        padding: 2px 20px;
     }
 
     table {
+        margin-top: 10px;
         border-collapse: collapse;
     }
 
@@ -71,6 +87,13 @@ coverageReport(lines) ::= <<
 </style>
 </head>
 <body>
+    <div class="header">
+        <h1>$stats.name$</h1>
+        <h2 class="statements">Statements: $stats.statements$</h2>
+        <h2 class="executed">Executed: $stats.executed$</h2>
+        <h2 class="coverage">Coverage: $stats.coverage$%</h2>
+    </div>
+
     <table>
         $lines:lineCoverage(); separator="\n"$
     </table>

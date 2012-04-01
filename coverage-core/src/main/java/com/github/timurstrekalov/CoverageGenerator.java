@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -94,7 +93,9 @@ public class CoverageGenerator {
     }
 
     public void run() throws IOException {
-        outputDir.mkdirs();
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
+            throw new IOException("Couldn't create output directory");
+        }
 
         for (final URL test : tests) {
             runTest(test);
@@ -104,10 +105,10 @@ public class CoverageGenerator {
     private void runTest(final URL test) throws IOException {
         final WebClient client = localClient.get();
 
-        final InstrumentingJavascriptPreProcessor preProcessor = new InstrumentingJavascriptPreProcessor(
+        final ScriptInstrumentor instrumentor = new ScriptInstrumentor(
                 coverageVariableName, ignorePatterns, outputDir, outputInstrumentedFiles);
 
-        client.setScriptPreProcessor(preProcessor);
+        client.setScriptPreProcessor(instrumentor);
 
         final Page page = client.getPage(test);
 
@@ -117,47 +118,71 @@ public class CoverageGenerator {
             client.waitForBackgroundJavaScript(30000);
             client.setScriptPreProcessor(null);
 
-            final NativeObject cov = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
+            final String testName = new File(test.toString()).getName();
+            final PerRunStatistics stats = new PerRunStatistics(testName);
+            final NativeObject coverageData = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
                     .getJavaScriptResult();
 
-            for (final Map.Entry<String, String> entry : preProcessor.getSourceCodeMap().entrySet()) {
-                final Scanner in = new Scanner(entry.getValue());
-                final Map<Integer, Integer> lineLengths = preProcessor.getExecutableLines();
-                final List<LineCoverage> lines = Lists.newLinkedList();
+            createPerFileReports(testName, instrumentor, stats, coverageData);
 
-                for (int lineNr = 1, lengthCountdown = 0; in.hasNext(); lineNr++) {
-                    final String line = in.nextLine();
+            stringTemplateGroup.getInstanceOf("perRunStatistics")
+                    .add("stats", stats)
+                    .write(new File(outputDir, new File(testName).getName() + "-report.html"), new ErrorLogger());
+        }
+    }
 
-                    final Double coverageEntry = (Double) cov.get(lineNr);
-                    final int coverage;
-                    final boolean executable;
+    private void createPerFileReports(
+            final String testName,
+            final ScriptInstrumentor instrumentor,
+            final PerRunStatistics stats,
+            final NativeObject coverageData) throws IOException {
 
-                    if (coverageEntry == null) {
-                        final int lineLength = line.trim().length();
+        for (final ScriptData data : instrumentor.getScriptDataList()) {
+            final Scanner in = new Scanner(data.getSourceCode());
+            final List<LineCoverage> lines = Lists.newLinkedList();
 
-                        if (lengthCountdown > 0 && lineLength > 0) {
-                            lengthCountdown -= lineLength;
-                            executable = false;
-                        } else if (!lineLengths.containsKey(lineNr)) {
-                            executable = false;
-                        } else {
-                            executable = true;
-                        }
+            int statementsExecuted = 0;
+            int statements = data.getNumberOfStatements();
 
-                        coverage = 0;
+            for (int lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext(); lineNr++) {
+                final String line = in.nextLine();
+
+                final Double coverageEntry = (Double) coverageData.get(lineNr);
+                final int timesLineExecuted;
+                final boolean executable;
+
+                if (coverageEntry == null) {
+                    final int lineLength = line.trim().length();
+
+                    if (lengthCountdown > 0 && lineLength > 0) {
+                        lengthCountdown -= lineLength;
+                        executable = false;
                     } else {
-                        coverage = coverageEntry.intValue();
-                        lengthCountdown = lineLengths.get(lineNr);
-                        executable = true;
+                        executable = data.hasStatement(lineNr);
                     }
 
-                    lines.add(new LineCoverage(lineNr, coverage, line, executable));
+                    timesLineExecuted = 0;
+                } else {
+                    timesLineExecuted = coverageEntry.intValue();
+                    lengthCountdown = data.getStatementLength(lineNr);
+                    executable = true;
+
+                    if (timesLineExecuted > 0) {
+                        statementsExecuted++;
+                    }
                 }
 
-                stringTemplateGroup.getInstanceOf("coverageReport")
-                        .add("lines", lines)
-                        .write(new File(outputDir, new File(entry.getKey() + ".html").getName()), new ErrorLogger());
+                lines.add(new LineCoverage(lineNr, timesLineExecuted, line, executable));
             }
+
+            final String jsFileName = data.getSourceName();
+            final PerFileStatistics perFileStats = stats.add(jsFileName, statements, statementsExecuted);
+            final String fileCoverageFilename = testName + "-" + new File(jsFileName).getName() + ".html";
+
+            stringTemplateGroup.getInstanceOf("lineByLineCoverageReport")
+                    .add("lines", lines)
+                    .add("stats", perFileStats)
+                    .write(new File(outputDir, fileCoverageFilename), new ErrorLogger());
         }
     }
 
