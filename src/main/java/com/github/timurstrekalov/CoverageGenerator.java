@@ -7,10 +7,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STErrorListener;
+import org.stringtemplate.v4.misc.ErrorBuffer;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,16 @@ public class CoverageGenerator {
         }
 
     };
+
+    private static final String COVERAGE_REPORT_TEMPLATE;
+
+    static {
+        try {
+            COVERAGE_REPORT_TEMPLATE = IOUtils.toString(CoverageGenerator.class.getResource("/coverage-report.stg"));
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final String[] reservedKeywords = {
         "break",
@@ -66,6 +77,9 @@ public class CoverageGenerator {
     private static final Pattern reservedKeywordsPattern = Pattern.compile(String.format("\\b(%s)\\b",
             StringUtils.join(reservedKeywords, '|')));
 
+    private static final Pattern jsStringPattern = Pattern.compile("('.*'|\".*\")");
+    private static final Pattern jsNumberPattern = Pattern.compile("\\b(\\d+(?:\\.\\d+)?)\\b");
+
     private final String coverageVariableName;
     private final List<URI> tests;
     private List<String> ignorePatterns;
@@ -79,52 +93,6 @@ public class CoverageGenerator {
         for (final URI test : tests) {
             runTest(test);
         }
-    }
-
-    private static void writeHead(final PrintWriter out) {
-        out.println("<head>");
-        out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">");
-        out.println("<title>Coverage</title>");
-        out.println("<style>");
-
-        out.println("    table {");
-        out.println("        border-collapse: collapse;");
-        out.println("    }");
-
-        out.println("    th div, td div {");
-        out.println("        text-align: center;");
-        out.println("    }");
-
-        out.println("    th, td, pre {");
-        out.println("        font-size: 14px;");
-        out.println("        font-weight: normal;");
-        out.println("        font-family: Courier New;");
-        out.println("    }");
-
-        out.println("    th, td.coverage {");
-        out.println("         padding: 0 8px;");
-        out.println("         border-radius: 8px;");
-        out.println("    }");
-
-        out.println("    td {");
-        out.println("         padding-left: 20px;");
-        out.println("    }");
-
-        out.println("    tr.covered td.coverage {");
-        out.println("         background-color: lightgreen;");
-        out.println("    }");
-
-        out.println("    tr.not-covered td.coverage {");
-        out.println("         background-color: lightpink;");
-        out.println("    }");
-
-        out.println("    span.reserved {");
-        out.println("        color: #000080;");
-        out.println("        font-weight: bold;");
-        out.println("    }");
-
-        out.println("</style>");
-        out.println("</head>");
     }
 
     private void runTest(final URI test) throws IOException {
@@ -148,12 +116,9 @@ public class CoverageGenerator {
                     .getJavaScriptResult();
 
             for (final Map.Entry<String, String> entry : preProcessor.getSourceCodeMap().entrySet()) {
-                final PrintWriter out = new PrintWriter(new File(entry.getKey() + ".html").getName());
+                StringWriter body = new StringWriter();
+                final PrintWriter out = new PrintWriter(body);
 
-                out.println("<!DOCTYPE html");
-                out.println("<html>");
-                writeHead(out);
-                out.println("<body>");
                 out.println("<table>");
 
                 final Scanner in = new Scanner(entry.getValue());
@@ -185,10 +150,17 @@ public class CoverageGenerator {
                 }
 
                 out.println("</table>");
-                out.println("</body>");
-                out.println("</html>");
 
                 IOUtils.closeQuietly(out);
+
+                final ST st = new ST(COVERAGE_REPORT_TEMPLATE, '$', '$');
+                st.add("body", body);
+
+                final STErrorListener buf = new ErrorBuffer();
+
+                st.write(new File(new File(entry.getKey() + ".html").getName()), buf);
+
+                System.out.println(buf.toString());
             }
         }
     }
@@ -204,7 +176,9 @@ public class CoverageGenerator {
             cssClass = "not-covered";
         }
 
-        final String styledLine = reservedKeywordsPattern.matcher(line).replaceAll("<span class=\"reserved\">$1</span>");
+        String styledLine = jsStringPattern.matcher(line).replaceAll("<span class=\"string\">$1</span>");
+        styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
+        styledLine = reservedKeywordsPattern.matcher(styledLine).replaceAll("<span class=\"keyword\">$1</span>");
 
         if (coverage > -1) {
             out.printf("<tr class=\"%s\">%n" +
