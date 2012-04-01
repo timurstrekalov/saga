@@ -15,7 +15,7 @@ coverageReport(lines) ::= <<
     }
 
     th {
-        border-right: 1px solid #ccc;
+        border-right: 1px solid #eee;
     }
 
     th div, td div {

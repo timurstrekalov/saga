@@ -6,7 +6,6 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,30 +26,20 @@ public class CoverageGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(CoverageGenerator.class);
 
-    private static final ThreadLocal<WebClient> localClient = new ThreadLocal<WebClient>() {
-        @Override
-        protected WebClient initialValue() {
-            return new WebClient();
-        }
-    };
-
     private static final IncorrectnessListener quietIncorrectnessListener = new IncorrectnessListener() {
-
         @Override
         public void notify(final String message, final Object origin) {
         }
-
     };
 
-    private static final String COVERAGE_REPORT_ST;
-
-    static {
-        try {
-            COVERAGE_REPORT_ST = IOUtils.toString(CoverageGenerator.class.getResource("/stringTemplates/coverageReport.st"));
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
+    private static final ThreadLocal<WebClient> localClient = new ThreadLocal<WebClient>() {
+        @Override
+        protected WebClient initialValue() {
+            final WebClient client = new WebClient();
+            client.setIncorrectnessListener(quietIncorrectnessListener);
+            return client;
         }
-    }
+    };
 
     private static final String[] reservedKeywords = {
         "break",
@@ -114,7 +103,6 @@ public class CoverageGenerator {
 
     private void runTest(final URL test) throws IOException {
         final WebClient client = localClient.get();
-        client.setIncorrectnessListener(quietIncorrectnessListener);
 
         final InstrumentingJavascriptPreProcessor preProcessor = new InstrumentingJavascriptPreProcessor(
                 coverageVariableName, ignorePatterns, outputDir, outputInstrumentedFiles);
@@ -142,24 +130,28 @@ public class CoverageGenerator {
 
                     final Double coverageEntry = (Double) cov.get(lineNr);
                     final int coverage;
+                    final boolean executable;
 
                     if (coverageEntry == null) {
                         final int lineLength = line.trim().length();
 
                         if (lengthCountdown > 0 && lineLength > 0) {
                             lengthCountdown -= lineLength;
-                            coverage = -1;
+                            executable = false;
                         } else if (!lineLengths.containsKey(lineNr)) {
-                            coverage = -1;
+                            executable = false;
                         } else {
-                            coverage = 0;
+                            executable = true;
                         }
+
+                        coverage = 0;
                     } else {
                         coverage = coverageEntry.intValue();
                         lengthCountdown = lineLengths.get(lineNr);
+                        executable = true;
                     }
 
-                    lines.add(newLineCoverage(lineNr, coverage, line));
+                    lines.add(new LineCoverage(lineNr, coverage, line, executable));
                 }
 
                 stringTemplateGroup.getInstanceOf("coverageReport")
@@ -167,14 +159,6 @@ public class CoverageGenerator {
                         .write(new File(outputDir, new File(entry.getKey() + ".html").getName()), new ErrorLogger());
             }
         }
-    }
-
-    private static LineCoverage newLineCoverage(final int lineNr, final int coverage, final String line) {
-        String styledLine = jsStringPattern.matcher(line).replaceAll("<span class=\"string\">$1</span>");
-        styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
-        styledLine = reservedKeywordsPattern.matcher(styledLine).replaceAll("<span class=\"keyword\">$1</span>");
-
-        return new LineCoverage(lineNr, coverage, styledLine);
     }
 
     public void setIgnorePatterns(final List<String> ignorePatterns) {
@@ -193,15 +177,19 @@ public class CoverageGenerator {
         public final boolean executable;
         public final String cssClass;
 
-        LineCoverage(final int lineNr, final int coverage, final String line) {
+        LineCoverage(final int lineNr, final int coverage, final String line, final boolean executable) {
             this.lineNr = lineNr;
             this.coverage = coverage;
-            this.line = line;
 
-            executable = coverage > -1;
+            String styledLine = jsStringPattern.matcher(line).replaceAll("<span class=\"string\">$1</span>");
+            styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
+            styledLine = reservedKeywordsPattern.matcher(styledLine).replaceAll("<span class=\"keyword\">$1</span>");
 
-            if (coverage == -1) {
-                cssClass = "";
+            this.line = styledLine;
+            this.executable = executable;
+
+            if (!executable) {
+                cssClass = "not-executable";
             } else if (coverage > 0) {
                 cssClass = "covered";
             } else {
