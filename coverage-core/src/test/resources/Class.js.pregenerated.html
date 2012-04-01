@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Coverage</title>
+<style>
+    body {
+        padding: 18px 10px;
+        margin: 0;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    th {
+        border-right: 1px solid #ccc;
+    }
+
+    th div, td div {
+        text-align: center;
+    }
+
+    th div {
+        margin: 0px 10px 0px 4px;
+    }
+
+    td div {
+        padding: 1px 4px;
+        margin: 0px 8px;
+    }
+
+    th, td, pre {
+        padding: 0;
+        margin: 0;
+
+        font-size: 14px;
+        font-weight: normal;
+        font-family: Courier New;
+    }
+
+    th div, td.coverage div {
+         border-radius: 8px;
+    }
+
+    td pre {
+         margin-left: 8px;
+    }
+
+    tr.covered td.coverage div {
+         background-color: lightgreen;
+    }
+
+    tr.not-covered td.coverage div {
+         background-color: lightpink;
+    }
+
+    span.keyword {
+        color: #000080;
+        font-weight: bold;
+    }
+
+    span.string {
+        color: #008000;
+    }
+
+    span.number {
+        color: #0000ff;
+    }
+</style>
+</head>
+<body>
+    <table>
+        <tr class="covered">
+            <th>
+                <div>1</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        1
+                </div>
+            </td>
+            <td>
+                <pre><span class="string">'use strict'</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>2</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>3</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        1
+                </div>
+            </td>
+            <td>
+                <pre><span class="keyword">function</span> Class(param) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>4</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">var</span> a = <span class="number">1</span>;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>5</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">var</span> b = a + <span class="number">122</span>;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>6</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">var</span> c = {</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>7</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        a: a,</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>8</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        b: b</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>9</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    };</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>10</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>11</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">var</span> z = (<span class="keyword">function</span> (param) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>12</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">var</span> y = a + b;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>13</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">delete</span> b[<span class="string">'z'</span>];</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>14</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">return</span> param ? y : <span class="number">0</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>15</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    })(param);</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>16</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>17</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        6
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">for</span>(i=<span class="number">2</span>;i<<span class="number">4</span>;i++){i++;}</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>18</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>19</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">function</span> thisNeverGetsCalled() {</pre>
+            </td>
+        </tr>
+        <tr class="not-covered">
+            <th>
+                <div>20</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        0
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">this</span>.shouldNeverBeSet = <span class="string">'qwe \''</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>21</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    };</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>22</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>23</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    (<span class="keyword">function</span> (param) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>24</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        a++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>25</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>26</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">if</span> (param) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>27</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>            b--;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>28</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>29</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    })(param);</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>30</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>31</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    a++;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>32</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    c.a++;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>33</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    b[<span class="string">"b"</span>]++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>34</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>35</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">var</span> uselessObject = {</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>36</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        neverGetsCalledEither: <span class="keyword">function</span> () {</pre>
+            </td>
+        </tr>
+        <tr class="not-covered">
+            <th>
+                <div>37</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        0
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">this</span>.b = <span class="string">"q \" we"</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>38</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        },</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>39</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>40</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        butThisOneDoes: <span class="keyword">function</span> () {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>41</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>            a++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>42</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        },</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>43</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>44</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>        andThisOneButItsUgly: <span class="keyword">function</span> () {a++;},</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>45</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>46</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        andThisOneButItsEmpty: <span class="keyword">function</span> () {}</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>47</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    };</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>48</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>49</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">var</span> e = <span class="keyword">function</span> () {</pre>
+            </td>
+        </tr>
+        <tr class="not-covered">
+            <th>
+                <div>50</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        0
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">this</span>.e = <span class="string">"aaaaa"</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>51</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    };</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>52</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>53</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">if</span> (param) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>54</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">this</span>.test();</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>55</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>56</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>57</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">this</span>.data = {</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>58</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        getsCalledOnTheSecondRun: <span class="keyword">function</span> () {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>59</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">var</span> a = <span class="string">'lll'</span>;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>60</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>            a += <span class="number">1</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>61</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>62</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">if</span> (param === true) {</pre>
+            </td>
+        </tr>
+        <tr class="not-covered">
+            <th>
+                <div>63</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        0
+                </div>
+            </td>
+            <td>
+                <pre>                a += <span class="number">2</span>;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>64</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>            } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> param === <span class="string">'boolean'</span>) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>65</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        1
+                </div>
+            </td>
+            <td>
+                <pre>                a += <span class="number">10</span>;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>66</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        1
+                </div>
+            </td>
+            <td>
+                <pre>            } <span class="keyword">else</span> <span class="keyword">if</span> (param !== undefined) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>67</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        1
+                </div>
+            </td>
+            <td>
+                <pre>                b += <span class="number">7</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>68</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>            } <span class="keyword">else</span> {</pre>
+            </td>
+        </tr>
+        <tr class="not-covered">
+            <th>
+                <div>69</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        0
+                </div>
+            </td>
+            <td>
+                <pre>                a = <span class="string">'kkk'</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>70</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>            }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>71</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>72</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">if</span> (param) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>73</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        1
+                </div>
+            </td>
+            <td>
+                <pre>                b++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>74</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>            } <span class="keyword">else</span> {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>75</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        1
+                </div>
+            </td>
+            <td>
+                <pre>                a++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>76</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>            }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>77</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        },</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>78</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>79</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        a: <span class="number">123</span></pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>80</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>81</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>82</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i < <span class="number">25</span>; i++) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>83</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        15
+                </div>
+            </td>
+            <td>
+                <pre>        b++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>84</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>85</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        15
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">switch</span> (i) {</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>86</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">case</span> <span class="number">1</span>:</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>87</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>                <span class="keyword">break</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>88</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">case</span> <span class="number">2</span>:</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>89</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>                a++;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>90</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>                b++;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>91</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>                <span class="keyword">break</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>92</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">case</span> <span class="number">3</span>:</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>93</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>                b++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>94</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">default</span>:</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>95</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        9
+                </div>
+            </td>
+            <td>
+                <pre>                b++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>96</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>97</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>98</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        15
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">if</span> (i === <span class="number">4</span>) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>99</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>            <span class="keyword">break</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>100</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>        }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>101</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>102</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>103</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">do</span> {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>104</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        588
+                </div>
+            </td>
+            <td>
+                <pre>        a++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>105</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    } <span class="keyword">while</span> (a < <span class="number">200</span>);</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>106</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>107</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">while</span> (true) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>108</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        b++;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>109</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">break</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>110</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>111</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>112</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">try</span> {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>113</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        a++;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>114</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'asd'</span>);</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>115</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    } <span class="keyword">catch</span> (e) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>116</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>        b++;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>117</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>118</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>119</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        3
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">if</span> (param) {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>120</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>        uselessObject.butThisOneDoes();</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>121</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>        uselessObject.andThisOneButItsUgly();</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>122</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>        uselessObject.andThisOneButItsEmpty();</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>123</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>    }</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>124</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>}</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>125</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>126</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        1
+                </div>
+            </td>
+            <td>
+                <pre>Class.prototype.test = <span class="keyword">function</span> test() {</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>127</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">this</span>.qwe = <span class="string">'asd'</span>;</pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>128</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">var</span> d = <span class="number">111</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>129</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre></pre>
+            </td>
+        </tr>
+        <tr class="covered">
+            <th>
+                <div>130</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        2
+                </div>
+            </td>
+            <td>
+                <pre>    <span class="keyword">this</span>.qqq = <span class="string">'bbb'</span>;</pre>
+            </td>
+        </tr>
+        <tr class="not-executable">
+            <th>
+                <div>131</div>
+            </th>
+            <td class="coverage">
+                <div>
+                        &nbsp;
+                </div>
+            </td>
+            <td>
+                <pre>}</pre>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

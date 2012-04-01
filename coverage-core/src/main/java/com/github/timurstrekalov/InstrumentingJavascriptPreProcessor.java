@@ -74,8 +74,11 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
         final AstRoot root = new Parser().parse(sourceCode, sourceName, lineNumber);
         root.visit(new InstrumentingVisitor());
 
-        final String tree = root.toSource();
-        final StringBuilder buf = new StringBuilder(tree.length() + executableLines.size() * arrayInitializer.length());
+        final String treeSource = root.toSource();
+        final StringBuilder buf = new StringBuilder(
+                initializingCode.length() +
+                executableLines.size() * arrayInitializer.length() +
+                treeSource.length());
 
         buf.append(initializingCode);
 
@@ -83,7 +86,7 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
             buf.append(String.format(arrayInitializer, i));
         }
 
-        buf.append(tree);
+        buf.append(treeSource);
 
         if (outputInstrumentedFiles) {
             try {
@@ -184,23 +187,7 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
             final int parentType = parent.getType();
 
             if (type == CASE) {
-                // 'switch' statement cases are special in the sense that their children are not actually their children,
-                // meaning the children have a reference to their parent, but the parent only has a List of all its
-                // children, so we can't just addChildBefore() like we do for all other cases.
-                //
-                // They do, however, retain a list of all statements per each case.
-                final SwitchCase switchCase = (SwitchCase) node;
-                final List<AstNode> newStatements = Lists.newArrayList();
-
-                for (final AstNode statement : switchCase.getStatements()) {
-                    final int lineNr = statement.getLineno();
-                    executableLines.put(lineNr, node.getLength());
-
-                    newStatements.add(newInstrumentationNode(lineNr));
-                    newStatements.add(statement);
-                }
-
-                switchCase.setStatements(newStatements);
+                handleSwitchCase((SwitchCase) node);
             } else if (type == IF && parentType == IF) {
                 flattenElseIf((IfStatement) node, (IfStatement) parent);
             } else {
@@ -213,6 +200,58 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
             }
         }
 
+        /**
+         * 'switch' statement cases are special in the sense that their children are not actually their children,
+         * meaning the children have a reference to their parent, but the parent only has a List of all its
+         * children, so we can't just addChildBefore() like we do for all other cases.
+         *
+         * They do, however, retain a list of all statements per each case, which we're using here
+         */
+        private void handleSwitchCase(final SwitchCase switchCase) {
+            final List<AstNode> newStatements = Lists.newArrayList();
+
+            for (final AstNode statement : switchCase.getStatements()) {
+                final int lineNr = statement.getLineno();
+                executableLines.put(lineNr, switchCase.getLength());
+
+                newStatements.add(newInstrumentationNode(lineNr));
+                newStatements.add(statement);
+            }
+
+            switchCase.setStatements(newStatements);
+        }
+
+        /**
+         * In order to make it possible to cover else-if blocks, we're flattening the shorthand else-if
+         *
+         * <pre>
+         * {@literal
+         * if (cond1) {
+         *     doIf();
+         * } else if (cond2) {
+         *     doElseIf();
+         * } else {
+         *     doElse();
+         * }
+         * }
+         * </pre>
+         *
+         * into
+         *
+         * <pre>
+         * {@literal
+         * if (cond1) {
+         *     doIf();
+         * } else {
+         *     if (cond2) {
+         *         doElseIf();
+         *     } else {
+         *         doElse();
+         *     }
+         * }
+         * }
+         * </pre>
+         */
         private void flattenElseIf(final IfStatement elseIfStatement, final IfStatement ifStatement) {
             final Scope scope = new Scope();
             scope.addChild(elseIfStatement);

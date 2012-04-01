@@ -28,6 +28,16 @@
                 <artifactId>log4j</artifactId>
                 <version>1.2.16</version>
             </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>1.9.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
