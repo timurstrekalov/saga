@@ -36,6 +36,7 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
     public InstrumentingJavascriptPreProcessor(final String coverageVariableName, final List<String> ignorePatterns) {
         this.coverageVariableName = coverageVariableName;
+
         initializingCode = String.format("%s = {};", coverageVariableName);
         arrayInitializer = String.format("%s[%%d] = 0;%n", coverageVariableName);
 

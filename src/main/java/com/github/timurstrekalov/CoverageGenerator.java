@@ -6,6 +6,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,12 +34,44 @@ public class CoverageGenerator {
 
     };
 
-    private static final Pattern reservedKeywordsPattern = Pattern.compile("\\b(break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|this|throw|try|typeof|var|void|while|with)\\b");
+    private static final String[] reservedKeywords = {
+        "break",
+        "case",
+        "catch",
+        "continue",
+        "debugger",
+        "default",
+        "delete",
+        "do",
+        "else",
+        "finally",
+        "for",
+        "function",
+        "if",
+        "in",
+        "instanceof",
+        "new",
+        "return",
+        "switch",
+        "this",
+        "throw",
+        "try",
+        "typeof",
+        "var",
+        "void",
+        "while",
+        "with"
+    };
 
+    private static final Pattern reservedKeywordsPattern = Pattern.compile(String.format("\\b(%s)\\b",
+            StringUtils.join(reservedKeywords, '|')));
+
+    private final String coverageVariableName;
     private final List<URI> tests;
     private List<String> ignorePatterns;
 
-    public CoverageGenerator(final List<URI> tests) {
+    public CoverageGenerator(final String coverageVariableName, final List<URI> tests) {
+        this.coverageVariableName = coverageVariableName;
         this.tests = tests;
     }
 
@@ -98,8 +131,8 @@ public class CoverageGenerator {
         final WebClient client = localClient.get();
         client.setIncorrectnessListener(quietIncorrectnessListener);
 
-        final InstrumentingJavascriptPreProcessor preProcessor = new InstrumentingJavascriptPreProcessor("_COV",
-                ignorePatterns);
+        final InstrumentingJavascriptPreProcessor preProcessor = new InstrumentingJavascriptPreProcessor(
+                coverageVariableName, ignorePatterns);
 
         client.setScriptPreProcessor(preProcessor);
 
@@ -111,7 +144,8 @@ public class CoverageGenerator {
             client.waitForBackgroundJavaScript(30000);
             client.setScriptPreProcessor(null);
 
-            final NativeObject cov = (NativeObject) htmlPage.executeJavaScript("_COV").getJavaScriptResult();
+            final NativeObject cov = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
+                    .getJavaScriptResult();
 
             for (final Map.Entry<String, String> entry : preProcessor.getSourceCodeMap().entrySet()) {
                 final PrintWriter out = new PrintWriter(new File(entry.getKey() + ".html").getName());

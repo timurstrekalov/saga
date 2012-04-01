@@ -12,7 +12,7 @@ public class CoverageGeneratorTest {
         final List<URI> tests = ImmutableList.of(new File("test.html").toURI());
         final List<String> ignore = ImmutableList.of("^.+Test.js$");
 
-        final CoverageGenerator gen = new CoverageGenerator(tests);
+        final CoverageGenerator gen = new CoverageGenerator("_COV", tests);
         gen.setIgnorePatterns(ignore);
         gen.run();
     }
