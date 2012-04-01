@@ -17,8 +17,8 @@ class PerRunStatistics {
         this.testName = testName;
     }
 
-    public PerFileStatistics add(final String jsFileName, final int statements, final int executed) {
-        final PerFileStatistics stats = new PerFileStatistics(jsFileName, statements, executed,
+    public PerFileStatistics add(final String jsFileName, final String href, final int statements, final int executed) {
+        final PerFileStatistics stats = new PerFileStatistics(jsFileName, href, statements, executed,
                 toCoverage(statements, executed));
 
         fileStats.add(stats);

@@ -144,7 +144,9 @@ public class CoverageGenerator {
             int statementsExecuted = 0;
             int statements = data.getNumberOfStatements();
 
-            for (int lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext(); lineNr++) {
+            for (int lineCount = 1, lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext();
+                 lineCount++, lineNr++) {
+
                 final String line = in.nextLine();
 
                 final Double coverageEntry = (Double) coverageData.get(lineNr);
@@ -172,12 +174,15 @@ public class CoverageGenerator {
                     }
                 }
 
-                lines.add(new LineCoverage(lineNr, timesLineExecuted, line, executable));
+                // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
+                lines.add(new LineCoverage(lineCount, timesLineExecuted, line, executable));
             }
 
             final String jsFileName = data.getSourceName();
-            final PerFileStatistics perFileStats = stats.add(jsFileName, statements, statementsExecuted);
             final String fileCoverageFilename = testName + "-" + new File(jsFileName).getName() + ".html";
+
+            final PerFileStatistics perFileStats = stats.add(jsFileName, fileCoverageFilename, statements,
+                    statementsExecuted);
 
             stringTemplateGroup.getInstanceOf("lineByLineCoverageReport")
                     .add("lines", lines)
