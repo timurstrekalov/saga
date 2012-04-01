@@ -46,7 +46,7 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
         this.outputDir = outputDir;
         this.outputInstrumentedFiles = outputInstrumentedFiles;
 
-        initializingCode = String.format("%s = {};", coverageVariableName);
+        initializingCode = String.format("%s = window.%s || {};%n", coverageVariableName, coverageVariableName);
         arrayInitializer = String.format("%s[%%d] = 0;%n", coverageVariableName);
 
         this.ignorePatterns = ImmutableList.copyOf(Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
@@ -65,15 +65,6 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
             final int lineNumber,
             final HtmlElement htmlElement) {
 
-        if (initializingCode.equals(sourceCode)) {
-            return sourceCode;
-        }
-
-        if (!coverageObjectInitialized) {
-            htmlPage.executeJavaScript(initializingCode);
-            coverageObjectInitialized = true;
-        }
-
         if (shouldIgnore(sourceName)) {
             return sourceCode;
         }
@@ -85,6 +76,8 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
         final String tree = root.toSource();
         final StringBuilder buf = new StringBuilder(tree.length() + executableLines.size() * arrayInitializer.length());
+
+        buf.append(initializingCode);
 
         for (final Integer i : executableLines.keySet()) {
             buf.append(String.format(arrayInitializer, i));
