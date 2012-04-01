@@ -10,7 +10,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STErrorListener;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupDir;
@@ -47,7 +46,7 @@ public class CoverageGenerator {
 
     static {
         try {
-            COVERAGE_REPORT_ST = IOUtils.toString(CoverageGenerator.class.getResource("/st/coverageReport.st"));
+            COVERAGE_REPORT_ST = IOUtils.toString(CoverageGenerator.class.getResource("/stringTemplates/coverageReport.st"));
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -92,13 +91,13 @@ public class CoverageGenerator {
     private final List<URI> tests;
     private List<String> ignorePatterns;
 
-    private final STGroup stg;
+    private final STGroup stringTemplateGroup;
 
     public CoverageGenerator(final String coverageVariableName, final List<URI> tests) {
         this.coverageVariableName = coverageVariableName;
         this.tests = tests;
 
-        stg = new STGroupDir("st", '$', '$');
+        stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
     }
 
     public void run() throws IOException {
@@ -157,30 +156,9 @@ public class CoverageGenerator {
                     lines.add(newLineCoverage(lineNr, coverage, line));
                 }
 
-                final ST st = stg.getInstanceOf("coverageReport");
-                st.add("lines", lines);
-
-                st.write(new File(new File(entry.getKey() + ".html").getName()), new STErrorListener() {
-                    @Override
-                    public void compileTimeError(final STMessage msg) {
-                        logger.error(msg.toString());
-                    }
-
-                    @Override
-                    public void runTimeError(final STMessage msg) {
-                        logger.error(msg.toString());
-                    }
-
-                    @Override
-                    public void IOError(final STMessage msg) {
-                        logger.error(msg.toString());
-                    }
-
-                    @Override
-                    public void internalError(final STMessage msg) {
-                        logger.error(msg.toString());
-                    }
-                });
+                stringTemplateGroup.getInstanceOf("coverageReport")
+                        .add("lines", lines)
+                        .write(new File(new File(entry.getKey() + ".html").getName()), new ErrorLogger());
             }
         }
     }
@@ -222,4 +200,25 @@ public class CoverageGenerator {
         }
     }
 
+    private static final class ErrorLogger implements STErrorListener {
+        @Override
+        public void compileTimeError(final STMessage msg) {
+            logger.error(msg.toString());
+        }
+
+        @Override
+        public void runTimeError(final STMessage msg) {
+            logger.error(msg.toString());
+        }
+
+        @Override
+        public void IOError(final STMessage msg) {
+            logger.error(msg.toString());
+        }
+
+        @Override
+        public void internalError(final STMessage msg) {
+            logger.error(msg.toString());
+        }
+    }
 }
