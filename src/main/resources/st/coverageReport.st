@@ -1,3 +1,4 @@
+coverageReport(lines) ::= <<
 <!DOCTYPE html>
 <html>
 <head>
@@ -70,6 +71,9 @@
 </style>
 </head>
 <body>
-$body$
+    <table>
+        $lines:lineCoverage(); separator="\n"$
+    </table>
 </body>
 </html>
+>>

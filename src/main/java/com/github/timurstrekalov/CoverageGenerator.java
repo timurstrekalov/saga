@@ -4,14 +4,20 @@ import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STErrorListener;
-import org.stringtemplate.v4.misc.ErrorBuffer;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupDir;
+import org.stringtemplate.v4.misc.STMessage;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +25,8 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class CoverageGenerator {
+
+    private static final Logger logger = LoggerFactory.getLogger(CoverageGenerator.class);
 
     private static final ThreadLocal<WebClient> localClient = new ThreadLocal<WebClient>() {
         @Override
@@ -35,11 +43,11 @@ public class CoverageGenerator {
 
     };
 
-    private static final String COVERAGE_REPORT_TEMPLATE;
+    private static final String COVERAGE_REPORT_ST;
 
     static {
         try {
-            COVERAGE_REPORT_TEMPLATE = IOUtils.toString(CoverageGenerator.class.getResource("/coverage-report.stg"));
+            COVERAGE_REPORT_ST = IOUtils.toString(CoverageGenerator.class.getResource("/st/coverageReport.st"));
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -84,9 +92,13 @@ public class CoverageGenerator {
     private final List<URI> tests;
     private List<String> ignorePatterns;
 
+    private final STGroup stg;
+
     public CoverageGenerator(final String coverageVariableName, final List<URI> tests) {
         this.coverageVariableName = coverageVariableName;
         this.tests = tests;
+
+        stg = new STGroupDir("st", '$', '$');
     }
 
     public void run() throws IOException {
@@ -116,13 +128,9 @@ public class CoverageGenerator {
                     .getJavaScriptResult();
 
             for (final Map.Entry<String, String> entry : preProcessor.getSourceCodeMap().entrySet()) {
-                StringWriter body = new StringWriter();
-                final PrintWriter out = new PrintWriter(body);
-
-                out.println("<table>");
-
                 final Scanner in = new Scanner(entry.getValue());
                 final Map<Integer, Integer> lineLengths = preProcessor.getExecutableLines();
+                final List<LineCoverage> lines = Lists.newLinkedList();
 
                 for (int lineNr = 1, lengthCountdown = 0; in.hasNext(); lineNr++) {
                     final String line = in.nextLine();
@@ -146,57 +154,72 @@ public class CoverageGenerator {
                         lengthCountdown = lineLengths.get(lineNr);
                     }
 
-                    padAndWrite(out, lineNr, line, coverage);
+                    lines.add(newLineCoverage(lineNr, coverage, line));
                 }
 
-                out.println("</table>");
+                final ST st = stg.getInstanceOf("coverageReport");
+                st.add("lines", lines);
 
-                IOUtils.closeQuietly(out);
+                st.write(new File(new File(entry.getKey() + ".html").getName()), new STErrorListener() {
+                    @Override
+                    public void compileTimeError(final STMessage msg) {
+                        logger.error(msg.toString());
+                    }
 
-                final ST st = new ST(COVERAGE_REPORT_TEMPLATE, '$', '$');
-                st.add("body", body);
+                    @Override
+                    public void runTimeError(final STMessage msg) {
+                        logger.error(msg.toString());
+                    }
 
-                final STErrorListener buf = new ErrorBuffer();
+                    @Override
+                    public void IOError(final STMessage msg) {
+                        logger.error(msg.toString());
+                    }
 
-                st.write(new File(new File(entry.getKey() + ".html").getName()), buf);
-
-                System.out.println(buf.toString());
+                    @Override
+                    public void internalError(final STMessage msg) {
+                        logger.error(msg.toString());
+                    }
+                });
             }
         }
     }
 
-    private static void padAndWrite(final PrintWriter out, final int lineNr, final String line, final int coverage) {
-        final String cssClass;
-
-        if (coverage == -1) {
-            cssClass = "";
-        } else if (coverage > 0) {
-            cssClass = "covered";
-        } else {
-            cssClass = "not-covered";
-        }
-
+    private static LineCoverage newLineCoverage(final int lineNr, final int coverage, final String line) {
         String styledLine = jsStringPattern.matcher(line).replaceAll("<span class=\"string\">$1</span>");
         styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
         styledLine = reservedKeywordsPattern.matcher(styledLine).replaceAll("<span class=\"keyword\">$1</span>");
 
-        if (coverage > -1) {
-            out.printf("<tr class=\"%s\">%n" +
-                       "    <th><div>%d</div></th>%n" +
-                       "    <td class=\"coverage\"><div>%d</div></td>%n" +
-                       "    <td><pre>%s</pre></td>%n" +
-                       "</tr>%n", cssClass, lineNr, coverage, styledLine);
-        } else {
-            out.printf("<tr>%n" +
-                       "    <th><div>%d</div></th>%n" +
-                       "    <td class=\"coverage\"><div></div></td>%n" +
-                       "    <td><pre>%s</pre></td>%n" +
-                       "</tr>%n", lineNr, styledLine);
-        }
+        return new LineCoverage(lineNr, coverage, styledLine);
     }
 
     public void setIgnorePatterns(final List<String> ignorePatterns) {
         this.ignorePatterns = ignorePatterns;
+    }
+
+    private static final class LineCoverage {
+
+        public final int lineNr;
+        public final int coverage;
+        public final String line;
+        public final boolean executable;
+        public final String cssClass;
+
+        LineCoverage(final int lineNr, final int coverage, final String line) {
+            this.lineNr = lineNr;
+            this.coverage = coverage;
+            this.line = line;
+
+            executable = coverage > -1;
+
+            if (coverage == -1) {
+                cssClass = "";
+            } else if (coverage > 0) {
+                cssClass = "covered";
+            } else {
+                cssClass = "not-covered";
+            }
+        }
     }
 
 }
