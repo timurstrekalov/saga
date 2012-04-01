@@ -98,7 +98,9 @@ public class CoverageGenerator {
         final WebClient client = localClient.get();
         client.setIncorrectnessListener(quietIncorrectnessListener);
 
-        final InstrumentingJavascriptPreProcessor preProcessor = new InstrumentingJavascriptPreProcessor(ignorePatterns);
+        final InstrumentingJavascriptPreProcessor preProcessor = new InstrumentingJavascriptPreProcessor("_COV",
+                ignorePatterns);
+
         client.setScriptPreProcessor(preProcessor);
 
         final Page page = client.getPage(test.toURL());

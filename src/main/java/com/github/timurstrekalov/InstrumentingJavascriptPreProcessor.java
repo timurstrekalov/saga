@@ -7,6 +7,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.*;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
+import net.sourceforge.htmlunit.corejs.javascript.Token;
 import net.sourceforge.htmlunit.corejs.javascript.ast.*;
 import org.apache.commons.io.IOUtils;
 
@@ -22,10 +23,9 @@ import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
 class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
-    private static final String INITIALIZING_CODE = "_COV = {};";
-
-    // %d denotes absolute position within the AST
-    private static final String ARRAY_INITIALIZER = "_COV[%d] = 0;%n";
+    private final String coverageVariableName;
+    private final String initializingCode;
+    private final String arrayInitializer;
 
     private final Map<Integer, Integer> executableLines = Maps.newTreeMap();
     private final Map<String, String> sourceCodeMap = new HashMap<String, String>();
@@ -34,7 +34,11 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
     private boolean coverageObjectInitialized;
 
-    public InstrumentingJavascriptPreProcessor(final List<String> ignorePatterns) {
+    public InstrumentingJavascriptPreProcessor(final String coverageVariableName, final List<String> ignorePatterns) {
+        this.coverageVariableName = coverageVariableName;
+        initializingCode = String.format("%s = {};", coverageVariableName);
+        arrayInitializer = String.format("%s[%%d] = 0;%n", coverageVariableName);
+
         this.ignorePatterns = ImmutableList.copyOf(Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
             @Override
             public Pattern apply(final String input) {
@@ -46,12 +50,12 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
     @Override
     public String preProcess(final HtmlPage htmlPage, final String sourceCode,
             final String sourceName, final int lineNumber, final HtmlElement htmlElement) {
-        if (INITIALIZING_CODE.equals(sourceCode)) {
+        if (initializingCode.equals(sourceCode)) {
             return sourceCode;
         }
 
         if (!coverageObjectInitialized) {
-            htmlPage.executeJavaScript(INITIALIZING_CODE);
+            htmlPage.executeJavaScript(initializingCode);
             coverageObjectInitialized = true;
         }
 
@@ -65,10 +69,10 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
         root.visit(new InstrumentingVisitor());
 
         final String tree = root.toSource();
-        final StringBuilder buf = new StringBuilder(tree.length() + executableLines.size() * ARRAY_INITIALIZER.length());
+        final StringBuilder buf = new StringBuilder(tree.length() + executableLines.size() * arrayInitializer.length());
 
         for (final Integer i : executableLines.keySet()) {
-            buf.append(String.format(ARRAY_INITIALIZER, i));
+            buf.append(String.format(arrayInitializer, i));
         }
 
         buf.append(tree);
@@ -82,8 +86,30 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
         return buf.toString();
     }
 
-    private static AstNode newInstrumentationNode(final int lineNr) {
-        return (AstNode) (new Parser().parse(String.format("_COV[%d]++;", lineNr), "injected", 0).getFirstChild());
+    private AstNode newInstrumentationNode(final int lineNr) {
+        final ExpressionStatement instrumentationNode = new ExpressionStatement();
+        final UnaryExpression inc = new UnaryExpression();
+
+        inc.setIsPostfix(true);
+        inc.setOperator(Token.INC);
+
+        final ElementGet coverageDataRef = new ElementGet();
+
+        final Name target = new Name();
+        target.setIdentifier(coverageVariableName);
+
+        final NumberLiteral index = new NumberLiteral();
+        index.setValue(Integer.toString(lineNr));
+
+        coverageDataRef.setTarget(target);
+        coverageDataRef.setElement(index);
+
+        inc.setOperand(coverageDataRef);
+
+        instrumentationNode.setExpression(inc);
+        instrumentationNode.setHasResult();
+
+        return instrumentationNode;
     }
 
     private boolean shouldIgnore(final String sourceName) {
