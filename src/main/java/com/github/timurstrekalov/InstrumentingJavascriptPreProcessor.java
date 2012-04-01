@@ -26,6 +26,8 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
     private final String coverageVariableName;
     private final String initializingCode;
     private final String arrayInitializer;
+    private final File outputDir;
+    private final boolean outputInstrumentedFiles;
 
     private final Map<Integer, Integer> executableLines = Maps.newTreeMap();
     private final Map<String, String> sourceCodeMap = new HashMap<String, String>();
@@ -34,8 +36,15 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
     private boolean coverageObjectInitialized;
 
-    public InstrumentingJavascriptPreProcessor(final String coverageVariableName, final List<String> ignorePatterns) {
+    public InstrumentingJavascriptPreProcessor(
+            final String coverageVariableName,
+            final List<String> ignorePatterns,
+            final File outputDir,
+            final boolean outputInstrumentedFiles) {
+
         this.coverageVariableName = coverageVariableName;
+        this.outputDir = outputDir;
+        this.outputInstrumentedFiles = outputInstrumentedFiles;
 
         initializingCode = String.format("%s = {};", coverageVariableName);
         arrayInitializer = String.format("%s[%%d] = 0;%n", coverageVariableName);
@@ -49,8 +58,13 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
     }
 
     @Override
-    public String preProcess(final HtmlPage htmlPage, final String sourceCode,
-            final String sourceName, final int lineNumber, final HtmlElement htmlElement) {
+    public String preProcess(
+            final HtmlPage htmlPage,
+            final String sourceCode,
+            final String sourceName,
+            final int lineNumber,
+            final HtmlElement htmlElement) {
+
         if (initializingCode.equals(sourceCode)) {
             return sourceCode;
         }
@@ -78,10 +92,13 @@ class InstrumentingJavascriptPreProcessor implements ScriptPreProcessor {
 
         buf.append(tree);
 
-        try {
-            IOUtils.write(buf, new FileOutputStream(new File(sourceName).getName() + "-instrumented.js"));
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
+        if (outputInstrumentedFiles) {
+            try {
+                final File outputFile = new File(outputDir, new File(sourceName).getName() + "-instrumented.js");
+                IOUtils.write(buf, new FileOutputStream(outputFile));
+            } catch (final IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return buf.toString();

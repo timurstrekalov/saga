@@ -17,7 +17,7 @@ import org.stringtemplate.v4.misc.STMessage;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -88,34 +88,40 @@ public class CoverageGenerator {
     private static final Pattern jsNumberPattern = Pattern.compile("\\b(\\d+(?:\\.\\d+)?)\\b");
 
     private final String coverageVariableName;
-    private final List<URI> tests;
+    private final List<URL> tests;
     private List<String> ignorePatterns;
 
     private final STGroup stringTemplateGroup;
+    private final File outputDir;
 
-    public CoverageGenerator(final String coverageVariableName, final List<URI> tests) {
+    private boolean outputInstrumentedFiles;
+
+    public CoverageGenerator(final String coverageVariableName, final List<URL> tests, final File outputDir) {
         this.coverageVariableName = coverageVariableName;
         this.tests = tests;
+        this.outputDir = outputDir;
 
         stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
     }
 
     public void run() throws IOException {
-        for (final URI test : tests) {
+        outputDir.mkdirs();
+
+        for (final URL test : tests) {
             runTest(test);
         }
     }
 
-    private void runTest(final URI test) throws IOException {
+    private void runTest(final URL test) throws IOException {
         final WebClient client = localClient.get();
         client.setIncorrectnessListener(quietIncorrectnessListener);
 
         final InstrumentingJavascriptPreProcessor preProcessor = new InstrumentingJavascriptPreProcessor(
-                coverageVariableName, ignorePatterns);
+                coverageVariableName, ignorePatterns, outputDir, outputInstrumentedFiles);
 
         client.setScriptPreProcessor(preProcessor);
 
-        final Page page = client.getPage(test.toURL());
+        final Page page = client.getPage(test);
 
         if (page instanceof HtmlPage) {
             final HtmlPage htmlPage = (HtmlPage) page;
@@ -158,7 +164,7 @@ public class CoverageGenerator {
 
                 stringTemplateGroup.getInstanceOf("coverageReport")
                         .add("lines", lines)
-                        .write(new File(new File(entry.getKey() + ".html").getName()), new ErrorLogger());
+                        .write(new File(outputDir, new File(entry.getKey() + ".html").getName()), new ErrorLogger());
             }
         }
     }
@@ -173,6 +179,10 @@ public class CoverageGenerator {
 
     public void setIgnorePatterns(final List<String> ignorePatterns) {
         this.ignorePatterns = ignorePatterns;
+    }
+
+    public void setOutputInstrumentedFiles(final boolean outputInstrumentedFiles) {
+        this.outputInstrumentedFiles = outputInstrumentedFiles;
     }
 
     private static final class LineCoverage {
