@@ -8,18 +8,18 @@ lineByLineCoverageReport(lines, stats) ::= <<
     body {
         padding: 18px 10px;
         margin: 0;
-        font-family: Arial, sans-serif;
+        font: 0.8125em Verdana, sans-serif;
     }
 
     h1 {
-        font-size: 16px;
-        font-family: Arial, sans-serif;
+        font-size: 1.2em;
         margin: 0;
         padding-left: 10px;
+        padding-bottom: 5px;
     }
 
     h2 {
-        font-size: 14px;
+        font-size: 1em;
         font-weight: normal;
         margin: 0;
         padding: 2px 20px;
@@ -43,7 +43,7 @@ lineByLineCoverageReport(lines, stats) ::= <<
     }
 
     td div {
-        padding: 1px 4px;
+        padding: 1px 6px;
         margin: 0px 8px;
     }
 
@@ -51,7 +51,7 @@ lineByLineCoverageReport(lines, stats) ::= <<
         padding: 0;
         margin: 0;
 
-        font-size: 14px;
+        font-size: 1.1em;
         font-weight: normal;
         font-family: Courier New;
     }
