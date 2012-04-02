@@ -1,4 +1,4 @@
-lineByLineCoverageReport(lines, stats) ::= <<
+lineByLineCoverageReport(stats) ::= <<
 <!DOCTYPE html>
 <html>
 <head>
@@ -100,7 +100,7 @@ lineByLineCoverageReport(lines, stats) ::= <<
 
     <h1 class="source">Source:</h1>
     <table>
-        $lines:lineCoverage(); separator="\n"$
+        $stats.lineCoverageRecords:lineCoverage(); separator="\n"$
     </table>
 </body>
 </html>

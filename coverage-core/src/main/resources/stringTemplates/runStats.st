@@ -1,9 +1,9 @@
-perRunStatistics(stats) ::= <<
+runStats(stats) ::= <<
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Coverage report for $stats.testName$</title>
+<title>Coverage report for $stats.runName$</title>
 <style>
     body {
         margin: 0;
@@ -100,7 +100,7 @@ perRunStatistics(stats) ::= <<
             </tr>
         </thead>
         <tbody>
-            $stats.fileStats:perFileStatistics(); separator="\n"$
+            $stats.fileStats:fileStats(); separator="\n"$
         </tbody>
     </table>
 </body>

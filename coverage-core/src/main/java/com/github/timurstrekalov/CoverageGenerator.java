@@ -6,7 +6,6 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.STErrorListener;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 public class CoverageGenerator {
 
@@ -40,50 +38,14 @@ public class CoverageGenerator {
         }
     };
 
-    private static final String[] reservedKeywords = {
-        "break",
-        "case",
-        "catch",
-        "continue",
-        "debugger",
-        "default",
-        "delete",
-        "do",
-        "else",
-        "false",
-        "finally",
-        "for",
-        "function",
-        "if",
-        "in",
-        "instanceof",
-        "new",
-        "null",
-        "return",
-        "switch",
-        "this",
-        "true",
-        "throw",
-        "try",
-        "typeof",
-        "var",
-        "void",
-        "while",
-        "with"
-    };
-
-    private static final Pattern reservedKeywordsPattern = Pattern.compile(String.format("\\b(%s)\\b",
-            StringUtils.join(reservedKeywords, '|')));
-
-    private static final Pattern jsStringPattern = Pattern.compile("('.*'|\".*\")");
-    private static final Pattern jsNumberPattern = Pattern.compile("\\b(\\d+(?:\\.\\d+)?)\\b");
-
     private final String coverageVariableName;
     private final List<URL> tests;
     private List<String> ignorePatterns;
 
     private final STGroup stringTemplateGroup;
     private final File outputDir;
+
+    private String wholeRunName = "all";
 
     private boolean outputInstrumentedFiles;
 
@@ -100,9 +62,13 @@ public class CoverageGenerator {
             throw new IOException("Couldn't create output directory");
         }
 
+        final RunStats totalStats = new RunStats(wholeRunName);
+
         for (final URL test : tests) {
             runTest(test);
         }
+
+        writeRunStats(wholeRunName, totalStats);
     }
 
     private void runTest(final URL test) throws IOException {
@@ -122,32 +88,32 @@ public class CoverageGenerator {
             client.setScriptPreProcessor(null);
 
             final String testName = new File(test.toString()).getName();
-            final PerRunStatistics stats = new PerRunStatistics(testName);
+            final RunStats stats = new RunStats(testName);
             final NativeObject coverageData = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
                     .getJavaScriptResult();
 
-            createPerFileReports(testName, instrumenter, stats, coverageData);
-
-            stringTemplateGroup.getInstanceOf("perRunStatistics")
-                    .add("stats", stats)
-                    .write(new File(outputDir, new File(testName).getName() + "-report.html"), new ErrorLogger());
+            writeStatsOfAllFiles(testName, instrumenter, stats, coverageData);
+            writeRunStats(testName, stats);
         }
     }
 
-    private void createPerFileReports(
+    private void writeStatsOfAllFiles(
             final String testName,
             final ScriptInstrumenter instrumenter,
-            final PerRunStatistics stats,
+            final RunStats stats,
             final NativeObject allCoverageData) throws IOException {
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             final Scanner in = new Scanner(data.getSourceCode());
             final NativeObject coverageData = (NativeObject) allCoverageData.get(data.getHashedSourceName());
 
-            final List<LineCoverage> lines = Lists.newLinkedList();
-
             int statementsExecuted = 0;
             int statements = data.getNumberOfStatements();
+
+            final String jsFileName = data.getSourceName();
+            final String fileCoverageFilename = testName + "-" + new File(jsFileName).getName() + ".html";
+
+            final List<LineCoverageRecord> lineCoverageRecords = Lists.newLinkedList();
 
             for (int lineCount = 1, lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext();
                  lineCount++, lineNr++) {
@@ -180,20 +146,22 @@ public class CoverageGenerator {
                 }
 
                 // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
-                lines.add(new LineCoverage(lineCount, timesLineExecuted, line, executable));
+                lineCoverageRecords.add(new LineCoverageRecord(lineCount, timesLineExecuted, line, executable));
             }
 
-            final String jsFileName = data.getSourceName();
-            final String fileCoverageFilename = testName + "-" + new File(jsFileName).getName() + ".html";
-
-            final PerFileStatistics perFileStats = stats.add(jsFileName, fileCoverageFilename, statements,
-                    statementsExecuted);
+            final FileStats fileStats = stats.add(jsFileName, fileCoverageFilename, statements,
+                    statementsExecuted, lineCoverageRecords);
 
             stringTemplateGroup.getInstanceOf("lineByLineCoverageReport")
-                    .add("lines", lines)
-                    .add("stats", perFileStats)
+                    .add("stats", fileStats)
                     .write(new File(outputDir, fileCoverageFilename), new ErrorLogger());
         }
+    }
+
+    private void writeRunStats(final String testName, final RunStats stats) throws IOException {
+        stringTemplateGroup.getInstanceOf("runStats")
+                .add("stats", stats)
+                .write(new File(outputDir, new File(testName).getName() + "-report.html"), new ErrorLogger());
     }
 
     public void setIgnorePatterns(final List<String> ignorePatterns) {
@@ -204,33 +172,8 @@ public class CoverageGenerator {
         this.outputInstrumentedFiles = outputInstrumentedFiles;
     }
 
-    private static final class LineCoverage {
-
-        public final int lineNr;
-        public final int coverage;
-        public final String line;
-        public final boolean executable;
-        public final String cssClass;
-
-        LineCoverage(final int lineNr, final int coverage, final String line, final boolean executable) {
-            this.lineNr = lineNr;
-            this.coverage = coverage;
-
-            String styledLine = jsStringPattern.matcher(line).replaceAll("<span class=\"string\">$1</span>");
-            styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
-            styledLine = reservedKeywordsPattern.matcher(styledLine).replaceAll("<span class=\"keyword\">$1</span>");
-
-            this.line = styledLine;
-            this.executable = executable;
-
-            if (!executable) {
-                cssClass = "not-executable";
-            } else if (coverage > 0) {
-                cssClass = "covered";
-            } else {
-                cssClass = "not-covered";
-            }
-        }
+    public void setWholeRunName(String wholeRunName) {
+        this.wholeRunName = wholeRunName;
     }
 
     private static final class ErrorLogger implements STErrorListener {

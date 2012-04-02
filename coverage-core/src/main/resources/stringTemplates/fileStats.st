@@ -1,4 +1,4 @@
-perFileStatistics(fileStats) ::= <<
+fileStats(fileStats) ::= <<
 <tr>
     <td><a href="$fileStats.href$">$fileStats.name$</a></td>
     <td class="statements">$fileStats.statements$</td>
