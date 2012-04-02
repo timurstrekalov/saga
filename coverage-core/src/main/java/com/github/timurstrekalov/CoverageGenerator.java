@@ -135,10 +135,12 @@ public class CoverageGenerator {
             final String testName,
             final ScriptInstrumenter instrumenter,
             final PerRunStatistics stats,
-            final NativeObject coverageData) throws IOException {
+            final NativeObject allCoverageData) throws IOException {
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             final Scanner in = new Scanner(data.getSourceCode());
+            final NativeObject coverageData = (NativeObject) allCoverageData.get(data.getHashedSourceName());
+
             final List<LineCoverage> lines = Lists.newLinkedList();
 
             int statementsExecuted = 0;

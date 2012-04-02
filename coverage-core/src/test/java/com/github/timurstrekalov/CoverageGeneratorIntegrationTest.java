@@ -16,7 +16,7 @@ public class CoverageGeneratorIntegrationTest {
     @Test
     public void endToEnd() throws IOException {
         final List<URL> tests = ImmutableList.of(getClass().getResource("/ClassTest.html"));
-        final List<String> ignore = ImmutableList.of("^.+Test.js$"/*, "^script in .+from \\(\\d+, \\d+\\) to \\(\\d+, \\d+\\)$"*/);
+        final List<String> ignore = ImmutableList.of(/*"^.+Test.js$", "^script in .+from \\(\\d+, \\d+\\) to \\(\\d+, \\d+\\)$"*/);
 
         final File outputDir = new File("target/coverage");
 

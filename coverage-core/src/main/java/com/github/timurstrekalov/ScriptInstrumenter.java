@@ -45,7 +45,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         this.outputInstrumentedFiles = outputInstrumentedFiles;
 
         initializingCode = String.format("%s = window.%s || {};%n", coverageVariableName, coverageVariableName);
-        arrayInitializer = String.format("%s[%%d] = 0;%n", coverageVariableName);
+        arrayInitializer = String.format("%s['%%s'][%%d] = 0;%n", coverageVariableName);
 
         this.ignorePatterns = ImmutableList.copyOf(Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
             @Override
@@ -80,49 +80,26 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 treeSource.length());
 
         buf.append(initializingCode);
+        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, data.getHashedSourceName()));
 
         for (final Integer i : data.getLineNumbersOfAllStatements()) {
-            buf.append(String.format(arrayInitializer, i));
+            buf.append(String.format(arrayInitializer, data.getHashedSourceName(), i));
         }
 
         buf.append(treeSource);
 
+        final String instrumentedCode = buf.toString();
+
         if (outputInstrumentedFiles) {
             try {
                 final File outputFile = new File(outputDir, new File(sourceName).getName() + "-instrumented.js");
-                IOUtils.write(buf, new FileOutputStream(outputFile));
+                IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        return buf.toString();
-    }
-
-    private AstNode newInstrumentationNode(final int lineNr) {
-        final ExpressionStatement instrumentationNode = new ExpressionStatement();
-        final UnaryExpression inc = new UnaryExpression();
-
-        inc.setIsPostfix(true);
-        inc.setOperator(Token.INC);
-
-        final ElementGet coverageDataRef = new ElementGet();
-
-        final Name target = new Name();
-        target.setIdentifier(coverageVariableName);
-
-        final NumberLiteral index = new NumberLiteral();
-        index.setValue(Integer.toString(lineNr));
-
-        coverageDataRef.setTarget(target);
-        coverageDataRef.setElement(index);
-
-        inc.setOperand(coverageDataRef);
-
-        instrumentationNode.setExpression(inc);
-        instrumentationNode.setHasResult();
-
-        return instrumentationNode;
+        return instrumentedCode;
     }
 
     private boolean shouldIgnore(final String sourceName) {
@@ -263,6 +240,42 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
             data.addExecutableLine(lineNr, elseIfStatement.getLength());
             scope.addChildBefore(newInstrumentationNode(lineNr), elseIfStatement);
+        }
+
+        private AstNode newInstrumentationNode(final int lineNr) {
+            final ExpressionStatement instrumentationNode = new ExpressionStatement();
+            final UnaryExpression inc = new UnaryExpression();
+
+            inc.setIsPostfix(true);
+            inc.setOperator(Token.INC);
+
+            final ElementGet outer = new ElementGet();
+            final ElementGet inner = new ElementGet();
+
+            outer.setTarget(inner);
+
+            final Name covDataVar = new Name();
+            covDataVar.setIdentifier(coverageVariableName);
+
+            inner.setTarget(covDataVar);
+
+            final StringLiteral fileName = new StringLiteral();
+            fileName.setValue(data.getHashedSourceName());
+            fileName.setQuoteCharacter('\'');
+
+            inner.setElement(fileName);
+
+            final NumberLiteral index = new NumberLiteral();
+            index.setValue(Integer.toString(lineNr));
+
+            outer.setElement(index);
+
+            inc.setOperand(outer);
+
+            instrumentationNode.setExpression(inc);
+            instrumentationNode.setHasResult();
+
+            return instrumentationNode;
         }
 
     }
