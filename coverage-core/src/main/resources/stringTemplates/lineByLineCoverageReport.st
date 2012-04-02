@@ -25,8 +25,12 @@ lineByLineCoverageReport(lines, stats) ::= <<
         padding: 2px 20px;
     }
 
+    h1.source {
+        margin-top: 12px;
+        margin-bottom: 5px;
+    }
+
     table {
-        margin-top: 10px;
         border-collapse: collapse;
     }
 
@@ -51,7 +55,7 @@ lineByLineCoverageReport(lines, stats) ::= <<
         padding: 0;
         margin: 0;
 
-        font-size: 1.1em;
+        font-size: 1.05em;
         font-weight: normal;
         font-family: Courier New;
     }
@@ -94,6 +98,7 @@ lineByLineCoverageReport(lines, stats) ::= <<
         <h2 class="coverage">Coverage: $stats.coverage$%</h2>
     </div>
 
+    <h1 class="source">Source:</h1>
     <table>
         $lines:lineCoverage(); separator="\n"$
     </table>

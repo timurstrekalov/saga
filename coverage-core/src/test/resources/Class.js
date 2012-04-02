@@ -5,7 +5,9 @@ function Class(param) {
     var b = a + 122;
     var c = {
         a: a,
-        b: b
+        b: b,
+        g: undefined,
+        j: null
     };
 
     var z = (function (param) {
