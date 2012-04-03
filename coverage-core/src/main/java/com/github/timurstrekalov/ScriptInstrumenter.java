@@ -6,7 +6,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
@@ -17,6 +16,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -32,11 +32,11 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     private final List<ScriptData> scriptDataList = Lists.newLinkedList();
 
-    private final List<Pattern> ignorePatterns;
+    private final Collection<Pattern> ignorePatterns;
 
     public ScriptInstrumenter(
             final String coverageVariableName,
-            final List<String> ignorePatterns,
+            final Collection<String> ignorePatterns,
             final File outputDir,
             final boolean outputInstrumentedFiles) {
 
@@ -47,12 +47,12 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         initializingCode = String.format("%s = window.%s || {};%n", coverageVariableName, coverageVariableName);
         arrayInitializer = String.format("%s['%%s'][%%d] = 0;%n", coverageVariableName);
 
-        this.ignorePatterns = ImmutableList.copyOf(Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
+        this.ignorePatterns = Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
             @Override
             public Pattern apply(final String input) {
                 return Pattern.compile(input);
             }
-        }));
+        });
     }
 
     @Override

@@ -3,12 +3,19 @@ runStats(stats) ::= <<
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Coverage report for $stats.runName$</title>
+<title>Coverage report for run "$stats.runName$"</title>
 <style>
     body {
         margin: 0;
         padding: 18px 10px;
         font: 0.8125em Verdana, sans-serif;
+    }
+
+    h1 {
+        font-size: 1.2em;
+        margin: 0;
+        padding-left: 10px;
+        padding-bottom: 5px;
     }
 
     table {
@@ -78,6 +85,7 @@ runStats(stats) ::= <<
 </style>
 </head>
 <body>
+    <h1>Coverage report for run "$stats.runName$"</h1>
     <table>
         <thead>
             <tr>

@@ -1,19 +1,19 @@
-lineCoverage(it) ::= <<
-<tr class="$it.cssClass$">
+lineCoverage(record) ::= <<
+<tr class="$record.cssClass$">
     <th>
-        <div>$it.lineNr$</div>
+        <div>$record.lineNr$</div>
     </th>
     <td class="coverage">
         <div>
-            $if(it.executable)$
-                $it.coverage$
+            $if(record.executable)$
+                $record.timesExecuted$
             $else$
                 &nbsp;
             $endif$
         </div>
     </td>
     <td>
-        <pre>$it.line$</pre>
+        <pre>$record.line$</pre>
     </td>
 </tr>
 >>

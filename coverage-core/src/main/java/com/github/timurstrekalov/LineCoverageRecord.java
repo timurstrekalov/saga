@@ -45,14 +45,14 @@ class LineCoverageRecord {
     private static final Pattern jsNumberPattern = Pattern.compile("\\b(\\d+(?:\\.\\d+)?)\\b");
 
     public final int lineNr;
-    public final int coverage;
+    public final int timesExecuted;
     public final String line;
     public final boolean executable;
     public final String cssClass;
 
-    LineCoverageRecord(final int lineNr, final int coverage, final String line, final boolean executable) {
+    LineCoverageRecord(final int lineNr, final int timesExecuted, final String line, final boolean executable) {
         this.lineNr = lineNr;
-        this.coverage = coverage;
+        this.timesExecuted = timesExecuted;
 
         String styledLine = jsStringPattern.matcher(line).replaceAll("<span class=\"string\">$1</span>");
         styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
@@ -63,7 +63,7 @@ class LineCoverageRecord {
 
         if (!executable) {
             cssClass = "not-executable";
-        } else if (coverage > 0) {
+        } else if (timesExecuted > 0) {
             cssClass = "covered";
         } else {
             cssClass = "not-covered";

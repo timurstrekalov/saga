@@ -21,7 +21,7 @@ class ScriptData {
         hashedSourceName = DigestUtils.md5Hex(sourceName);
     }
 
-    public void addExecutableLine(final Integer lineNr, final Integer length) {
+    void addExecutableLine(final Integer lineNr, final Integer length) {
         statementsWithLengths.put(lineNr, length);
     }
 
@@ -46,11 +46,6 @@ class ScriptData {
     }
 
     public Integer getStatementLength(final int lineNr) {
-        if (!statementsWithLengths.containsKey(lineNr)) {
-            System.out.println(sourceName);
-            System.out.println(lineNr);
-            System.out.println(statementsWithLengths);
-        }
         return statementsWithLengths.get(lineNr);
     }
 

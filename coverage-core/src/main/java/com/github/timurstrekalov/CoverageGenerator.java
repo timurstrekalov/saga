@@ -16,6 +16,7 @@ import org.stringtemplate.v4.misc.STMessage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
@@ -39,8 +40,8 @@ public class CoverageGenerator {
     };
 
     private final String coverageVariableName;
-    private final List<URL> tests;
-    private List<String> ignorePatterns;
+    private final Collection<URL> tests;
+    private Collection<String> ignorePatterns;
 
     private final STGroup stringTemplateGroup;
     private final File outputDir;
@@ -48,8 +49,9 @@ public class CoverageGenerator {
     private String wholeRunName = "all";
 
     private boolean outputInstrumentedFiles;
+    private RunStats totalStats;
 
-    public CoverageGenerator(final String coverageVariableName, final List<URL> tests, final File outputDir) {
+    public CoverageGenerator(final String coverageVariableName, final Collection<URL> tests, final File outputDir) {
         this.coverageVariableName = coverageVariableName;
         this.tests = tests;
         this.outputDir = outputDir;
@@ -62,7 +64,7 @@ public class CoverageGenerator {
             throw new IOException("Couldn't create output directory");
         }
 
-        final RunStats totalStats = new RunStats(wholeRunName);
+        totalStats = new RunStats(wholeRunName);
 
         for (final URL test : tests) {
             runTest(test);
@@ -107,13 +109,10 @@ public class CoverageGenerator {
             final Scanner in = new Scanner(data.getSourceCode());
             final NativeObject coverageData = (NativeObject) allCoverageData.get(data.getHashedSourceName());
 
-            int statementsExecuted = 0;
-            int statements = data.getNumberOfStatements();
-
             final String jsFileName = data.getSourceName();
             final String fileCoverageFilename = testName + "-" + new File(jsFileName).getName() + ".html";
 
-            final List<LineCoverageRecord> lineCoverageRecords = Lists.newLinkedList();
+            final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
 
             for (int lineCount = 1, lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext();
                  lineCount++, lineNr++) {
@@ -139,18 +138,16 @@ public class CoverageGenerator {
                     timesLineExecuted = coverageEntry.intValue();
                     lengthCountdown = data.getStatementLength(lineNr);
                     executable = true;
-
-                    if (timesLineExecuted > 0) {
-                        statementsExecuted++;
-                    }
                 }
 
                 // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
                 lineCoverageRecords.add(new LineCoverageRecord(lineCount, timesLineExecuted, line, executable));
             }
 
-            final FileStats fileStats = stats.add(jsFileName, fileCoverageFilename, statements,
-                    statementsExecuted, lineCoverageRecords);
+            final FileStats fileStats = new FileStats(jsFileName, fileCoverageFilename, lineCoverageRecords);
+
+            stats.add(fileStats);
+            totalStats.add(fileStats);
 
             stringTemplateGroup.getInstanceOf("lineByLineCoverageReport")
                     .add("stats", fileStats)
@@ -164,7 +161,7 @@ public class CoverageGenerator {
                 .write(new File(outputDir, new File(testName).getName() + "-report.html"), new ErrorLogger());
     }
 
-    public void setIgnorePatterns(final List<String> ignorePatterns) {
+    public void setIgnorePatterns(final Collection<String> ignorePatterns) {
         this.ignorePatterns = ignorePatterns;
     }
 

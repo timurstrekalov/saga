@@ -1,58 +1,60 @@
 package com.github.timurstrekalov;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Maps;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
+
+import static com.github.timurstrekalov.Util.sum;
+import static com.github.timurstrekalov.Util.toCoverage;
 
 class RunStats {
 
     public final String runName;
 
-    private final List<FileStats> fileStats = Lists.newLinkedList();
-
-    private int totalStatements;
-    private int totalExecuted;
+    private final Map<String, FileStats> fileStatsMap = Maps.newTreeMap();
 
     RunStats(final String runName) {
         this.runName = runName;
     }
 
-    public FileStats add(
-            final String jsFileName,
-            final String href,
-            final int statements,
-            final int executed,
-            final List<LineCoverageRecord> lineCoverageRecords) {
+    void add(final FileStats newStats) {
+        final String key = newStats.name;
+        final FileStats oldStats = fileStatsMap.get(key);
 
-        final FileStats stats = new FileStats(jsFileName, href, statements, executed, toCoverage(statements, executed),
-                lineCoverageRecords);
-
-        fileStats.add(stats);
-
-        totalStatements += stats.statements;
-        totalExecuted += stats.executed;
-
-        return stats;
+        if (oldStats != null) {
+            fileStatsMap.put(key, FileStats.merge(newStats, oldStats));
+        } else {
+            fileStatsMap.put(key, newStats);
+        }
     }
 
-    public List<FileStats> getFileStats() {
-        return fileStats;
+    public Collection<FileStats> getFileStats() {
+        return fileStatsMap.values();
     }
 
     public int getTotalStatements() {
-        return totalStatements;
+        return sum(Collections2.transform(fileStatsMap.values(), new Function<FileStats, Integer>() {
+            @Override
+            public Integer apply(final FileStats input) {
+                return input.getStatements();
+            }
+        }));
     }
 
     public int getTotalExecuted() {
-        return totalExecuted;
+        return sum(Collections2.transform(fileStatsMap.values(), new Function<FileStats, Integer>() {
+            @Override
+            public Integer apply(final FileStats input) {
+                return input.getExecuted();
+            }
+        }));
     }
 
     public int getTotalCoverage() {
-        return toCoverage(totalStatements, totalExecuted);
-    }
-
-    private static int toCoverage(final int totalStatements, final int totalExecuted) {
-        return (int) ((double) totalExecuted / totalStatements * 100);
+        return toCoverage(getTotalStatements(), getTotalExecuted());
     }
 
 }
