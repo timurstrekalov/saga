@@ -1,7 +1,6 @@
 package com.github.timurstrekalov;
 
 import com.google.common.collect.Maps;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.Map;
 import java.util.Set;
@@ -10,15 +9,12 @@ class ScriptData {
 
     private final String sourceName;
     private final String sourceCode;
-    private final String hashedSourceName;
 
     private final Map<Integer, Integer> statementsWithLengths = Maps.newTreeMap();
 
     ScriptData(final String sourceName, final String sourceCode) {
         this.sourceName = sourceName;
         this.sourceCode = sourceCode;
-
-        hashedSourceName = DigestUtils.md5Hex(sourceName);
     }
 
     void addExecutableLine(final Integer lineNr, final Integer length) {
@@ -57,7 +53,4 @@ class ScriptData {
         return getLineNumbersOfAllStatements().iterator().next();
     }
 
-    public String getHashedSourceName() {
-        return hashedSourceName;
-    }
 }

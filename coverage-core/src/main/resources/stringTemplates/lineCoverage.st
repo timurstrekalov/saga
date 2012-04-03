@@ -3,7 +3,7 @@ lineCoverage(record) ::= <<
     <th>
         <div>$record.lineNr$</div>
     </th>
-    <td class="coverage">
+    <td class="times-executed">
         <div>
             $if(record.executable)$
                 $record.timesExecuted$

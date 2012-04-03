@@ -41,14 +41,16 @@ public class CoverageGenerator {
 
     private final String coverageVariableName;
     private final Collection<URL> tests;
-    private Collection<String> ignorePatterns;
+
+    private final Collection<String> ignorePatterns = Lists.newLinkedList();
+    private boolean outputInstrumentedFiles;
 
     private final STGroup stringTemplateGroup;
     private final File outputDir;
 
     private String wholeRunName = "all";
+    private String instrumentedFileDirectoryName = "instrumented";
 
-    private boolean outputInstrumentedFiles;
     private RunStats totalStats;
 
     public CoverageGenerator(final String coverageVariableName, final Collection<URL> tests, final File outputDir) {
@@ -70,14 +72,25 @@ public class CoverageGenerator {
             runTest(test);
         }
 
-        writeRunStats(wholeRunName, totalStats);
+        writeRunStats(totalStats);
     }
 
     private void runTest(final URL test) throws IOException {
         final WebClient client = localClient.get();
 
-        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(
-                coverageVariableName, ignorePatterns, outputDir, outputInstrumentedFiles);
+        final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(coverageVariableName);
+
+        instrumenter.setIgnorePatterns(ignorePatterns);
+
+        if (outputInstrumentedFiles) {
+            if (!instrumentedFileDirectory.exists() && !instrumentedFileDirectory.mkdirs()) {
+                throw new RuntimeException("Can't create " + instrumentedFileDirectory);
+            }
+
+            instrumenter.setOutputDir(instrumentedFileDirectory);
+            instrumenter.setOutputInstrumentedFiles(outputInstrumentedFiles);
+        }
 
         client.setScriptPreProcessor(instrumenter);
 
@@ -89,28 +102,27 @@ public class CoverageGenerator {
             client.waitForBackgroundJavaScript(30000);
             client.setScriptPreProcessor(null);
 
-            final String testName = new File(test.toString()).getName();
-            final RunStats stats = new RunStats(testName);
+            final String runName = new File(test.toString()).getName();
             final NativeObject coverageData = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
                     .getJavaScriptResult();
 
-            writeStatsOfAllFiles(testName, instrumenter, stats, coverageData);
-            writeRunStats(testName, stats);
+            collectAndWriteRunStats(runName, instrumenter, coverageData);
         }
     }
 
-    private void writeStatsOfAllFiles(
-            final String testName,
+    private void collectAndWriteRunStats(
+            final String runName,
             final ScriptInstrumenter instrumenter,
-            final RunStats stats,
             final NativeObject allCoverageData) throws IOException {
+
+        final RunStats runStats = new RunStats(runName);
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             final Scanner in = new Scanner(data.getSourceCode());
-            final NativeObject coverageData = (NativeObject) allCoverageData.get(data.getHashedSourceName());
+            final NativeObject coverageData = (NativeObject) allCoverageData.get(data.getSourceName());
 
             final String jsFileName = data.getSourceName();
-            final String fileCoverageFilename = testName + "-" + new File(jsFileName).getName() + ".html";
+            final String fileCoverageFilename = new File(jsFileName).getName();
 
             final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
 
@@ -146,31 +158,33 @@ public class CoverageGenerator {
 
             final FileStats fileStats = new FileStats(jsFileName, fileCoverageFilename, lineCoverageRecords);
 
-            stats.add(fileStats);
+            runStats.add(fileStats);
             totalStats.add(fileStats);
-
-            stringTemplateGroup.getInstanceOf("lineByLineCoverageReport")
-                    .add("stats", fileStats)
-                    .write(new File(outputDir, fileCoverageFilename), new ErrorLogger());
         }
+
+        writeRunStats(runStats);
     }
 
-    private void writeRunStats(final String testName, final RunStats stats) throws IOException {
+    private void writeRunStats(final RunStats stats) throws IOException {
         stringTemplateGroup.getInstanceOf("runStats")
                 .add("stats", stats)
-                .write(new File(outputDir, new File(testName).getName() + "-report.html"), new ErrorLogger());
+                .write(new File(outputDir, stats.runName + "-report.html"), new ErrorLogger());
     }
 
     public void setIgnorePatterns(final Collection<String> ignorePatterns) {
-        this.ignorePatterns = ignorePatterns;
+        this.ignorePatterns.addAll(ignorePatterns);
     }
 
     public void setOutputInstrumentedFiles(final boolean outputInstrumentedFiles) {
         this.outputInstrumentedFiles = outputInstrumentedFiles;
     }
 
-    public void setWholeRunName(String wholeRunName) {
+    public void setWholeRunName(final String wholeRunName) {
         this.wholeRunName = wholeRunName;
+    }
+
+    public void setInstrumentedFileDirectoryName(final String instrumentedFileDirectoryName) {
+        this.instrumentedFileDirectoryName = instrumentedFileDirectoryName;
     }
 
     private static final class ErrorLogger implements STErrorListener {

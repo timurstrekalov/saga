@@ -20,36 +20,52 @@ runStats(stats) ::= <<
 
     table {
         border-collapse: collapse;
+    }
+
+    .stats {
         width: 100%;
     }
 
-    th, td.statements, td.executed, td.coverage {
+    .stats-header th,
+    .stats td.statements,
+    .stats td.executed,
+    .stats td.coverage {
         text-align: center;
     }
 
-    th, td {
+    .stats > thead th,
+    .stats > thead td,
+    .stats > tbody > tr > td {
         padding: 4px 10px;
     }
 
-    th {
+    .stats > tbody > tr > td.line-coverage-cell {
+        padding: 0px;
+    }
+
+    .stats > thead th {
         font-size: 1.1em;
     }
 
-    thead tr:first-child {
+    .stats > thead tr:first-child {
         background-color: #ccc;
     }
 
-    th:first-child, td:first-child {
+    .stats > thead th:first-child,
+    .stats > thead td:first-child,
+    .stats > tbody > tr > td:first-child {
         border-top-left-radius: 4px;
         border-bottom-left-radius: 4px;
     }
 
-    th:last-child, td:last-child  {
+    .stats > thead th:last-child,
+    .stats > thead td:last-child,
+    .stats > tbody > tr > td:last-child {
         border-top-right-radius: 4px;
         border-bottom-right-radius: 4px;
     }
 
-    tbody tr:nth-child(odd) {
+    .stats > tbody > tr:nth-child(4n + 1) {
         background-color: #eee;
     }
 
@@ -57,7 +73,7 @@ runStats(stats) ::= <<
         color: #0000ff;
     }
 
-    td.coverage-bar {
+    .bar-container {
         padding: 2px;
         padding-right: 8px;
         width: 15%;
@@ -82,25 +98,90 @@ runStats(stats) ::= <<
         display: block;
         height: 100%;
     }
+
+    /* line by line coverage styles */
+
+    .line-coverage {
+        margin: 10px 0px;
+    }
+
+    .line-coverage th {
+        border-right: 1px solid #ccc;
+    }
+
+    .line-coverage th div,
+    .line-coverage td div {
+        text-align: center;
+    }
+
+    .line-coverage th div {
+        margin: 0px 10px 0px 4px;
+    }
+
+    .line-coverage td div {
+        padding: 1px 6px;
+        margin: 0px 8px;
+    }
+
+    .line-coverage th,
+    .line-coverage td,
+    .line-coverage pre {
+        padding: 0;
+        margin: 0;
+
+        font-size: 1.05em;
+        font-weight: normal;
+        font-family: Courier New;
+    }
+
+    .line-coverage th div,
+    .line-coverage td.times-executed div {
+         border-radius: 8px;
+    }
+
+    .line-coverage td pre {
+         margin-left: 8px;
+    }
+
+    .line-coverage tr.covered td.times-executed div {
+         background-color: lightgreen;
+    }
+
+    .line-coverage tr.not-covered td.times-executed div {
+         background-color: lightpink;
+    }
+
+    .line-coverage span.keyword {
+        color: #000080;
+        font-weight: bold;
+    }
+
+    .line-coverage span.string {
+        color: #008000;
+    }
+
+    .line-coverage span.number {
+        color: #0000ff;
+    }
 </style>
 </head>
 <body>
     <h1>Coverage report for run "$stats.runName$"</h1>
-    <table>
+    <table class="stats">
         <thead>
-            <tr>
+            <tr class="stats-header">
                 <th>File</th>
                 <th>Statements</th>
                 <th>Executed</th>
                 <th>Coverage</th>
                 <th></th>
             </tr>
-            <tr>
+            <tr class="stats-header">
                 <td>Total</td>
                 <td class="statements">$stats.totalStatements$</td>
                 <td class="executed">$stats.totalExecuted$</td>
                 <td class="coverage">$stats.totalCoverage$%</td>
-                <td class="coverage-bar">
+                <td class="bar-container">
                     <div class="bar">
                         <span style="width: $stats.totalCoverage$%;"></span>
                     </div>
@@ -108,9 +189,15 @@ runStats(stats) ::= <<
             </tr>
         </thead>
         <tbody>
-            $stats.fileStats:fileStats(); separator="\n"$
+            $stats.fileStats:fileStats()$
         </tbody>
     </table>
+    <script type="text/javascript">
+        function __coverage_toggleSection(id) {
+            var el = document.getElementById(id);
+            el.style.display = el.style.display === 'none' ? '' : 'none';
+        }
+    </script>
 </body>
 </html>
 >>

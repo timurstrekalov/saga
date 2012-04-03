@@ -36,7 +36,7 @@ class FileStats {
         return Collections2.filter(lineCoverageRecords, new Predicate<LineCoverageRecord>() {
             @Override
             public boolean apply(final LineCoverageRecord input) {
-                return input.executable;
+                return input.isExecutable();
             }
         }).size();
     }
@@ -45,7 +45,7 @@ class FileStats {
         return sum(Collections2.transform(lineCoverageRecords, new Function<LineCoverageRecord, Integer>() {
             @Override
             public Integer apply(final LineCoverageRecord input) {
-                return input.timesExecuted > 0 ? 1 : 0;
+                return input.getTimesExecuted() > 0 ? 1 : 0;
             }
         }));
     }
@@ -67,12 +67,7 @@ class FileStats {
             final LineCoverageRecord l1 = r1.get(i);
             final LineCoverageRecord l2 = r2.get(i);
 
-            isTrue(l1.lineNr == l2.lineNr);
-            isTrue(l1.executable == l2.executable);
-            isTrue(l1.line.equals(l2.line));
-
-            mergedRecords.add(new LineCoverageRecord(l1.lineNr, l1.timesExecuted + l2.timesExecuted, l1.line,
-                    l1.executable));
+            mergedRecords.add(LineCoverageRecord.merge(l1, l2));
         }
 
         return new FileStats(s1.name, s1.href, mergedRecords);

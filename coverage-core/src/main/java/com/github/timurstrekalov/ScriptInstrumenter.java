@@ -27,32 +27,18 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private final String coverageVariableName;
     private final String initializingCode;
     private final String arrayInitializer;
-    private final File outputDir;
-    private final boolean outputInstrumentedFiles;
 
     private final List<ScriptData> scriptDataList = Lists.newLinkedList();
 
-    private final Collection<Pattern> ignorePatterns;
+    private Collection<Pattern> ignorePatterns;
+    private File outputDir;
+    private boolean outputInstrumentedFiles;
 
-    public ScriptInstrumenter(
-            final String coverageVariableName,
-            final Collection<String> ignorePatterns,
-            final File outputDir,
-            final boolean outputInstrumentedFiles) {
-
+    public ScriptInstrumenter(final String coverageVariableName) {
         this.coverageVariableName = coverageVariableName;
-        this.outputDir = outputDir;
-        this.outputInstrumentedFiles = outputInstrumentedFiles;
 
         initializingCode = String.format("%s = window.%s || {};%n", coverageVariableName, coverageVariableName);
         arrayInitializer = String.format("%s['%%s'][%%d] = 0;%n", coverageVariableName);
-
-        this.ignorePatterns = Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
-            @Override
-            public Pattern apply(final String input) {
-                return Pattern.compile(input);
-            }
-        });
     }
 
     @Override
@@ -80,10 +66,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 treeSource.length());
 
         buf.append(initializingCode);
-        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, data.getHashedSourceName()));
+        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, data.getSourceName()));
 
         for (final Integer i : data.getLineNumbersOfAllStatements()) {
-            buf.append(String.format(arrayInitializer, data.getHashedSourceName(), i));
+            buf.append(String.format(arrayInitializer, data.getSourceName(), i));
         }
 
         buf.append(treeSource);
@@ -113,6 +99,23 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     public List<ScriptData> getScriptDataList() {
         return scriptDataList;
+    }
+
+    public void setIgnorePatterns(final Collection<String> ignorePatterns) {
+        this.ignorePatterns = Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
+            @Override
+            public Pattern apply(final String input) {
+                return Pattern.compile(input);
+            }
+        });
+    }
+
+    public void setOutputInstrumentedFiles(final boolean outputInstrumentedFiles) {
+        this.outputInstrumentedFiles = outputInstrumentedFiles;
+    }
+
+    public void setOutputDir(File outputDir) {
+        this.outputDir = outputDir;
     }
 
     private class InstrumentingVisitor implements NodeVisitor {
@@ -260,7 +263,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             inner.setTarget(covDataVar);
 
             final StringLiteral fileName = new StringLiteral();
-            fileName.setValue(data.getHashedSourceName());
+            fileName.setValue(data.getSourceName());
             fileName.setQuoteCharacter('\'');
 
             inner.setElement(fileName);

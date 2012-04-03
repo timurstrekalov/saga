@@ -4,6 +4,8 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.regex.Pattern;
 
+import static org.apache.commons.lang.Validate.isTrue;
+
 class LineCoverageRecord {
 
     private static final String[] reservedKeywords = {
@@ -44,29 +46,76 @@ class LineCoverageRecord {
     private static final Pattern jsStringPattern = Pattern.compile("('.*'|\".*\")");
     private static final Pattern jsNumberPattern = Pattern.compile("\\b(\\d+(?:\\.\\d+)?)\\b");
 
-    public final int lineNr;
-    public final int timesExecuted;
-    public final String line;
-    public final boolean executable;
-    public final String cssClass;
+    private int lineNr;
+    private int timesExecuted;
+    private String line;
+    private boolean executable;
+    private String cssClass;
 
     LineCoverageRecord(final int lineNr, final int timesExecuted, final String line, final boolean executable) {
         this.lineNr = lineNr;
         this.timesExecuted = timesExecuted;
+        this.line = styleLine(line);
+        this.executable = executable;
 
+        cssClass = getCssClass(timesExecuted, executable);
+    }
+
+    private LineCoverageRecord() {
+
+    }
+
+    public static LineCoverageRecord merge(final LineCoverageRecord l1, final LineCoverageRecord l2) {
+        isTrue(l1.lineNr == l2.lineNr);
+        isTrue(l1.executable == l2.executable);
+        isTrue(l1.line.equals(l2.line));
+
+        final LineCoverageRecord merged = new LineCoverageRecord();
+
+        merged.lineNr = l1.lineNr;
+        merged.timesExecuted = l1.timesExecuted + l2.timesExecuted;
+        merged.line = l1.line;
+        merged.executable = l1.executable;
+        merged.cssClass = getCssClass(merged.timesExecuted, merged.executable);
+
+        return merged;
+    }
+
+    private static String getCssClass(int timesExecuted, boolean executable) {
+        if (!executable) {
+            return "not-executable";
+        } else if (timesExecuted > 0) {
+            return "covered";
+        }
+
+        return "not-covered";
+    }
+
+    private static String styleLine(final String line) {
         String styledLine = jsStringPattern.matcher(line).replaceAll("<span class=\"string\">$1</span>");
         styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
         styledLine = reservedKeywordsPattern.matcher(styledLine).replaceAll("<span class=\"keyword\">$1</span>");
 
-        this.line = styledLine;
-        this.executable = executable;
+        return styledLine;
+    }
 
-        if (!executable) {
-            cssClass = "not-executable";
-        } else if (timesExecuted > 0) {
-            cssClass = "covered";
-        } else {
-            cssClass = "not-covered";
-        }
+    public int getLineNr() {
+        return lineNr;
+    }
+
+    public int getTimesExecuted() {
+        return timesExecuted;
+    }
+
+    public String getLine() {
+        return line;
+    }
+
+    public boolean isExecutable() {
+        return executable;
+    }
+
+    public String getCssClass() {
+        return cssClass;
     }
 }

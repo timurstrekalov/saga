@@ -3,7 +3,6 @@ package com.github.timurstrekalov;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.File;
@@ -32,19 +31,16 @@ public class CoverageGeneratorIntegrationTest {
             }
         });
 
-        final List<String> ignore = ImmutableList.of(/*"^.+Test.js$", "^script in .+from \\(\\d+, \\d+\\) to \\(\\d+, \\d+\\)$"*/);
+        final List<String> ignore = ImmutableList.of("^.+Test.*$", "^script in .+from \\(\\d+, \\d+\\) to \\(\\d+, \\d+\\)$");
 
         final File outputDir = new File("target/coverage");
 
         gen = new CoverageGenerator("_COV", tests, outputDir);
 
-        gen.setIgnorePatterns(ignore);
+//        gen.setIgnorePatterns(ignore);
         gen.setOutputInstrumentedFiles(true);
 
         gen.run();
-
-        final String expected = IOUtils.toString(getClass().getResource("/Class.js.pregenerated.html"));
-        final String actual = IOUtils.toString(new File(outputDir, "ClassTest.html-Class.js.html").toURI());
 
 //        assertEquals(expected, actual);
     }
