@@ -39,25 +39,22 @@ public class CoverageGenerator {
         }
     };
 
-    private final String coverageVariableName;
-    private final Collection<URL> tests;
 
-    private final Collection<String> ignorePatterns = Lists.newLinkedList();
+    private Collection<String> noInstrumentPatterns;
     private boolean outputInstrumentedFiles;
 
     private final STGroup stringTemplateGroup;
-    private final File outputDir;
+    
+    private String coverageVariableName = "__coverage_data";
+    private File[] tests;
+    private File outputDir;
 
-    private String wholeRunName = "all";
+    private String reportName = "all";
     private String instrumentedFileDirectoryName = "instrumented";
 
     private RunStats totalStats;
 
-    public CoverageGenerator(final String coverageVariableName, final Collection<URL> tests, final File outputDir) {
-        this.coverageVariableName = coverageVariableName;
-        this.tests = tests;
-        this.outputDir = outputDir;
-
+    public CoverageGenerator() {
         stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
     }
 
@@ -66,10 +63,10 @@ public class CoverageGenerator {
             throw new IOException("Couldn't create output directory");
         }
 
-        totalStats = new RunStats(wholeRunName);
+        totalStats = new RunStats(reportName);
 
-        for (final URL test : tests) {
-            runTest(test);
+        for (final File test : tests) {
+            runTest(test.toURI().toURL());
         }
 
         writeRunStats(totalStats);
@@ -81,7 +78,9 @@ public class CoverageGenerator {
         final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
         final ScriptInstrumenter instrumenter = new ScriptInstrumenter(coverageVariableName);
 
-        instrumenter.setIgnorePatterns(ignorePatterns);
+        if (noInstrumentPatterns != null) {
+            instrumenter.setIgnorePatterns(noInstrumentPatterns);
+        }
 
         if (outputInstrumentedFiles) {
             if (!instrumentedFileDirectory.exists() && !instrumentedFileDirectory.mkdirs()) {
@@ -171,20 +170,32 @@ public class CoverageGenerator {
                 .write(new File(outputDir, stats.runName + "-report.html"), new ErrorLogger());
     }
 
-    public void setIgnorePatterns(final Collection<String> ignorePatterns) {
-        this.ignorePatterns.addAll(ignorePatterns);
+    public void setNoInstrumentPatterns(final Collection<String> noInstrumentPatterns) {
+        this.noInstrumentPatterns = noInstrumentPatterns;
     }
 
     public void setOutputInstrumentedFiles(final boolean outputInstrumentedFiles) {
         this.outputInstrumentedFiles = outputInstrumentedFiles;
     }
 
-    public void setWholeRunName(final String wholeRunName) {
-        this.wholeRunName = wholeRunName;
+    public void setReportName(final String reportName) {
+        this.reportName = reportName;
     }
 
     public void setInstrumentedFileDirectoryName(final String instrumentedFileDirectoryName) {
         this.instrumentedFileDirectoryName = instrumentedFileDirectoryName;
+    }
+
+    public void setCoverageVariableName(final String coverageVariableName) {
+        this.coverageVariableName = coverageVariableName;
+    }
+
+    public void setTests(final File[] tests) {
+        this.tests = tests;
+    }
+
+    public void setOutputDir(final File outputDir) {
+        this.outputDir = outputDir;
     }
 
     private static final class ErrorLogger implements STErrorListener {

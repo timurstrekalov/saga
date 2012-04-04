@@ -8,6 +8,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.sun.istack.internal.NotNull;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
 import net.sourceforge.htmlunit.corejs.javascript.ast.*;
@@ -89,7 +90,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     }
 
     private boolean shouldIgnore(final String sourceName) {
-        return Iterables.any(ignorePatterns, new Predicate<Pattern>() {
+        return ignorePatterns != null && Iterables.any(ignorePatterns, new Predicate<Pattern>() {
             @Override
             public boolean apply(final Pattern input) {
                 return input.matcher(sourceName).matches();
@@ -101,7 +102,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         return scriptDataList;
     }
 
-    public void setIgnorePatterns(final Collection<String> ignorePatterns) {
+    public void setIgnorePatterns(@NotNull final Collection<String> ignorePatterns) {
         this.ignorePatterns = Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
             @Override
             public Pattern apply(final String input) {
