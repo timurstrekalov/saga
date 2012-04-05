@@ -56,6 +56,33 @@ function Class(param) {
         this.test();
     }
 
+    if (param)
+        a++;
+    else
+        b++
+
+    if (!param)
+        b++;
+    else
+        a++
+
+    while (true === false)
+        b++
+
+    var s = 1;
+
+    while (++s < 10)
+        s++
+
+    for (var j = 0; j < 20; j++)
+        s += 2;
+
+    for (var k = 0; k < 2; k++) s+=1
+
+    do
+        s += 3;
+    while (s < 70)
+
     this.data = {
         getsCalledOnTheSecondRun: function () {
             var a = 'lll';
@@ -92,6 +119,8 @@ function Class(param) {
                 b++;
                 break;
             case 3:
+            case 4:
+            case 5:
                 b++;
             default:
                 b++;

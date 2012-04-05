@@ -13,6 +13,8 @@ import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
 import net.sourceforge.htmlunit.corejs.javascript.ast.*;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,6 +26,8 @@ import java.util.regex.Pattern;
 import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
 class ScriptInstrumenter implements ScriptPreProcessor {
+
+    private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
     private final String coverageVariableName;
     private final String initializingCode;
@@ -172,14 +176,38 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 handleSwitchCase((SwitchCase) node);
             } else if (type == IF && parentType == IF) {
                 flattenElseIf((IfStatement) node, (IfStatement) parent);
-            } else {
-                if (parentType != CASE) {
-                    final int lineNr = node.getLineno();
+            } else if (parentType != CASE) {
+                if (parent.hasChildren()) {
+                    parent.addChildBefore(newInstrumentationNode(node.getLineno()), node);
+                } else {
+                    // if, else, while, do, for without {} around their respective 'blocks' for some reason
+                    // don't have children. Meh. Creating blocks to ease instrumentation.
+                    final Block block = newInstrumentedBlock(node);
 
-                    data.addExecutableLine(lineNr, node.getLength());
-                    parent.addChildBefore(newInstrumentationNode(lineNr), node);
+                    if (parentType == IF) {
+                        final IfStatement ifStatement = (IfStatement) parent;
+
+                        if (ifStatement.getThenPart() == node) {
+                            ifStatement.setThenPart(block);
+                        } else if (ifStatement.getElsePart() == node) {
+                            ifStatement.setElsePart(block);
+                        }
+                    } else if (parentType == WHILE || parentType == FOR || parentType == DO) {
+                        ((Loop) parent).setBody(block);
+                    } else {
+                        logger.warn("Cannot handle node with parent that has no children, source:\n{}", parent.toSource());
+                    }
                 }
             }
+
+            data.addExecutableLine(node.getLineno(), node.getLength());
+        }
+
+        private Block newInstrumentedBlock(final AstNode node) {
+            final Block block = new Block();
+            block.addChild(node);
+            block.addChildBefore(newInstrumentationNode(node.getLineno()), node);
+            return block;
         }
 
         /**
@@ -190,6 +218,11 @@ class ScriptInstrumenter implements ScriptPreProcessor {
          * They do, however, retain a list of all statements per each case, which we're using here
          */
         private void handleSwitchCase(final SwitchCase switchCase) {
+            // empty case: statement
+            if (switchCase.getStatements() == null) {
+                return;
+            }
+
             final List<AstNode> newStatements = Lists.newArrayList();
 
             for (final AstNode statement : switchCase.getStatements()) {
@@ -235,15 +268,15 @@ class ScriptInstrumenter implements ScriptPreProcessor {
          * </pre>
          */
         private void flattenElseIf(final IfStatement elseIfStatement, final IfStatement ifStatement) {
-            final Scope scope = new Scope();
-            scope.addChild(elseIfStatement);
+            final Block block = new Block();
+            block.addChild(elseIfStatement);
 
-            ifStatement.setElsePart(scope);
+            ifStatement.setElsePart(block);
 
             final int lineNr = elseIfStatement.getLineno();
 
             data.addExecutableLine(lineNr, elseIfStatement.getLength());
-            scope.addChildBefore(newInstrumentationNode(lineNr), elseIfStatement);
+            block.addChildBefore(newInstrumentationNode(lineNr), elseIfStatement);
         }
 
         private AstNode newInstrumentationNode(final int lineNr) {
