@@ -2,65 +2,92 @@ package com.github.timurstrekalov.cli;
 
 import com.github.timurstrekalov.CoverageGenerator;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.apache.tools.ant.DirectoryScanner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class Main {
 
     public static void main(final String[] args) throws IOException, ParseException {
-//        final Option baseDir = new Option("b", "base-dir", true, "Base directory for test search");
-//
-//        final Option tests = new Option("t", "test-path", true, "Ant-style paths to the tests to run");
-//        tests.setRequired(true);
-//
-//        final Option outputDir = new Option("o", "output-dir", true, "The output directory for coverage reports");
-//        outputDir.setRequired(true);
-//
-//        final Option outputInstrumentedFiles = new Option("f", "output-instrumented-files", true, "Whether to output instrumented files");
-//        final Option noInstrumentPattern = new Option("n", "no-instrument-pattern", true, "no-instrument-pattern");
-//
-//        final Options options = new Options();
-//
-//        options.addOption(baseDir);
-//        options.addOption(tests);
-//        options.addOption(outputDir);
-//        options.addOption(outputInstrumentedFiles);
-//        options.addOption(noInstrumentPattern);
-//
-//        final CommandLineParser parser = new GnuParser();
-//
-//        try {
-//            final CommandLine line = parser.parse(options, args);
-//
-//            for (final Iterator i = line.iterator(); i.hasNext();) {
-//                System.out.println(i.next());
-//            }
-//        } catch (final ParseException e) {
-//            System.err.println(e.getMessage());
-//            System.exit(1);
-//        }
+        final Option baseDirOpt = new Option("b", "base-dir", true, "(required) base directory for test search");
+        final Option testPathOpt = new Option("t", "test-path", true, "(required) Ant-style paths to the tests to run");
+        final Option outputDirOpt = new Option("o", "output-dir", true, "The output directory for coverage reports");
 
-        final CoverageGenerator gen = new CoverageGenerator();
+        final Option outputInstrumentedFilesOpt = new Option("f", "output-instrumented-files", true,
+                "Whether to output instrumented files (default is false)");
 
-//        gen.setTests(findTests("/Users/timur/Desktop/static-resources/target/general", ImmutableList.of("**/*-ManualSpecRunner.html")));
-        gen.setTests(findTests(".", ImmutableList.of("**/ClassTest.html")));
-        gen.setOutputDir(new File("/Users/timur/Desktop/coverage"));
+        final Option noInstrumentPatternOpt = new Option("n", "no-instrument-pattern", true,
+                "Regular expression patterns to match classes to exclude from instrumentation");
 
-        gen.setOutputInstrumentedFiles(true);
-//        gen.setNoInstrumentPatterns(of("^.+Test.*$", "^script in .+from \\(\\d+, \\d+\\) to \\(\\d+, \\d+\\)$"));
+        final Option helpOpt = new Option("h", "help", false, "Print this message");
+        final Options options = new Options();
 
-        gen.run();
+        options.addOption(baseDirOpt);
+        options.addOption(testPathOpt);
+        options.addOption(outputDirOpt);
+        options.addOption(outputInstrumentedFilesOpt);
+        options.addOption(noInstrumentPatternOpt);
+        options.addOption(helpOpt);
+
+        try {
+            CommandLineParser parser = new GnuParser();
+            CommandLine line = parser.parse(options, args, false);
+
+            if (line.hasOption('h')) {
+                printHelpAndExit(options);
+            }
+
+            baseDirOpt.setRequired(true);
+            testPathOpt.setRequired(true);
+            outputDirOpt.setRequired(true);
+
+            options.addOption(baseDirOpt);
+            options.addOption(testPathOpt);
+            options.addOption(outputDirOpt);
+
+            parser = new GnuParser();
+            line = parser.parse(options, args);
+
+            final CoverageGenerator gen = new CoverageGenerator();
+
+            gen.setTests(findTests(line.getOptionValue('b'), line.getOptionValues('t')));
+            gen.setOutputDir(new File(line.getOptionValue('o')));
+
+            final String outputInstrumentedFiles = line.getOptionValue('f');
+            if (outputInstrumentedFiles != null) {
+                gen.setOutputInstrumentedFiles(true);
+            }
+
+            final String[] noInstrumentPatterns = line.getOptionValues('n');
+            if (noInstrumentPatterns != null) {
+                gen.setNoInstrumentPatterns(ImmutableList.copyOf(noInstrumentPatterns));
+            }
+
+            gen.run();
+        } catch (final MissingOptionException e) {
+            System.err.println(e.getMessage());
+            printHelpAndExit(options);
+        } catch (final UnrecognizedOptionException e) {
+            System.err.println(e.getMessage());
+            printHelpAndExit(options);
+        } catch (final ParseException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
     }
 
-    private static File[] findTests(final String baseDir, final List<String> tests) {
+    private static void printHelpAndExit(final Options options) {
+        new HelpFormatter().printHelp("java -jar coverage.jar", options);
+        System.exit(1);
+    }
+
+    private static File[] findTests(final String baseDir, final String[] tests) {
         final DirectoryScanner scanner = new DirectoryScanner();
 
         scanner.setBasedir(baseDir);
-        scanner.setIncludes(tests.toArray(new String[tests.size()]));
+        scanner.setIncludes(tests);
         scanner.scan();
 
         final String[] matches = scanner.getIncludedFiles();

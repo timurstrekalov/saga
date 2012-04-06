@@ -194,9 +194,27 @@ runStats(stats) ::= <<
     </table>
     <script type="text/javascript">
         function __coverage_toggleSection(id) {
-            var el = document.getElementById(id);
-            el.style.display = el.style.display === 'none' ? '' : 'none';
+            var el = document.getElementById('__src_' + id);
+            if (!el) {
+                return;
+            }
+
+            var show = el.style.display === 'none';
+
+            if (show) {
+                el.style.display = '';
+                window.location.hash = "#" + id;
+            } else {
+                el.style.display = 'none';
+                window.location.hash = '';
+            }
         }
+
+        window.onload = function () {
+            if (window.location.hash) {
+                __coverage_toggleSection(window.location.hash.substr(1));
+            }
+        };
     </script>
 </body>
 </html>
