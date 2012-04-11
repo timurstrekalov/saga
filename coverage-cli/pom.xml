@@ -8,11 +8,38 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>coverage-cli</artifactId>
     <packaging>jar</packaging>
 
-    <name>coverage-cli</name>
+    <properties>
+        <mainClass>com.github.timurstrekalov.cli.Main</mainClass>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>${mainClass}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
