@@ -12,18 +12,18 @@ import java.util.List;
 public class Main {
 
     public static void main(final String[] args) throws IOException, ParseException {
-        final Option baseDirOpt = new Option("b", "base-dir", true, "(required) base directory for test search");
+        final Option baseDirOpt = new Option("b", "base-dir", true, "Base directory for test search");
         baseDirOpt.setArgs(1);
 
         final Option includeOpt = new Option("i", "include", true,
-                "(required) Comma-separated list of Ant-style paths to the tests to run");
+                "Comma-separated list of Ant-style paths to the tests to run");
         includeOpt.setArgs(1);
 
         final Option excludeOpt = new Option("e", "exclude", true,
                 "Comma-separated list of Ant-style paths to the tests to exclude from run");
         excludeOpt.setArgs(1);
 
-        final Option outputDirOpt = new Option("o", "output-dir", true, "(required) the output directory for coverage reports");
+        final Option outputDirOpt = new Option("o", "output-dir", true, "The output directory for coverage reports");
         outputDirOpt.setArgs(1);
 
         final Option outputInstrumentedFilesOpt = new Option("f", "output-instrumented-files", true,
