@@ -3,7 +3,7 @@ package com.github.timurstrekalov.cli;
 import com.github.timurstrekalov.CoverageGenerator;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.cli.*;
-import org.apache.tools.ant.DirectoryScanner;
+import org.codehaus.plexus.util.DirectoryScanner;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ public class Main {
     public static void main(final String[] args) throws IOException, ParseException {
         final Option baseDirOpt = new Option("b", "base-dir", true, "(required) base directory for test search");
         final Option testPathOpt = new Option("t", "test-path", true, "(required) Ant-style paths to the tests to run");
-        final Option outputDirOpt = new Option("o", "output-dir", true, "The output directory for coverage reports");
+        final Option outputDirOpt = new Option("o", "output-dir", true, "(required) the output directory for coverage reports");
 
         final Option outputInstrumentedFilesOpt = new Option("f", "output-instrumented-files", true,
                 "Whether to output instrumented files (default is false)");
