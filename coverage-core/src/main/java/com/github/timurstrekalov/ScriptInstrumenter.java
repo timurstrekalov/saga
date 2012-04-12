@@ -8,6 +8,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.sun.istack.internal.NotNull;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
@@ -21,11 +22,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
 class ScriptInstrumenter implements ScriptPreProcessor {
+
+    private static final Map<String, String> instrumentedScriptCache = Maps.newConcurrentMap();
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
@@ -38,6 +42,8 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private Collection<Pattern> ignorePatterns;
     private File outputDir;
     private boolean outputInstrumentedFiles;
+
+    private boolean cacheInstrumentedCode;
 
     public ScriptInstrumenter(final String coverageVariableName) {
         this.coverageVariableName = coverageVariableName;
@@ -53,6 +59,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final String sourceName,
             final int lineNumber,
             final HtmlElement htmlElement) {
+
+        if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(sourceName)) {
+            return instrumentedScriptCache.get(sourceName);
+        }
 
         if (shouldIgnore(sourceName)) {
             return sourceCode;
@@ -80,6 +90,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         buf.append(treeSource);
 
         final String instrumentedCode = buf.toString();
+
+        if (cacheInstrumentedCode) {
+            instrumentedScriptCache.put(sourceName, instrumentedCode);
+        }
 
         if (outputInstrumentedFiles) {
             try {
@@ -121,6 +135,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     public void setOutputDir(File outputDir) {
         this.outputDir = outputDir;
+    }
+
+    public void setCacheInstrumentedCode(final boolean cacheInstrumentedCode) {
+        this.cacheInstrumentedCode = cacheInstrumentedCode;
     }
 
     private class InstrumentingVisitor implements NodeVisitor {

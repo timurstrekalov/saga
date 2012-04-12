@@ -49,8 +49,10 @@ public class CoverageGenerator {
     private File[] tests;
     private File outputDir;
 
-    private String reportName = "all";
+    private String reportName = "total";
     private String instrumentedFileDirectoryName = "instrumented";
+    private boolean cacheInstrumentedCode = true;
+    private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
 
     private RunStats totalStats;
 
@@ -70,7 +72,11 @@ public class CoverageGenerator {
             runTest(test.toURI().toURL());
         }
 
-        writeRunStats(totalStats);
+        logger.info("Test run finished");
+
+        if (outputStrategy.contains(OutputStrategy.TOTAL)) {
+            writeRunStats(totalStats);
+        }
     }
 
     private void runTest(final URL test) throws IOException {
@@ -91,6 +97,8 @@ public class CoverageGenerator {
             instrumenter.setOutputDir(instrumentedFileDirectory);
             instrumenter.setOutputInstrumentedFiles(outputInstrumentedFiles);
         }
+
+        instrumenter.setCacheInstrumentedCode(cacheInstrumentedCode);
 
         client.setScriptPreProcessor(instrumenter);
 
@@ -162,10 +170,13 @@ public class CoverageGenerator {
             totalStats.add(fileStats);
         }
 
-        writeRunStats(runStats);
+        if (outputStrategy.contains(OutputStrategy.PER_TEST)) {
+            writeRunStats(runStats);
+        }
     }
 
     private void writeRunStats(final RunStats stats) throws IOException {
+        logger.debug("Writing run statistics, name: {}", stats.runName);
         stringTemplateGroup.getInstanceOf("runStats")
                 .add("stats", stats)
                 .write(new File(outputDir, stats.runName + "-report.html"), new ErrorLogger());
@@ -197,6 +208,14 @@ public class CoverageGenerator {
 
     public void setOutputDir(final File outputDir) {
         this.outputDir = outputDir;
+    }
+
+    public void setCacheInstrumentedCode(final boolean cacheInstrumentedCode) {
+        this.cacheInstrumentedCode = cacheInstrumentedCode;
+    }
+
+    public void setOutputStrategy(OutputStrategy outputStrategy) {
+        this.outputStrategy = outputStrategy;
     }
 
     private static final class ErrorLogger implements STErrorListener {

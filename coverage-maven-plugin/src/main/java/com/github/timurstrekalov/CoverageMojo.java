@@ -42,14 +42,24 @@ public class CoverageMojo extends AbstractMojo {
     private File outputDir;
 
     /**
-     * @parameter default-value="false"
+     * @parameter
      */
-    private boolean outputInstrumentedFiles;
+    private Boolean outputInstrumentedFiles;
 
     /**
      * @parameter
      */
     private String[] noInstrumentPatterns;
+
+    /**
+     * @parameter
+     */
+    private Boolean cacheInstrumentedCode;
+
+    /**
+     * @parameter
+     */
+    private OutputStrategy outputStrategy;
 
     public void execute() throws MojoExecutionException {
         final CoverageGenerator gen = new CoverageGenerator();
@@ -63,21 +73,32 @@ public class CoverageMojo extends AbstractMojo {
             for (int i = 0; i < list.size(); i++) {
                 files[i] = (File) list.get(i);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new MojoExecutionException("Error looking up tests to run", e);
         }
 
         gen.setTests(files);
         gen.setOutputDir(outputDir);
-        gen.setOutputInstrumentedFiles(outputInstrumentedFiles);
+
+        if (outputInstrumentedFiles != null) {
+            gen.setOutputInstrumentedFiles(outputInstrumentedFiles);
+        }
+
+        if (cacheInstrumentedCode != null) {
+            gen.setCacheInstrumentedCode(cacheInstrumentedCode);
+        }
 
         if (noInstrumentPatterns != null) {
             gen.setNoInstrumentPatterns(ImmutableList.copyOf(noInstrumentPatterns));
         }
 
+        if (outputStrategy != null) {
+            gen.setOutputStrategy(outputStrategy);
+        }
+
         try {
             gen.run();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new MojoExecutionException("Error generating coverage", e);
         }
     }
