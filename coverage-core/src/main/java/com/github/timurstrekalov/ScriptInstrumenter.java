@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,22 @@ import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
 class ScriptInstrumenter implements ScriptPreProcessor {
 
-    private static final Map<String, String> instrumentedScriptCache = Maps.newConcurrentMap();
+    // hack, see http://sourceforge.net/tracker/?func=detail&atid=448266&aid=3106039&group_id=47038
+    // still no build with that fix
+    static {
+        try {
+            final Field field = AstNode.class.getDeclaredField("operatorNames");
+            field.setAccessible(true);
+
+            @SuppressWarnings("unchecked")
+            final Map<Integer, String> operatorNames = (Map<Integer, String>) field.get(AstNode.class);
+            operatorNames.put(Token.VOID, "void");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static final Map<String, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
@@ -61,7 +77,9 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final HtmlElement htmlElement) {
 
         if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(sourceName)) {
-            return instrumentedScriptCache.get(sourceName);
+            final ScriptData data = instrumentedScriptCache.get(sourceName);
+            scriptDataList.add(data);
+            return data.getInstrumentedSourceCode();
         }
 
         if (shouldIgnore(sourceName)) {
@@ -81,7 +99,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 treeSource.length());
 
         buf.append(initializingCode);
-        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, data.getSourceName()));
+        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, sourceName));
 
         for (final Integer i : data.getLineNumbersOfAllStatements()) {
             buf.append(String.format(arrayInitializer, data.getSourceName(), i));
@@ -90,9 +108,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         buf.append(treeSource);
 
         final String instrumentedCode = buf.toString();
+        data.setInstrumentedSourceCode(instrumentedCode);
 
         if (cacheInstrumentedCode) {
-            instrumentedScriptCache.put(sourceName, instrumentedCode);
+            instrumentedScriptCache.put(sourceName, data);
         }
 
         if (outputInstrumentedFiles) {

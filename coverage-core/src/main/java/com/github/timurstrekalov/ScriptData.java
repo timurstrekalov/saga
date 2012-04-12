@@ -12,6 +12,8 @@ class ScriptData {
 
     private final Map<Integer, Integer> statementsWithLengths = Maps.newTreeMap();
 
+    private String instrumentedSourceCode;
+
     ScriptData(final String sourceName, final String sourceCode) {
         this.sourceName = sourceName;
         this.sourceCode = sourceCode;
@@ -53,4 +55,11 @@ class ScriptData {
         return getLineNumbersOfAllStatements().iterator().next();
     }
 
+    public void setInstrumentedSourceCode(final String instrumentedSourceCode) {
+        this.instrumentedSourceCode = instrumentedSourceCode;
+    }
+
+    public String getInstrumentedSourceCode() {
+        return instrumentedSourceCode;
+    }
 }

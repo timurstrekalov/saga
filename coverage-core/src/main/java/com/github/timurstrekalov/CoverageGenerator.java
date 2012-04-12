@@ -1,10 +1,12 @@
 package com.github.timurstrekalov;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.Lists;
+import net.sourceforge.htmlunit.corejs.javascript.EcmaError;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,7 @@ public class CoverageGenerator {
     private static final ThreadLocal<WebClient> localClient = new ThreadLocal<WebClient>() {
         @Override
         protected WebClient initialValue() {
-            final WebClient client = new WebClient();
+            final WebClient client = new WebClient(BrowserVersion.FIREFOX_3_6);
             client.setIncorrectnessListener(quietIncorrectnessListener);
             return client;
         }
@@ -52,6 +54,7 @@ public class CoverageGenerator {
     private String reportName = "total";
     private String instrumentedFileDirectoryName = "instrumented";
     private boolean cacheInstrumentedCode = true;
+    private boolean outputEcmaErrors = false;
     private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
 
     private RunStats totalStats;
@@ -69,7 +72,14 @@ public class CoverageGenerator {
 
         for (final File test : tests) {
             logger.info("Running {}", test.getAbsoluteFile().toURI().normalize().getPath());
-            runTest(test.toURI().toURL());
+
+            try {
+                runTest(test.toURI().toURL());
+            } catch (final EcmaError e) {
+                if (outputEcmaErrors) {
+                    logger.warn(e.getMessage(), e);
+                }
+            }
         }
 
         logger.info("Test run finished");
