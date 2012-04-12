@@ -27,6 +27,7 @@ public class CoverageGenerator {
     private static final IncorrectnessListener quietIncorrectnessListener = new IncorrectnessListener() {
         @Override
         public void notify(final String message, final Object origin) {
+            logger.debug(message);
         }
     };
 
@@ -38,7 +39,6 @@ public class CoverageGenerator {
             return client;
         }
     };
-
 
     private Collection<String> noInstrumentPatterns;
     private boolean outputInstrumentedFiles;
@@ -66,6 +66,7 @@ public class CoverageGenerator {
         totalStats = new RunStats(reportName);
 
         for (final File test : tests) {
+            logger.info("Running {}", test.getAbsoluteFile().toURI().normalize().getPath());
             runTest(test.toURI().toURL());
         }
 
