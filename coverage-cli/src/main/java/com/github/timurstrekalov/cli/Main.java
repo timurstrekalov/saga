@@ -13,22 +13,14 @@ public class Main {
 
     public static void main(final String[] args) throws IOException, ParseException {
         final Option baseDirOpt = new Option("b", "base-dir", true, "Base directory for test search");
-        baseDirOpt.setArgs(1);
-
         final Option includeOpt = new Option("i", "include", true,
                 "Comma-separated list of Ant-style paths to the tests to run");
-        includeOpt.setArgs(1);
-
         final Option excludeOpt = new Option("e", "exclude", true,
                 "Comma-separated list of Ant-style paths to the tests to exclude from run");
-        excludeOpt.setArgs(1);
 
-        final Option outputDirOpt = new Option("o", "output-dir", true, "The output directory for coverage reports");
-        outputDirOpt.setArgs(1);
-
+        final Option outputDirOpt = new Option("o", "output-dir", false, "The output directory for coverage reports");
         final Option outputInstrumentedFilesOpt = new Option("f", "output-instrumented-files", true,
                 "Whether to output instrumented files (default is false)");
-        outputInstrumentedFilesOpt.setArgs(0);
 
         final Option noInstrumentPatternOpt = new Option("n", "no-instrument-pattern", true,
                 "Regular expression patterns to match classes to exclude from instrumentation");
