@@ -1,6 +1,6 @@
 fileStats(fileStats) ::= <<
 <tr>
-    <td><a href="" onclick="__coverage_toggleSection('$fileStats.href$'); return false;">$fileStats.name$</a></td>
+    <td><a href="#" onclick="__coverage_toggleSection('$fileStats.href$'); return false;">$fileStats.name$</a></td>
     <td class="statements">$fileStats.statements$</td>
     <td class="executed">$fileStats.executed$</td>
     <td class="coverage">$fileStats.coverage$%</td>

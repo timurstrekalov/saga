@@ -164,6 +164,30 @@ runStats(stats) ::= <<
         color: #0000ff;
     }
 </style>
+<script type="text/javascript">
+    function __coverage_toggleSection(id) {
+        var el = document.getElementById('__src_' + id);
+        if (!el) {
+            return;
+        }
+
+        var show = el.style.display === 'none';
+
+        if (show) {
+            el.style.display = '';
+            window.location.hash = "#" + id;
+        } else {
+            el.style.display = 'none';
+            window.location.hash = '';
+        }
+    }
+
+    window.onload = function () {
+        if (window.location.hash) {
+            __coverage_toggleSection(window.location.hash.substr(1));
+        }
+    };
+</script>
 </head>
 <body>
     <h1>Coverage report for run "$stats.runName$"</h1>
@@ -192,30 +216,6 @@ runStats(stats) ::= <<
             $stats.fileStats:fileStats()$
         </tbody>
     </table>
-    <script type="text/javascript">
-        function __coverage_toggleSection(id) {
-            var el = document.getElementById('__src_' + id);
-            if (!el) {
-                return;
-            }
-
-            var show = el.style.display === 'none';
-
-            if (show) {
-                el.style.display = '';
-                window.location.hash = "#" + id;
-            } else {
-                el.style.display = 'none';
-                window.location.hash = '';
-            }
-        }
-
-        window.onload = function () {
-            if (window.location.hash) {
-                __coverage_toggleSection(window.location.hash.substr(1));
-            }
-        };
-    </script>
 </body>
 </html>
 >>

@@ -1,8 +1,9 @@
 package com.github.timurstrekalov;
 
-import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
+import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -10,6 +11,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sun.istack.internal.NotNull;
+import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
 import net.sourceforge.htmlunit.corejs.javascript.ast.*;
@@ -49,6 +51,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
+    private final HtmlUnitContextFactory contextFactory;
     private final String coverageVariableName;
     private final String initializingCode;
     private final String arrayInitializer;
@@ -61,7 +64,8 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     private boolean cacheInstrumentedCode;
 
-    public ScriptInstrumenter(final String coverageVariableName) {
+    public ScriptInstrumenter(HtmlUnitContextFactory contextFactory, final String coverageVariableName) {
+        this.contextFactory = contextFactory;
         this.coverageVariableName = coverageVariableName;
 
         initializingCode = String.format("%s = window.%s || {};%n", coverageVariableName, coverageVariableName);
@@ -89,7 +93,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         final ScriptData data = new ScriptData(sourceName, sourceCode);
         scriptDataList.add(data);
 
-        final AstRoot root = new Parser().parse(sourceCode, sourceName, lineNumber);
+        final CompilerEnvirons environs = new CompilerEnvirons();
+        environs.initFromContext(contextFactory.enterContext());
+
+        final AstRoot root = new Parser(environs).parse(sourceCode, sourceName, lineNumber);
         root.visit(new InstrumentingVisitor(data));
 
         final String treeSource = root.toSource();
@@ -170,11 +177,41 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
         @Override
         public boolean visit(final AstNode node) {
+            handleVoidBug(node);
+            handleNumberLiteralBug(node);
+
             if (isExecutableBlock(node)) {
                 addInstrumentationSnippetFor(node);
             }
 
             return true;
+        }
+
+        /**
+         * Even though we're hacking the AstNode class at the top, toSource() of 'void 0' nodes still returns
+         * "void0" instead of "void 0". This is yet another hack to fix it (and yes, it was submitted with the
+         * original patch to the issue above).
+         */
+        private void handleVoidBug(final AstNode node) {
+            if (node.getType() == Token.VOID) {
+                final AstNode operand = ((UnaryExpression) node).getOperand();
+                if (operand.getType() == Token.NUMBER) {
+                    final NumberLiteral numberLiteral = (NumberLiteral) operand;
+                    numberLiteral.setValue(" " + Long.toString(((long) numberLiteral.getNumber())));
+                }
+            }
+        }
+
+        /**
+         * fix the fact that NumberLiteral outputs hexadecimal numbers without the '0x' part (e.g. 0xFF becomes FF
+         * when toSource() is called), which results in invalid JS syntax. Using the actual number value instead
+         * to fix this (shouldn't break anything)
+         */
+        private void handleNumberLiteralBug(final AstNode node) {
+            if (node.getType() == Token.NUMBER && node.getParent().getType() != Token.VOID) {
+                final NumberLiteral numberLiteral = (NumberLiteral) node;
+                numberLiteral.setValue(Double.toString(numberLiteral.getNumber()));
+            }
         }
 
         private boolean isExecutableBlock(final AstNode node) {

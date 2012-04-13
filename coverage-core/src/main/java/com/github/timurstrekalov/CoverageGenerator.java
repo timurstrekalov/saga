@@ -1,9 +1,6 @@
 package com.github.timurstrekalov;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.IncorrectnessListener;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.EcmaError;
@@ -38,6 +35,8 @@ public class CoverageGenerator {
         protected WebClient initialValue() {
             final WebClient client = new WebClient(BrowserVersion.FIREFOX_3_6);
             client.setIncorrectnessListener(quietIncorrectnessListener);
+            client.setJavaScriptEnabled(true);
+            client.setAjaxController(new NicelyResynchronizingAjaxController());
             return client;
         }
     };
@@ -54,6 +53,7 @@ public class CoverageGenerator {
     private String reportName = "total";
     private String instrumentedFileDirectoryName = "instrumented";
     private boolean cacheInstrumentedCode = true;
+
     private boolean outputEcmaErrors = false;
     private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
 
@@ -93,7 +93,7 @@ public class CoverageGenerator {
         final WebClient client = localClient.get();
 
         final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
-        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(coverageVariableName);
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(client.getJavaScriptEngine().getContextFactory(), coverageVariableName);
 
         if (noInstrumentPatterns != null) {
             instrumenter.setIgnorePatterns(noInstrumentPatterns);
@@ -226,6 +226,10 @@ public class CoverageGenerator {
 
     public void setOutputStrategy(OutputStrategy outputStrategy) {
         this.outputStrategy = outputStrategy;
+    }
+
+    public void setOutputEcmaErrors(boolean outputEcmaErrors) {
+        this.outputEcmaErrors = outputEcmaErrors;
     }
 
     private static final class ErrorLogger implements STErrorListener {
