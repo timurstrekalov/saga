@@ -1,5 +1,3 @@
 lineByLineCoverageReport(fileStats) ::= <<
-<table id="__src_$fileStats.href$" class="line-coverage" style="display: none;">
-    $fileStats.lineCoverageRecords:lineCoverage()$
-</table>
+<p id="__data_$fileStats.href$">[$fileStats.lineCoverageRecords:lineCoverage(); separator=","$]</p>
 >>

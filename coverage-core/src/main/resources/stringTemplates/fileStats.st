@@ -11,8 +11,6 @@ fileStats(fileStats) ::= <<
     </td>
 </tr>
 <tr id="__src_$fileStats.href$" style="display: none;">
-    <td class="line-coverage-cell" colspan="5">
-        $lbl_data(fileStats)$
-    </td>
+    <td class="line-coverage-cell" colspan="5">$lineByLineCoverageReport(fileStats)$</td>
 </tr>
 >>

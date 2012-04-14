@@ -47,7 +47,7 @@ runStats(stats) ::= <<
         font-size: 1.1em;
     }
 
-    .stats > thead tr:first-child {
+    .stats > thead tr:first-child th {
         background-color: #ccc;
     }
 
@@ -65,7 +65,7 @@ runStats(stats) ::= <<
         border-bottom-right-radius: 4px;
     }
 
-    .stats > tbody > tr:nth-child(4n + 1) {
+    .stats > tbody > tr:nth-child(4n + 1) td {
         background-color: #eee;
     }
 
@@ -201,8 +201,6 @@ runStats(stats) ::= <<
         var reservedKeywordsPattern = new RegExp('\\\b(' + reservedKeywords.join('|') + ')\\\b', 'g');
         var jsStringPattern = /('.*'|".*")/g;
         var jsNumberPattern = /\b(\d+(?:\.\d+)?)\b/g;
-
-        console.log('\\b(' + reservedKeywords.join('|') + ')\\b');
 
         function el(type) {
             return document.createElement(type);
