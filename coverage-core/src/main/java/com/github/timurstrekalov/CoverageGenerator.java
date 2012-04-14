@@ -3,7 +3,6 @@ package com.github.timurstrekalov;
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.Lists;
-import net.sourceforge.htmlunit.corejs.javascript.EcmaError;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +17,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 public class CoverageGenerator {
 
@@ -54,10 +54,7 @@ public class CoverageGenerator {
     private String instrumentedFileDirectoryName = "instrumented";
     private boolean cacheInstrumentedCode = true;
 
-    private boolean outputEcmaErrors = false;
     private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
-
-    private RunStats totalStats;
 
     public CoverageGenerator() {
         stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
@@ -68,32 +65,68 @@ public class CoverageGenerator {
             throw new IOException("Couldn't create output directory");
         }
 
-        totalStats = new RunStats(reportName);
+        final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        final CompletionService<RunStats> completionService = new ExecutorCompletionService<RunStats>(executorService);
 
         for (final File test : tests) {
-            logger.info("Running {}", test.getAbsoluteFile().toURI().normalize().getPath());
+            completionService.submit(new Callable<RunStats>() {
+                @Override
+                public RunStats call() {
+                    logger.info("Running {}", test.getAbsoluteFile().toURI().normalize().getPath());
 
-            try {
-                runTest(test.toURI().toURL());
-            } catch (final EcmaError e) {
-                if (outputEcmaErrors) {
-                    logger.warn(e.getMessage(), e);
+                    try {
+                        final RunStats runStats = runTest(test.toURI().toURL());
+
+                        if (outputStrategy.contains(OutputStrategy.PER_TEST)) {
+                            writeRunStats(runStats);
+                        }
+
+                        return runStats;
+                    } catch (final IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
+            });
+        }
+
+        final List<RunStats> allRunStats = Lists.newLinkedList();
+
+        for (int i = 0; i < tests.length; i++) {
+            try {
+                final Future<RunStats> future = completionService.take();
+                final RunStats runStats = future.get();
+
+                allRunStats.add(runStats);
+            } catch (final InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (final ExecutionException e) {
+                throw new RuntimeException(e);
             }
         }
 
         logger.info("Test run finished");
 
+        executorService.shutdown();
+
         if (outputStrategy.contains(OutputStrategy.TOTAL)) {
+            final RunStats totalStats = new RunStats(reportName);
+
+            for (final RunStats runStats : allRunStats) {
+                for (final FileStats fileStats : runStats.getFileStats()) {
+                    totalStats.add(fileStats);
+                }
+            }
+
             writeRunStats(totalStats);
         }
     }
 
-    private void runTest(final URL test) throws IOException {
+    private RunStats runTest(final URL test) throws IOException {
         final WebClient client = localClient.get();
 
         final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
-        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(client.getJavaScriptEngine().getContextFactory(), coverageVariableName);
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(client.getJavaScriptEngine().getContextFactory(),
+                coverageVariableName);
 
         if (noInstrumentPatterns != null) {
             instrumenter.setIgnorePatterns(noInstrumentPatterns);
@@ -124,11 +157,13 @@ public class CoverageGenerator {
             final NativeObject coverageData = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
                     .getJavaScriptResult();
 
-            collectAndWriteRunStats(runName, instrumenter, coverageData);
+            return collectAndWriteRunStats(runName, instrumenter, coverageData);
         }
+
+        return null;
     }
 
-    private void collectAndWriteRunStats(
+    private RunStats collectAndWriteRunStats(
             final String runName,
             final ScriptInstrumenter instrumenter,
             final NativeObject allCoverageData) throws IOException {
@@ -177,12 +212,9 @@ public class CoverageGenerator {
             final FileStats fileStats = new FileStats(jsFileName, fileCoverageFilename, lineCoverageRecords);
 
             runStats.add(fileStats);
-            totalStats.add(fileStats);
         }
 
-        if (outputStrategy.contains(OutputStrategy.PER_TEST)) {
-            writeRunStats(runStats);
-        }
+        return runStats;
     }
 
     private void writeRunStats(final RunStats stats) throws IOException {
@@ -226,10 +258,6 @@ public class CoverageGenerator {
 
     public void setOutputStrategy(OutputStrategy outputStrategy) {
         this.outputStrategy = outputStrategy;
-    }
-
-    public void setOutputEcmaErrors(boolean outputEcmaErrors) {
-        this.outputEcmaErrors = outputEcmaErrors;
     }
 
     private static final class ErrorLogger implements STErrorListener {
