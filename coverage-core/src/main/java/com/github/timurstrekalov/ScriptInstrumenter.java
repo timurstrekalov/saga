@@ -124,6 +124,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         if (outputInstrumentedFiles) {
             try {
                 final File outputFile = new File(outputDir, new File(sourceName).getName() + "-instrumented.js");
+                logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
                 IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
             } catch (final IOException e) {
                 throw new RuntimeException(e);
@@ -197,7 +198,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 final AstNode operand = ((UnaryExpression) node).getOperand();
                 if (operand.getType() == Token.NUMBER) {
                     final NumberLiteral numberLiteral = (NumberLiteral) operand;
-                    numberLiteral.setValue(" " + Double.toString((numberLiteral.getNumber())));
+                    numberLiteral.setValue(" " + getValue(numberLiteral));
                 }
             }
         }
@@ -210,10 +211,18 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         private void handleNumberLiteralBug(final AstNode node) {
             if (node.getType() == Token.NUMBER) {
                 final NumberLiteral numberLiteral = (NumberLiteral) node;
-                numberLiteral.setValue(Double.toString(numberLiteral.getNumber()));
+                numberLiteral.setValue(getValue(numberLiteral));
 
                 handleVoidBug(node.getParent());
             }
+        }
+
+        private String getValue(final NumberLiteral literal) {
+            if (Math.floor(literal.getNumber()) == literal.getNumber()) {
+                return Long.toString((long) literal.getNumber());
+            }
+
+            return Double.toString(literal.getNumber());
         }
 
         private boolean isExecutableBlock(final AstNode node) {

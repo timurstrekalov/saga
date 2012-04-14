@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.List;
 
@@ -14,18 +15,19 @@ import static org.apache.commons.lang.Validate.isTrue;
 class FileStats {
 
     public final String name;
-    public final String href;
-
+    public final String id;
     public final List<LineCoverageRecord> lineCoverageRecords;
 
     FileStats(final String name,
-            final String href,
-            final List<LineCoverageRecord> lineCoverageRecords) {
+              final List<LineCoverageRecord> lineCoverageRecords) {
 
         this.name = name;
-        this.href = href;
-
+        this.id = generateId();
         this.lineCoverageRecords = lineCoverageRecords;
+    }
+
+    private String generateId() {
+        return DigestUtils.md5Hex(name);
     }
 
     public List<LineCoverageRecord> getLineCoverageRecords() {
@@ -70,6 +72,6 @@ class FileStats {
             mergedRecords.add(LineCoverageRecord.merge(l1, l2));
         }
 
-        return new FileStats(s1.name, s1.href, mergedRecords);
+        return new FileStats(s1.name, mergedRecords);
     }
 }

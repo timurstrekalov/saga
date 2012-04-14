@@ -17,6 +17,7 @@ import org.stringtemplate.v4.misc.STMessage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -161,7 +162,7 @@ public class CoverageGenerator {
 
         if (outputInstrumentedFiles) {
             if (!instrumentedFileDirectory.exists() && !instrumentedFileDirectory.mkdirs()) {
-                throw new RuntimeException("Can't create " + instrumentedFileDirectory);
+                throw new RuntimeException("Can't create " + instrumentedFileDirectory.getAbsolutePath());
             }
 
             instrumenter.setOutputDir(instrumentedFileDirectory);
@@ -201,7 +202,6 @@ public class CoverageGenerator {
             final NativeObject coverageData = (NativeObject) allCoverageData.get(data.getSourceName());
 
             final String jsFileName = data.getSourceName();
-            final String fileCoverageFilename = new File(jsFileName).getName();
 
             final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
 
@@ -212,30 +212,33 @@ public class CoverageGenerator {
 
                 final Double coverageEntry = (Double) coverageData.get(lineNr);
                 final int timesLineExecuted;
-                final boolean executable;
 
                 if (coverageEntry == null) {
                     final int lineLength = line.trim().length();
 
                     if (lengthCountdown > 0 && lineLength > 0) {
                         lengthCountdown -= lineLength;
-                        executable = false;
+                        timesLineExecuted = -1;
                     } else {
-                        executable = data.hasStatement(lineNr);
+                        timesLineExecuted = data.hasStatement(lineNr) ? 0 : -1;
                     }
-
-                    timesLineExecuted = 0;
                 } else {
                     timesLineExecuted = coverageEntry.intValue();
                     lengthCountdown = data.getStatementLength(lineNr);
-                    executable = true;
                 }
 
                 // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
-                lineCoverageRecords.add(new LineCoverageRecord(lineCount, timesLineExecuted, line, executable));
+                lineCoverageRecords.add(new LineCoverageRecord(lineCount, timesLineExecuted, line));
             }
 
-            runStats.add(new FileStats(jsFileName, fileCoverageFilename, lineCoverageRecords));
+            try {
+                final String name = jsFileName.startsWith("script in ") ? jsFileName :
+                        new URI(jsFileName).normalize().toString();
+
+                runStats.add(new FileStats(name, lineCoverageRecords));
+            } catch (final URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return runStats;

@@ -228,9 +228,9 @@ runStats(stats) ::= <<
                 var tr = el('tr');
                 var record = data[i];
 
-                var executable = !!record[0];
-                var timesExecuted = record[1];
-                var src = record[2];
+                var timesExecuted = record[0];
+                var src = record[1];
+                var executable = timesExecuted > -1;
 
                 tr.className = !executable ? 'not-executable' : timesExecuted > 0 ? 'covered' : 'not-covered';
                 table.appendChild(tr);

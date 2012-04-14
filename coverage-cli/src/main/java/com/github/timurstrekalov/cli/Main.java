@@ -18,7 +18,8 @@ public class Main {
                 "Comma-separated list of Ant-style paths to the tests to exclude from run");
 
         final Option outputDirOpt = new Option("o", "output-dir", true, "The output directory for coverage reports");
-        final Option outputInstrumentedFilesOpt = new Option("f", "output-instrumented-files", true,
+
+        final Option outputInstrumentedFilesOpt = new Option("f", "output-instrumented-files", false,
                 "Whether to output instrumented files (default is false)");
 
         final Option noInstrumentPatternOpt = new Option("n", "no-instrument-pattern", true,
@@ -70,7 +71,7 @@ public class Main {
 
             final CoverageGenerator gen = new CoverageGenerator(baseDir, includes, excludes, outputDir);
 
-            if (line.getOptionValue('f') != null) {
+            if (line.hasOption('f')) {
                 gen.setOutputInstrumentedFiles(true);
             }
 

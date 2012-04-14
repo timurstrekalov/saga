@@ -1,6 +1,6 @@
 fileStats(fileStats) ::= <<
 <tr>
-    <td><a href="#" onclick="__coverage_toggleSection('$fileStats.href$'); return false;">$fileStats.name$</a></td>
+    <td><a href="#" onclick="__coverage_toggleSection('$fileStats.id$'); return false;">$fileStats.name$</a></td>
     <td class="statements">$fileStats.statements$</td>
     <td class="executed">$fileStats.executed$</td>
     <td class="coverage">$fileStats.coverage$%</td>
@@ -10,7 +10,7 @@ fileStats(fileStats) ::= <<
         </div>
     </td>
 </tr>
-<tr id="__src_$fileStats.href$" style="display: none;">
-    <td class="line-coverage-cell" colspan="5">$lineByLineCoverageReport(fileStats)$</td>
+<tr id="__src_$fileStats.id$" style="display: none;">
+    <td class="line-coverage-cell" colspan="5">$lineByLineCoverageData(fileStats)$</td>
 </tr>
 >>
