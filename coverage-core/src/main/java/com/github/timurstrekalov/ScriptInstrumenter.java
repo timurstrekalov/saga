@@ -197,7 +197,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 final AstNode operand = ((UnaryExpression) node).getOperand();
                 if (operand.getType() == Token.NUMBER) {
                     final NumberLiteral numberLiteral = (NumberLiteral) operand;
-                    numberLiteral.setValue(" " + Long.toString(((long) numberLiteral.getNumber())));
+                    numberLiteral.setValue(" " + Double.toString((numberLiteral.getNumber())));
                 }
             }
         }
@@ -208,9 +208,11 @@ class ScriptInstrumenter implements ScriptPreProcessor {
          * to fix this (shouldn't break anything)
          */
         private void handleNumberLiteralBug(final AstNode node) {
-            if (node.getType() == Token.NUMBER && node.getParent().getType() != Token.VOID) {
+            if (node.getType() == Token.NUMBER) {
                 final NumberLiteral numberLiteral = (NumberLiteral) node;
                 numberLiteral.setValue(Double.toString(numberLiteral.getNumber()));
+
+                handleVoidBug(node.getParent());
             }
         }
 

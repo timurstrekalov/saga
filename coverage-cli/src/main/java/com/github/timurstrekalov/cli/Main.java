@@ -18,7 +18,7 @@ public class Main {
         final Option excludeOpt = new Option("e", "exclude", true,
                 "Comma-separated list of Ant-style paths to the tests to exclude from run");
 
-        final Option outputDirOpt = new Option("o", "output-dir", false, "The output directory for coverage reports");
+        final Option outputDirOpt = new Option("o", "output-dir", true, "The output directory for coverage reports");
         final Option outputInstrumentedFilesOpt = new Option("f", "output-instrumented-files", true,
                 "Whether to output instrumented files (default is false)");
 

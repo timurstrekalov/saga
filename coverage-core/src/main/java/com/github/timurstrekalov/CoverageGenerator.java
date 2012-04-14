@@ -213,16 +213,14 @@ public class CoverageGenerator {
                 lineCoverageRecords.add(new LineCoverageRecord(lineCount, timesLineExecuted, line, executable));
             }
 
-            final FileStats fileStats = new FileStats(jsFileName, fileCoverageFilename, lineCoverageRecords);
-
-            runStats.add(fileStats);
+            runStats.add(new FileStats(jsFileName, fileCoverageFilename, lineCoverageRecords));
         }
 
         return runStats;
     }
 
     private void writeRunStats(final RunStats stats) throws IOException {
-        logger.debug("Writing run statistics, name: {}", stats.runName);
+        logger.info("Writing coverage report, name: {}", stats.runName);
         stringTemplateGroup.getInstanceOf("runStats")
                 .add("stats", stats)
                 .write(new File(outputDir, stats.runName + "-report.html"), new ErrorLogger());

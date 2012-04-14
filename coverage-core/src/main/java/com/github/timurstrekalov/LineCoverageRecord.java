@@ -1,5 +1,6 @@
 package com.github.timurstrekalov;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.regex.Pattern;
@@ -92,7 +93,8 @@ class LineCoverageRecord {
     }
 
     private static String styleLine(final String line) {
-        String styledLine = jsStringPattern.matcher(line).replaceAll("<span class=\"string\">$1</span>");
+        final String escaped = StringEscapeUtils.escapeHtml(line);
+        String styledLine = jsStringPattern.matcher(escaped).replaceAll("<span class=\"string\">$1</span>");
         styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
         styledLine = reservedKeywordsPattern.matcher(styledLine).replaceAll("<span class=\"keyword\">$1</span>");
 

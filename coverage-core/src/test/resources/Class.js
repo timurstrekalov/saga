@@ -83,6 +83,10 @@ function Class(param) {
         s += 3;
     while (s < 70)
 
+    var v = void 0;
+    var vv = void 0xff;
+    var vvv = void(0);
+
     this.data = {
         getsCalledOnTheSecondRun: function () {
             var a = 'lll';
