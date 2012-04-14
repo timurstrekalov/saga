@@ -3,7 +3,7 @@ runStats(stats) ::= <<
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Coverage report for run "$stats.runName$"</title>
+<title>$stats.title$</title>
 <style>
     body {
         margin: 0;
@@ -190,7 +190,7 @@ runStats(stats) ::= <<
 </script>
 </head>
 <body>
-    <h1>Coverage report for run "$stats.runName$"</h1>
+    <h1>$stats.title$</h1>
     <table class="stats">
         <thead>
             <tr class="stats-header">

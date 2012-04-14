@@ -1,13 +1,12 @@
 package com.github.timurstrekalov.cli;
 
 import com.github.timurstrekalov.CoverageGenerator;
-import com.google.common.collect.ImmutableList;
+import com.github.timurstrekalov.OutputStrategy;
 import org.apache.commons.cli.*;
-import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Arrays;
 
 public class Main {
 
@@ -29,6 +28,9 @@ public class Main {
         final Option threadCountOpt = new Option("t", "thread-count", true,
                 "The maximum number of threads to use (defaults to the number of cores)");
 
+        final Option outputStrategyOpt = new Option("s", "output-strategy", true,
+                "Coverage report output strategy. One of " + Arrays.toString(OutputStrategy.values()));
+
         final Option helpOpt = new Option("h", "help", false, "Print this message");
         final Options options = new Options();
 
@@ -39,6 +41,7 @@ public class Main {
         options.addOption(outputInstrumentedFilesOpt);
         options.addOption(noInstrumentPatternOpt);
         options.addOption(threadCountOpt);
+        options.addOption(outputStrategyOpt);
         options.addOption(helpOpt);
 
         try {
@@ -60,28 +63,19 @@ public class Main {
             parser = new GnuParser();
             line = parser.parse(options, args);
 
-            final CoverageGenerator gen = new CoverageGenerator();
             final File baseDir = new File(line.getOptionValue('b'));
+            final String includes = line.getOptionValue('i');
+            final String excludes = line.getOptionValue('e');
+            final File outputDir = new File(line.getOptionValue('o'));
 
-            final List files = FileUtils.getFiles(baseDir, line.getOptionValue('i'), line.getOptionValue('e'));
-            final File[] tests = new File[files.size()];
+            final CoverageGenerator gen = new CoverageGenerator(baseDir, includes, excludes, outputDir);
 
-            for (int i = 0; i < files.size(); i++) {
-                tests[i] = (File) files.get(i);
-            }
-
-            gen.setTests(tests);
-            gen.setOutputDir(new File(line.getOptionValue('o')));
-
-            final String outputInstrumentedFiles = line.getOptionValue('f');
-            if (outputInstrumentedFiles != null) {
+            if (line.getOptionValue('f') != null) {
                 gen.setOutputInstrumentedFiles(true);
             }
 
-            final String[] noInstrumentPatterns = line.getOptionValues('n');
-            if (noInstrumentPatterns != null) {
-                gen.setNoInstrumentPatterns(ImmutableList.copyOf(noInstrumentPatterns));
-            }
+            gen.setNoInstrumentPatterns(line.getOptionValues('n'));
+            gen.setOutputStrategy(line.getOptionValue('s'));
 
             final String threadCount = line.getOptionValue('t');
             if (threadCount != null) {

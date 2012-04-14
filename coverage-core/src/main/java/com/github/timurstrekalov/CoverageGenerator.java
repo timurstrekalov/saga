@@ -2,8 +2,11 @@ package com.github.timurstrekalov;
 
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
+import org.apache.commons.lang.Validate;
+import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.STErrorListener;
@@ -13,8 +16,9 @@ import org.stringtemplate.v4.misc.STMessage;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
@@ -41,14 +45,17 @@ public class CoverageGenerator {
         }
     };
 
-    private Collection<String> noInstrumentPatterns;
+    private final File baseDir;
+    private final String includes;
+    private final String excludes;
+    private final File outputDir;
+
+    private Collection<String> noInstrumentPatterns = Collections.emptyList();
     private boolean outputInstrumentedFiles;
 
     private final STGroup stringTemplateGroup;
-    
+
     private String coverageVariableName = "__coverage_data";
-    private File[] tests;
-    private File outputDir;
 
     private String reportName = "total";
     private String instrumentedFileDirectoryName = "instrumented";
@@ -58,16 +65,34 @@ public class CoverageGenerator {
 
     private int threadCount = Runtime.getRuntime().availableProcessors();
 
-    public CoverageGenerator() {
+    public CoverageGenerator(final File baseDir, final String includes, final File outputDir) {
+        this(baseDir, includes, null, outputDir);
+    }
+
+    public CoverageGenerator(final File baseDir, final String includes, final String excludes, final File outputDir) {
+        this.baseDir = baseDir;
+        this.includes = includes;
+        this.excludes = excludes;
+        this.outputDir = outputDir;
+
         stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
     }
 
     public void run() throws IOException {
         if (!outputDir.exists() && !outputDir.mkdirs()) {
-            throw new IOException("Couldn't create output directory");
+            throw new IOException("Couldn't create output directory: " + outputDir);
+        }
+
+        @SuppressWarnings("unchecked")
+        final List<File> tests = FileUtils.getFiles(baseDir, includes, excludes);
+
+        if (tests.isEmpty()) {
+            logger.warn("No tests found, exiting");
+            return;
         }
 
         logger.info("Using up to {} threads", threadCount);
+        logger.info("Output strategy set to {}", outputStrategy);
 
         final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         final CompletionService<RunStats> completionService = new ExecutorCompletionService<RunStats>(executorService);
@@ -79,7 +104,7 @@ public class CoverageGenerator {
                     logger.info("Running {}", test.getAbsoluteFile().toURI().normalize().getPath());
 
                     try {
-                        final RunStats runStats = runTest(test.toURI().toURL());
+                        final RunStats runStats = runTest(test);
 
                         if (outputStrategy.contains(OutputStrategy.PER_TEST)) {
                             writeRunStats(runStats);
@@ -95,7 +120,7 @@ public class CoverageGenerator {
 
         final List<RunStats> allRunStats = Lists.newLinkedList();
 
-        for (int i = 0; i < tests.length; i++) {
+        for (int i = 0; i < tests.size(); i++) {
             try {
                 final Future<RunStats> future = completionService.take();
                 final RunStats runStats = future.get();
@@ -113,7 +138,7 @@ public class CoverageGenerator {
         executorService.shutdown();
 
         if (outputStrategy.contains(OutputStrategy.TOTAL)) {
-            final RunStats totalStats = new RunStats(reportName);
+            final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
 
             for (final RunStats runStats : allRunStats) {
                 for (final FileStats fileStats : runStats.getFileStats()) {
@@ -125,16 +150,14 @@ public class CoverageGenerator {
         }
     }
 
-    private RunStats runTest(final URL test) throws IOException {
+    private RunStats runTest(final File test) throws IOException {
         final WebClient client = localClient.get();
 
         final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
         final ScriptInstrumenter instrumenter = new ScriptInstrumenter(client.getJavaScriptEngine().getContextFactory(),
                 coverageVariableName);
 
-        if (noInstrumentPatterns != null) {
-            instrumenter.setIgnorePatterns(noInstrumentPatterns);
-        }
+        instrumenter.setIgnorePatterns(noInstrumentPatterns);
 
         if (outputInstrumentedFiles) {
             if (!instrumentedFileDirectory.exists() && !instrumentedFileDirectory.mkdirs()) {
@@ -149,7 +172,7 @@ public class CoverageGenerator {
 
         client.setScriptPreProcessor(instrumenter);
 
-        final Page page = client.getPage(test);
+        final Page page = client.getPage(test.toURI().toURL());
 
         if (page instanceof HtmlPage) {
             final HtmlPage htmlPage = (HtmlPage) page;
@@ -157,22 +180,21 @@ public class CoverageGenerator {
             client.waitForBackgroundJavaScript(30000);
             client.setScriptPreProcessor(null);
 
-            final String runName = new File(test.toString()).getName();
             final NativeObject coverageData = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
                     .getJavaScriptResult();
 
-            return collectAndWriteRunStats(runName, instrumenter, coverageData);
+            return collectAndWriteRunStats(test, instrumenter, coverageData);
         }
 
         return null;
     }
 
     private RunStats collectAndWriteRunStats(
-            final String runName,
+            final File test,
             final ScriptInstrumenter instrumenter,
             final NativeObject allCoverageData) throws IOException {
 
-        final RunStats runStats = new RunStats(runName);
+        final RunStats runStats = new RunStats(test);
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             final Scanner in = new Scanner(data.getSourceCode());
@@ -220,50 +242,83 @@ public class CoverageGenerator {
     }
 
     private void writeRunStats(final RunStats stats) throws IOException {
-        logger.info("Writing coverage report, name: {}", stats.runName);
-        stringTemplateGroup.getInstanceOf("runStats")
-                .add("stats", stats)
-                .write(new File(outputDir, stats.runName + "-report.html"), new ErrorLogger());
+        final URI relativeTestUri = baseDir.toURI().relativize(stats.test.toURI());
+        final File fileOutputDir = new File(new File(outputDir.toURI().resolve(relativeTestUri)).getParent());
+
+        if (!fileOutputDir.exists() && !fileOutputDir.mkdirs()) {
+            throw new IOException("Couldn't create coverage report output directory: " + fileOutputDir);
+        }
+
+        final File outputFile = new File(fileOutputDir, stats.getReportName());
+
+        logger.info("Writing coverage report: {}", outputFile.getAbsoluteFile());
+
+        synchronized (stringTemplateGroup) {
+            stringTemplateGroup.getInstanceOf("runStats")
+                    .add("stats", stats)
+                    .write(outputFile, new ErrorLogger());
+        }
     }
 
     public void setNoInstrumentPatterns(final Collection<String> noInstrumentPatterns) {
-        this.noInstrumentPatterns = noInstrumentPatterns;
+        if (noInstrumentPatterns != null) {
+            this.noInstrumentPatterns = noInstrumentPatterns;
+        }
     }
 
-    public void setOutputInstrumentedFiles(final boolean outputInstrumentedFiles) {
-        this.outputInstrumentedFiles = outputInstrumentedFiles;
+    public void setNoInstrumentPatterns(final String[] noInstrumentPatterns) {
+        if (noInstrumentPatterns != null) {
+            setNoInstrumentPatterns(ImmutableList.copyOf(noInstrumentPatterns));
+        }
+    }
+
+    public void setOutputInstrumentedFiles(final Boolean outputInstrumentedFiles) {
+        if (outputInstrumentedFiles != null) {
+            this.outputInstrumentedFiles = outputInstrumentedFiles;
+        }
     }
 
     public void setReportName(final String reportName) {
-        this.reportName = reportName;
+        if (reportName != null) {
+            this.reportName = reportName;
+        }
     }
 
     public void setInstrumentedFileDirectoryName(final String instrumentedFileDirectoryName) {
-        this.instrumentedFileDirectoryName = instrumentedFileDirectoryName;
+        if (instrumentedFileDirectoryName != null) {
+            this.instrumentedFileDirectoryName = instrumentedFileDirectoryName;
+        }
     }
 
     public void setCoverageVariableName(final String coverageVariableName) {
-        this.coverageVariableName = coverageVariableName;
+        if (coverageVariableName != null) {
+            this.coverageVariableName = coverageVariableName;
+        }
     }
 
-    public void setTests(final File[] tests) {
-        this.tests = tests;
+    public void setCacheInstrumentedCode(final Boolean cacheInstrumentedCode) {
+        if (cacheInstrumentedCode != null) {
+            this.cacheInstrumentedCode = cacheInstrumentedCode;
+        }
     }
 
-    public void setOutputDir(final File outputDir) {
-        this.outputDir = outputDir;
+    public void setOutputStrategy(final String outputStrategy) {
+        if (outputStrategy != null) {
+            setOutputStrategy(OutputStrategy.valueOf(outputStrategy.toUpperCase()));
+        }
     }
 
-    public void setCacheInstrumentedCode(final boolean cacheInstrumentedCode) {
-        this.cacheInstrumentedCode = cacheInstrumentedCode;
+    public void setOutputStrategy(final OutputStrategy outputStrategy) {
+        if (outputStrategy != null) {
+            this.outputStrategy = outputStrategy;
+        }
     }
 
-    public void setOutputStrategy(OutputStrategy outputStrategy) {
-        this.outputStrategy = outputStrategy;
-    }
-
-    public void setThreadCount(int threadCount) {
-        this.threadCount = threadCount;
+    public void setThreadCount(final Integer threadCount) {
+        if (threadCount != null) {
+            Validate.isTrue(threadCount > 0, "Thread count must be greater than zero");
+            this.threadCount = threadCount;
+        }
     }
 
     private static final class ErrorLogger implements STErrorListener {

@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
@@ -12,12 +13,22 @@ import static com.github.timurstrekalov.Util.toCoverage;
 
 class RunStats {
 
-    public final String runName;
+    public final File test;
+    public final String title;
 
     private final Map<String, FileStats> fileStatsMap = Maps.newTreeMap();
 
-    RunStats(final String runName) {
-        this.runName = runName;
+    RunStats(final File test) {
+        this(test, String.format("Coverage report for \"%s\"", test.getAbsolutePath()));
+    }
+
+    RunStats(final File test, final String title) {
+        this.test = test;
+        this.title = title;
+    }
+
+    String getReportName() {
+        return test.getName() + "-report.html";
     }
 
     void add(final FileStats newStats) {
