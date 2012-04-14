@@ -165,28 +165,133 @@ runStats(stats) ::= <<
     }
 </style>
 <script type="text/javascript">
-    function __coverage_toggleSection(id) {
-        var el = document.getElementById('__src_' + id);
-        if (!el) {
-            return;
+    (function () {
+        var reservedKeywords = [
+            "break",
+            "case",
+            "catch",
+            "continue",
+            "debugger",
+            "default",
+            "delete",
+            "do",
+            "else",
+            "false",
+            "finally",
+            "for",
+            "function",
+            "if",
+            "in",
+            "instanceof",
+            "new",
+            "null",
+            "return",
+            "switch",
+            "this",
+            "true",
+            "throw",
+            "try",
+            "typeof",
+            "var",
+            "void",
+            "while",
+            "with"
+        ];
+
+        var reservedKeywordsPattern = new RegExp('\\\b(' + reservedKeywords.join('|') + ')\\\b', 'g');
+        var jsStringPattern = /('.*'|".*")/g;
+        var jsNumberPattern = /\b(\d+(?:\.\d+)?)\b/g;
+
+        console.log('\\b(' + reservedKeywords.join('|') + ')\\b');
+
+        function el(type) {
+            return document.createElement(type);
         }
 
-        var show = el.style.display === 'none';
-
-        if (show) {
-            el.style.display = '';
-            window.location.hash = "#" + id;
-        } else {
-            el.style.display = 'none';
-            window.location.hash = '';
+        function withText(node, text) {
+            node.innerHTML = text;
+            return node;
         }
-    }
 
-    window.onload = function () {
-        if (window.location.hash) {
-            __coverage_toggleSection(window.location.hash.substr(1));
+        function createSourceTable(dataEl) {
+            var d = document;
+
+            var data = eval(dataEl.innerHTML);
+            var td = dataEl.parentNode;
+            td.removeChild(dataEl);
+
+            var frag = d.createDocumentFragment();
+
+            var table = el('table');
+            table.className = 'line-coverage';
+            frag.appendChild(table);
+
+            for (var i = 0, len = data.length; i < len; i++) {
+                var tr = el('tr');
+                var record = data[i];
+
+                var executable = !!record[0];
+                var timesExecuted = record[1];
+                var src = record[2];
+
+                tr.className = !executable ? 'not-executable' : timesExecuted > 0 ? 'covered' : 'not-covered';
+                table.appendChild(tr);
+
+                var lineNrNode = el('th');
+                lineNrNode.appendChild(withText(el('div'), i + 1));
+                tr.appendChild(lineNrNode);
+
+                var timesExecutedNode = el('td');
+                timesExecutedNode.className = 'times-executed';
+                timesExecutedNode.appendChild(withText(el('div'), executable ? timesExecuted : '&nbsp;'));
+                tr.appendChild(timesExecutedNode);
+
+                var srcNode = el('td');
+
+                var styledSrc = src
+                    .replace(jsStringPattern, '<span class="string">\$1</span>')
+                    .replace(jsNumberPattern, '<span class="number">\$1</span>')
+                    .replace(reservedKeywordsPattern, '<span class="keyword">\$1</span>');
+
+                srcNode.appendChild(withText(el('pre'), styledSrc));
+
+                tr.appendChild(srcNode);
+            }
+
+            td.appendChild(frag.cloneNode(true));
         }
-    };
+
+        window.__coverage_toggleSection = function (id) {
+            var d = document;
+            var srcRow = d.getElementById('__src_' + id);
+            if (!srcRow) {
+                return;
+            }
+
+            var dataEl = d.getElementById('__data_' + id);
+
+            if (dataEl) {
+                createSourceTable(dataEl);
+            }
+
+            var show = srcRow.style.display === 'none';
+
+            if (show) {
+                srcRow.style.display = '';
+                window.location.hash = "#" + id;
+            } else {
+                srcRow.style.display = 'none';
+                window.location.hash = '';
+            }
+        }
+
+        window.onload = function () {
+            if (window.location.hash) {
+                __coverage_toggleSection(window.location.hash.substr(1));
+            }
+        };
+
+    })();
 </script>
 </head>
 <body>

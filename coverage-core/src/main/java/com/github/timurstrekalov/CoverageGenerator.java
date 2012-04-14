@@ -141,7 +141,7 @@ public class CoverageGenerator {
             final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
 
             for (final RunStats runStats : allRunStats) {
-                for (final FileStats fileStats : runStats.getFileStats()) {
+                for (final FileStats fileStats : runStats) {
                     totalStats.add(fileStats);
                 }
             }

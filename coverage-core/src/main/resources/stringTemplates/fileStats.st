@@ -10,9 +10,9 @@ fileStats(fileStats) ::= <<
         </div>
     </td>
 </tr>
-<tr>
+<tr id="__src_$fileStats.href$" style="display: none;">
     <td class="line-coverage-cell" colspan="5">
-        $lineByLineCoverageReport(fileStats)$
+        $lbl_data(fileStats)$
     </td>
 </tr>
 >>

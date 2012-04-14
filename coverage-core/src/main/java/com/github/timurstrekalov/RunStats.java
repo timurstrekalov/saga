@@ -6,12 +6,13 @@ import com.google.common.collect.Maps;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 import static com.github.timurstrekalov.Util.sum;
 import static com.github.timurstrekalov.Util.toCoverage;
 
-class RunStats {
+class RunStats implements Iterable<FileStats> {
 
     public final File test;
     public final String title;
@@ -68,4 +69,8 @@ class RunStats {
         return toCoverage(getTotalStatements(), getTotalExecuted());
     }
 
+    @Override
+    public Iterator<FileStats> iterator() {
+        return getFileStats().iterator();
+    }
 }

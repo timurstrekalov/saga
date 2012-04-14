@@ -13,7 +13,7 @@ lineCoverage(record) ::= <<
         </div>
     </td>
     <td>
-        <pre>$record.line$</pre>
+        <pre>$record.lineSource$</pre>
     </td>
 </tr>
 >>

@@ -51,15 +51,12 @@ class LineCoverageRecord {
     private int timesExecuted;
     private String line;
     private boolean executable;
-    private String cssClass;
 
     LineCoverageRecord(final int lineNr, final int timesExecuted, final String line, final boolean executable) {
         this.lineNr = lineNr;
         this.timesExecuted = timesExecuted;
-        this.line = styleLine(line);
+        this.line = line;
         this.executable = executable;
-
-        cssClass = getCssClass(timesExecuted, executable);
     }
 
     private LineCoverageRecord() {
@@ -77,28 +74,8 @@ class LineCoverageRecord {
         merged.timesExecuted = l1.timesExecuted + l2.timesExecuted;
         merged.line = l1.line;
         merged.executable = l1.executable;
-        merged.cssClass = getCssClass(merged.timesExecuted, merged.executable);
 
         return merged;
-    }
-
-    private static String getCssClass(int timesExecuted, boolean executable) {
-        if (!executable) {
-            return "not-executable";
-        } else if (timesExecuted > 0) {
-            return "covered";
-        }
-
-        return "not-covered";
-    }
-
-    private static String styleLine(final String line) {
-        final String escaped = StringEscapeUtils.escapeHtml(line);
-        String styledLine = jsStringPattern.matcher(escaped).replaceAll("<span class=\"string\">$1</span>");
-        styledLine = jsNumberPattern.matcher(styledLine).replaceAll("<span class=\"number\">$1</span>");
-        styledLine = reservedKeywordsPattern.matcher(styledLine).replaceAll("<span class=\"keyword\">$1</span>");
-
-        return styledLine;
     }
 
     public int getLineNr() {
@@ -109,15 +86,16 @@ class LineCoverageRecord {
         return timesExecuted;
     }
 
-    public String getLine() {
-        return line;
+    public String getLineSource() {
+        return StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(line));
     }
 
     public boolean isExecutable() {
         return executable;
     }
 
-    public String getCssClass() {
-        return cssClass;
+    public int getExecutableAsNumber() {
+        return executable ? 1 : 0;
     }
+
 }
