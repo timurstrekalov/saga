@@ -1,15 +1,12 @@
 package com.github.timurstrekalov;
 
-import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import com.sun.istack.internal.NotNull;
 import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
@@ -26,6 +23,7 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
@@ -47,7 +45,8 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         }
     }
 
-    private static final Map<String, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
+    private static final ConcurrentMap<String, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
+    private static final ConcurrentHashMultiset<String> writtenToDisk = ConcurrentHashMultiset.create();
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
@@ -64,7 +63,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     private boolean cacheInstrumentedCode;
 
-    public ScriptInstrumenter(HtmlUnitContextFactory contextFactory, final String coverageVariableName) {
+    public ScriptInstrumenter(final HtmlUnitContextFactory contextFactory, final String coverageVariableName) {
         this.contextFactory = contextFactory;
         this.coverageVariableName = coverageVariableName;
 
@@ -118,14 +117,17 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         data.setInstrumentedSourceCode(instrumentedCode);
 
         if (cacheInstrumentedCode) {
-            instrumentedScriptCache.put(sourceName, data);
+            instrumentedScriptCache.putIfAbsent(sourceName, data);
         }
 
         if (outputInstrumentedFiles) {
             try {
-                final File outputFile = new File(outputDir, new File(sourceName).getName() + "-instrumented.js");
-                logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
-                IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
+                if (!writtenToDisk.contains(sourceName)) {
+                    final File outputFile = new File(outputDir, new File(sourceName).getName() + "-instrumented.js");
+                    logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
+                    IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
+                    writtenToDisk.add(sourceName);
+                }
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
@@ -261,6 +263,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 handleSwitchCase((SwitchCase) node);
             } else if (type == IF && parentType == IF) {
                 flattenElseIf((IfStatement) node, (IfStatement) parent);
+                data.addExecutableLine(node.getLineno(), node.getLength());
             } else if (parentType != CASE) {
                 if (parent.hasChildren()) {
                     parent.addChildBefore(newInstrumentationNode(node.getLineno()), node);
@@ -283,9 +286,9 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                         logger.warn("Cannot handle node with parent that has no children, source:\n{}", parent.toSource());
                     }
                 }
-            }
 
-            data.addExecutableLine(node.getLineno(), node.getLength());
+                data.addExecutableLine(node.getLineno(), node.getLength());
+            }
         }
 
         private Block newInstrumentedBlock(final AstNode node) {
@@ -388,6 +391,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             inner.setElement(fileName);
 
             final NumberLiteral index = new NumberLiteral();
+            index.setNumber(lineNr);
             index.setValue(Integer.toString(lineNr));
 
             outer.setElement(index);

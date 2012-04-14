@@ -5,12 +5,12 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.Validate;
 
 import java.util.List;
 
 import static com.github.timurstrekalov.Util.sum;
 import static com.github.timurstrekalov.Util.toCoverage;
-import static org.apache.commons.lang.Validate.isTrue;
 
 class FileStats {
 
@@ -60,8 +60,8 @@ class FileStats {
         final List<LineCoverageRecord> r1 = s1.getLineCoverageRecords();
         final List<LineCoverageRecord> r2 = s2.getLineCoverageRecords();
 
-        isTrue(s1.name.equals(s2.name));
-        isTrue(r1.size() == r2.size());
+        Validate.isTrue(s1.name.equals(s2.name));
+        Validate.isTrue(r1.size() == r2.size());
 
         final List<LineCoverageRecord> mergedRecords = Lists.newLinkedList();
 

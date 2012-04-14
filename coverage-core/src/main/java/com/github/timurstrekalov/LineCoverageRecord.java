@@ -1,8 +1,7 @@
 package com.github.timurstrekalov;
 
 import org.apache.commons.lang.StringEscapeUtils;
-
-import static org.apache.commons.lang.Validate.isTrue;
+import org.apache.commons.lang.Validate;
 
 class LineCoverageRecord {
 
@@ -21,13 +20,13 @@ class LineCoverageRecord {
     }
 
     public static LineCoverageRecord merge(final LineCoverageRecord l1, final LineCoverageRecord l2) {
-        isTrue(l1.lineNr == l2.lineNr);
-        isTrue(l1.line.equals(l2.line));
+        Validate.isTrue(l1.lineNr == l2.lineNr);
+        Validate.isTrue(l1.line.equals(l2.line));
 
         final LineCoverageRecord merged = new LineCoverageRecord();
 
         merged.lineNr = l1.lineNr;
-        merged.timesExecuted = l1.timesExecuted + l2.timesExecuted;
+        merged.timesExecuted = l1.timesExecuted == -1 ? -1 : l1.timesExecuted + l2.timesExecuted;
         merged.line = l1.line;
 
         return merged;
