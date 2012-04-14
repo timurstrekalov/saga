@@ -56,6 +56,8 @@ public class CoverageGenerator {
 
     private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
 
+    private int threadCount = Runtime.getRuntime().availableProcessors();
+
     public CoverageGenerator() {
         stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
     }
@@ -65,7 +67,9 @@ public class CoverageGenerator {
             throw new IOException("Couldn't create output directory");
         }
 
-        final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        logger.info("Using up to {} threads", threadCount);
+
+        final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         final CompletionService<RunStats> completionService = new ExecutorCompletionService<RunStats>(executorService);
 
         for (final File test : tests) {
@@ -258,6 +262,10 @@ public class CoverageGenerator {
 
     public void setOutputStrategy(OutputStrategy outputStrategy) {
         this.outputStrategy = outputStrategy;
+    }
+
+    public void setThreadCount(int threadCount) {
+        this.threadCount = threadCount;
     }
 
     private static final class ErrorLogger implements STErrorListener {

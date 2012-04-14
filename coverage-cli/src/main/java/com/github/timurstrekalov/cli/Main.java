@@ -26,6 +26,9 @@ public class Main {
                 "Regular expression patterns to match classes to exclude from instrumentation");
         noInstrumentPatternOpt.setArgs(Option.UNLIMITED_VALUES);
 
+        final Option threadCountOpt = new Option("t", "thread-count", true,
+                "The maximum number of threads to use (defaults to the number of cores)");
+
         final Option helpOpt = new Option("h", "help", false, "Print this message");
         final Options options = new Options();
 
@@ -35,6 +38,7 @@ public class Main {
         options.addOption(outputDirOpt);
         options.addOption(outputInstrumentedFilesOpt);
         options.addOption(noInstrumentPatternOpt);
+        options.addOption(threadCountOpt);
         options.addOption(helpOpt);
 
         try {
@@ -77,6 +81,16 @@ public class Main {
             final String[] noInstrumentPatterns = line.getOptionValues('n');
             if (noInstrumentPatterns != null) {
                 gen.setNoInstrumentPatterns(ImmutableList.copyOf(noInstrumentPatterns));
+            }
+
+            final String threadCount = line.getOptionValue('t');
+            if (threadCount != null) {
+                try {
+                    gen.setThreadCount(Integer.parseInt(threadCount));
+                } catch (final Exception e) {
+                    System.err.println("Invalid thread count");
+                    printHelpAndExit(options);
+                }
             }
 
             gen.run();

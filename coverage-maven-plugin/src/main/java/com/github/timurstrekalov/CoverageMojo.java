@@ -61,6 +61,11 @@ public class CoverageMojo extends AbstractMojo {
      */
     private OutputStrategy outputStrategy;
 
+    /**
+     * @parameter
+     */
+    private Integer threadCount;
+
     public void execute() throws MojoExecutionException {
         final CoverageGenerator gen = new CoverageGenerator();
 
@@ -94,6 +99,10 @@ public class CoverageMojo extends AbstractMojo {
 
         if (outputStrategy != null) {
             gen.setOutputStrategy(outputStrategy);
+        }
+
+        if (threadCount != null) {
+            gen.setThreadCount(threadCount);
         }
 
         try {
