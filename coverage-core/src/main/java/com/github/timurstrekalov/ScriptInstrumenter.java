@@ -12,7 +12,9 @@ import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
 import net.sourceforge.htmlunit.corejs.javascript.ast.*;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,15 +123,22 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         }
 
         if (outputInstrumentedFiles) {
-            try {
-                if (!writtenToDisk.contains(sourceName)) {
-                    final File outputFile = new File(outputDir, new File(sourceName).getName() + "-instrumented.js");
-                    logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
-                    IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
-                    writtenToDisk.add(sourceName);
+            synchronized (writtenToDisk) {
+                try {
+                    if (!writtenToDisk.contains(sourceName)) {
+                        final File file = new File(sourceName);
+                        final File fileOutputDir = new File(outputDir, DigestUtils.md5Hex(file.getParent()));
+                        FileUtils.mkdir(fileOutputDir.getAbsolutePath());
+
+                        final File outputFile = new File(fileOutputDir, file.getName() + ".js");
+
+                        logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
+                        IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
+                        writtenToDisk.add(sourceName);
+                    }
+                } catch (final IOException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
             }
         }
 

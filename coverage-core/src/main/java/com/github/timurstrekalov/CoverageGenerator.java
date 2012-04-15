@@ -80,9 +80,7 @@ public class CoverageGenerator {
     }
 
     public void run() throws IOException {
-        if (!outputDir.exists() && !outputDir.mkdirs()) {
-            throw new IOException("Couldn't create output directory: " + outputDir);
-        }
+        FileUtils.mkdir(outputDir.getAbsolutePath());
 
         @SuppressWarnings("unchecked")
         final List<File> tests = FileUtils.getFiles(baseDir, includes, excludes);
@@ -161,9 +159,7 @@ public class CoverageGenerator {
         instrumenter.setIgnorePatterns(noInstrumentPatterns);
 
         if (outputInstrumentedFiles) {
-            if (!instrumentedFileDirectory.exists() && !instrumentedFileDirectory.mkdirs()) {
-                throw new RuntimeException("Can't create " + instrumentedFileDirectory.getAbsolutePath());
-            }
+            FileUtils.mkdir(instrumentedFileDirectory.getAbsolutePath());
 
             instrumenter.setOutputDir(instrumentedFileDirectory);
             instrumenter.setOutputInstrumentedFiles(outputInstrumentedFiles);
@@ -248,9 +244,7 @@ public class CoverageGenerator {
         final URI relativeTestUri = baseDir.toURI().relativize(stats.test.toURI());
         final File fileOutputDir = new File(new File(outputDir.toURI().resolve(relativeTestUri)).getParent());
 
-        if (!fileOutputDir.exists() && !fileOutputDir.mkdirs()) {
-            throw new IOException("Couldn't create coverage report output directory: " + fileOutputDir);
-        }
+        FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
         final File outputFile = new File(fileOutputDir, stats.getReportName());
 
