@@ -3,18 +3,18 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.timurstrekalov</groupId>
-    <artifactId>coverage-root</artifactId>
+    <artifactId>saga-root</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <modules>
-        <module>coverage-core</module>
-        <module>coverage-cli</module>
-        <module>coverage-maven-plugin</module>
+        <module>saga-core</module>
+        <module>saga-cli</module>
+        <module>saga-maven-plugin</module>
     </modules>
 
     <build>
