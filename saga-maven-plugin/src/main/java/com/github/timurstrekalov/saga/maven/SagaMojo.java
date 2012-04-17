@@ -14,7 +14,7 @@ import java.io.IOException;
  * @phase verify
  * @threadSafe
  */
-public class CoverageMojo extends AbstractMojo {
+public class SagaMojo extends AbstractMojo {
 
     /**
      * @parameter
