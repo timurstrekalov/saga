@@ -81,23 +81,39 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final int lineNumber,
             final HtmlElement htmlElement) {
 
-        if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(sourceName)) {
-            final ScriptData data = instrumentedScriptCache.get(sourceName);
+        String resolvedSourceName;
+
+        if (sourceName.startsWith("script in")) {
+            resolvedSourceName = sourceName;
+        } else {
+            try {
+                resolvedSourceName = ResourceUtils.getRelativePath(sourceName,
+                        htmlPage.getWebResponse().getWebRequest().getUrl().toString(), File.separator);
+            } catch (final Exception e) {
+                logger.error(e.getMessage(), e);
+                resolvedSourceName = sourceName;
+            }
+        }
+
+        if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(resolvedSourceName)) {
+            final ScriptData data = instrumentedScriptCache.get(resolvedSourceName);
             scriptDataList.add(data);
             return data.getInstrumentedSourceCode();
         }
 
-        if (shouldIgnore(sourceName)) {
+        if (shouldIgnore(resolvedSourceName)) {
             return sourceCode;
         }
 
-        final ScriptData data = new ScriptData(sourceName, sourceCode);
+        final ScriptData data;
+
+        data = new ScriptData(resolvedSourceName, sourceCode);
         scriptDataList.add(data);
 
         final CompilerEnvirons environs = new CompilerEnvirons();
         environs.initFromContext(contextFactory.enterContext());
 
-        final AstRoot root = new Parser(environs).parse(sourceCode, sourceName, lineNumber);
+        final AstRoot root = new Parser(environs).parse(sourceCode, resolvedSourceName, lineNumber);
         root.visit(new InstrumentingVisitor(data));
 
         final String treeSource = root.toSource();
@@ -107,7 +123,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 treeSource.length());
 
         buf.append(initializingCode);
-        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, sourceName));
+        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, resolvedSourceName));
 
         for (final Integer i : data.getLineNumbersOfAllStatements()) {
             buf.append(String.format(arrayInitializer, data.getSourceName(), i));
@@ -119,14 +135,14 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         data.setInstrumentedSourceCode(instrumentedCode);
 
         if (cacheInstrumentedCode) {
-            instrumentedScriptCache.putIfAbsent(sourceName, data);
+            instrumentedScriptCache.putIfAbsent(resolvedSourceName, data);
         }
 
         if (outputInstrumentedFiles) {
             synchronized (writtenToDisk) {
                 try {
-                    if (!writtenToDisk.contains(sourceName)) {
-                        final File file = new File(sourceName);
+                    if (!writtenToDisk.contains(resolvedSourceName)) {
+                        final File file = new File(resolvedSourceName);
                         final File fileOutputDir = new File(outputDir, DigestUtils.md5Hex(file.getParent()));
                         FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
@@ -134,7 +150,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
                         logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
                         IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
-                        writtenToDisk.add(sourceName);
+                        writtenToDisk.add(resolvedSourceName);
                     }
                 } catch (final IOException e) {
                     throw new RuntimeException(e);
