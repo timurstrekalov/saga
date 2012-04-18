@@ -66,18 +66,23 @@ public class SagaMojo extends AbstractMojo {
     private Integer threadCount;
 
     public void execute() throws MojoExecutionException {
-        final CoverageGenerator gen = new CoverageGenerator(baseDir, includes, excludes, outputDir);
-
-        gen.setOutputInstrumentedFiles(outputInstrumentedFiles);
-        gen.setCacheInstrumentedCode(cacheInstrumentedCode);
-        gen.setNoInstrumentPatterns(noInstrumentPatterns);
-        gen.setOutputStrategy(outputStrategy);
-        gen.setThreadCount(threadCount);
-
         try {
-            gen.run();
-        } catch (final IOException e) {
-            throw new MojoExecutionException("Error generating coverage", e);
+
+            final CoverageGenerator gen = new CoverageGenerator(baseDir, includes, excludes, outputDir);
+
+            gen.setOutputInstrumentedFiles(outputInstrumentedFiles);
+            gen.setCacheInstrumentedCode(cacheInstrumentedCode);
+            gen.setNoInstrumentPatterns(noInstrumentPatterns);
+            gen.setOutputStrategy(outputStrategy);
+            gen.setThreadCount(threadCount);
+
+            try {
+                gen.run();
+            } catch (final IOException e) {
+                throw new MojoExecutionException("Error generating coverage", e);
+            }
+        } catch (final IllegalArgumentException e) {
+            throw new MojoExecutionException("Caught IllegalArgumentException: illegal POM parameters?", e);
         }
     }
 

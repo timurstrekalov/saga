@@ -71,6 +71,8 @@ public class CoverageGenerator {
     }
 
     public CoverageGenerator(final File baseDir, final String includes, final String excludes, final File outputDir) {
+        Validate.isTrue(baseDir.exists(), "baseDir doesn't exist");
+
         this.baseDir = baseDir;
         this.includes = includes;
         this.excludes = excludes;
