@@ -47,7 +47,7 @@ runStats(stats) ::= <<
         font-size: 1.1em;
     }
 
-    .stats > thead tr:first-child th {
+    .stats > thead > tr:first-child th {
         background-color: #ccc;
     }
 
@@ -65,8 +65,13 @@ runStats(stats) ::= <<
         border-bottom-right-radius: 4px;
     }
 
-    .stats > tbody > tr:nth-child(4n + 1) td {
+    .stats > tbody > tr:nth-child(4n + 1) {
         background-color: #eee;
+    }
+
+    .stats > tbody > tr:nth-child(2n + 1):hover {
+        background-color: #ddd;
+        cursor: pointer;
     }
 
     a, a:hover, a:visited, a:active {
@@ -91,10 +96,8 @@ runStats(stats) ::= <<
     }
 
     .bar > span {
-        background-color: #00dd00;
-
+        background-color: chartreuse;
         border-radius: 6px;
-
         display: block;
         height: 100%;
     }
@@ -136,19 +139,19 @@ runStats(stats) ::= <<
 
     .line-coverage th div,
     .line-coverage td.times-executed div {
-         border-radius: 8px;
+        border-radius: 8px;
     }
 
     .line-coverage td pre {
-         margin-left: 8px;
+        margin-left: 8px;
     }
 
     .line-coverage tr.covered td.times-executed div {
-         background-color: lightgreen;
+        background-color: lightgreen;
     }
 
     .line-coverage tr.not-covered td.times-executed div {
-         background-color: lightpink;
+        background-color: lightpink;
     }
 
     .line-coverage span.keyword {
