@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 /**
- * Courtesy of <a href="http://stackoverflow.com/questions/204784/how-to-construct-a-relative-path-in-java-from-two-absolute-paths-or-urls">Don</a>
+ * Courtesy of <a href="http://stackoverflow.com/a/3054692/1326795">Don</a>
  */
 public class ResourceUtils {
 
