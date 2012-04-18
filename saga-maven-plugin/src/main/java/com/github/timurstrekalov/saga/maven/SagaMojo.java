@@ -2,7 +2,6 @@ package com.github.timurstrekalov.saga.maven;
 
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
 import com.github.timurstrekalov.saga.core.OutputStrategy;
-import com.google.common.collect.ImmutableList;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 
@@ -71,7 +70,7 @@ public class SagaMojo extends AbstractMojo {
 
         gen.setOutputInstrumentedFiles(outputInstrumentedFiles);
         gen.setCacheInstrumentedCode(cacheInstrumentedCode);
-        gen.setNoInstrumentPatterns(ImmutableList.copyOf(noInstrumentPatterns));
+        gen.setNoInstrumentPatterns(noInstrumentPatterns);
         gen.setOutputStrategy(outputStrategy);
         gen.setThreadCount(threadCount);
 
