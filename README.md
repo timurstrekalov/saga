@@ -1,9 +1,10 @@
 What? Another coverage tool?
 ============================
 
-Indeed. I've been using JSCoverage a lot - and it proved to be a pain to use in a Continuous Integration environment. In
-desperation, I wrote the [jscoverage-maven-plugin](https://github.com/timurstrekalov/jscoverage-maven-plugin), a Maven
-wrapper around [JSCoverage](http://siliconforks.com/jscoverage/), which did the job, except for some huge drawbacks:
+Indeed. I've been using [JSCoverage](http://siliconforks.com/jscoverage/) a lot - and it proved to be a pain to use in
+a Continuous Integration environment. In desperation, I wrote the
+[jscoverage-maven-plugin](https://github.com/timurstrekalov/jscoverage-maven-plugin), a
+[Maven](http://maven.apache.org/) wrapper around JSCoverage, which did the job, except for some huge drawbacks:
 
 1. It directly depended on JSCoverage.
 2. It only generated the statements/executed/coverage report, even though JSCoverage itself made it possible to see
