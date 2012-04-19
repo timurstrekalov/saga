@@ -47,12 +47,11 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         }
     }
 
-    private static final Pattern INLINE_SCRIPT_RE = Pattern.compile("script in (.+) from \\((\\d+), (\\d+)\\) to \\((\\d+), (\\d+)\\)");
+    private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
+    private static final Pattern inlineScriptRe = Pattern.compile("script in (.+) from \\((\\d+), (\\d+)\\) to \\((\\d+), (\\d+)\\)");
     private static final ConcurrentMap<String, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
     private static final ConcurrentHashMultiset<String> writtenToDisk = ConcurrentHashMultiset.create();
-
-    private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
     private final HtmlUnitContextFactory contextFactory;
     private final String coverageVariableName;
@@ -83,7 +82,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final int lineNumber,
             final HtmlElement htmlElement) {
 
-        final String normalizedSourceName = INLINE_SCRIPT_RE.matcher(sourceName).replaceAll("$1__from_$2_$3_to_$4_$5");
+        final String normalizedSourceName = inlineScriptRe.matcher(sourceName).replaceAll("$1__from_$2_$3_to_$4_$5");
 
         if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(normalizedSourceName)) {
             final ScriptData data = instrumentedScriptCache.get(normalizedSourceName);
