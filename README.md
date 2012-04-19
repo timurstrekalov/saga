@@ -26,7 +26,8 @@ The good things about Saga
 
 1. It's Java. Wait, scratch that, that's not necessarily a good thing. However, it's written in Java for a reason: the
     idea was that it should be extremely simple to integrate it with Maven and any other build tool. Another reason is
-    the fact that it heavily relies on HtmlUnit and its internals for running tests and instrumentation.
+    the fact that it heavily relies on [HtmlUnit](http://htmlunit.sourceforge.net/) and its internals for running
+    tests and instrumentation.
 2. It can generate both total coverage and per-test reports. The good thing about it is that you get more accurate
     results - unit tests are designed to cover specific units. If your total coverage report shows you high coverage
     for a unit, that does not necessarily mean that you've covered the unit that much. Actually, it doesn't mean you've
