@@ -71,21 +71,67 @@ And that's it. Of course, there are some more configuration options, if you feel
     <thead>
         <tr>
             <th>Parameter name</th>
-            <th>Required?</th>
             <th>Description</th>
             <th>Default value</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>baseDir</td>
-            <td><strong>true</strong></td>
+            <td><strong>baseDir</strong></td>
             <td>The base directory for the test search</td>
             <td>none</td>
         </tr>
+        <tr>
+            <td><strong>includes</strong></td>
+            <td>
+                A comma-separated list of [Ant-style patterns](http://ant.apache.org/manual/dirtasks.html#patterns)
+                to include in the search for test runners
+            </td>
+            <td>none</td>
+        </tr>
+        <tr>
+            <td>excludes</td>
+            <td>
+                A comma-separated list of [Ant-style patterns](http://ant.apache.org/manual/dirtasks.html#patterns)
+                to exclude from the search for test runners
+            </td>
+            <td>none</td>
+        </tr>
+        <tr>
+            <td><strong>outputDir</strong></td>
+            <td>The output directory for coverage reports</td>
+            <td>none</td>
+        </tr>
+        <tr>
+            <td>outputInstrumentedFiles</td>
+            <td>Whether to output instrumented files. Will be written to ${outputDir}/instrumented</td>
+            <td>false</td>
+        </tr>
+        <tr>
+            <td>noInstrumentPatterns</td>
+            <td>A list of regular expressions to match source file paths to be excluded from instrumentation</td>
+            <td>none</td>
+        </tr>
+        <tr>
+            <td>cacheInstrumentedCode</td>
+            <td>
+                Whether to cache instrumented source code. It's entirely possible that two tests might load some of the
+                same resources - this would prevent them from being instrumented every time, but rather cache them for
+                the whole coverage run.
+            </td>
+            <td>true</td>
+        </tr>
+        <tr>
+            <td>outputStrategy</td>
+            <td>One of TOTAL, PER_TEST or BOTH. Pretty self-explanatory.</td>
+            <td>TOTAL</td>
+        </tr>
+        <tr>
+            <td>threadCount</td>
+            <td>The maximum number of threads to use.</td>
+            <td>Runtime.getRuntime().availableProcessors()</td>
+        </tr>
     </tbody>
-    <tr>
-    </tr>
 </table>
 
 Why the name?
