@@ -67,7 +67,11 @@ Add the following piece of code:
         </configuration>
     </plugin>
 
-And that's it. Of course, there are some more configuration options, if you feel like it:
+And that's it. Wait, you also have to do
+
+    mvn verify
+
+Of course, there are some more configuration options, if you feel like it:
 
 <table>
     <thead>
