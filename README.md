@@ -84,16 +84,18 @@ And that's it. Of course, there are some more configuration options, if you feel
         <tr>
             <td><strong>includes</strong></td>
             <td>
-                A comma-separated list of [Ant-style patterns](http://ant.apache.org/manual/dirtasks.html#patterns)
-                to include in the search for test runners
+                A comma-separated list of
+                <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a> to include in
+                the search for test runners
             </td>
             <td>none</td>
         </tr>
         <tr>
             <td>excludes</td>
             <td>
-                A comma-separated list of [Ant-style patterns](http://ant.apache.org/manual/dirtasks.html#patterns)
-                to exclude from the search for test runners
+                A comma-separated list of
+                <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a> to exclude from
+                the search for test runners
             </td>
             <td>none</td>
         </tr>
