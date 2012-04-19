@@ -112,6 +112,18 @@ function Class(param) {
         a: 123
     }
 
+    if (false) {
+        // testing consecutive ranges of missed lines
+        a++;
+        b++;
+        z++;
+
+        a++;
+        b++;
+
+        var h = 'qwe';
+    }
+
     for (var i = 0; i < 25; i++) {
         b++;
 

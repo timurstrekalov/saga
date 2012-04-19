@@ -39,10 +39,6 @@ runStats(stats) ::= <<
         padding: 4px 10px;
     }
 
-    .stats > tbody > tr > td.line-coverage-cell {
-        padding: 0px;
-    }
-
     .stats > thead th {
         font-size: 1.1em;
     }
@@ -166,6 +162,10 @@ runStats(stats) ::= <<
     .line-coverage span.number {
         color: #0000ff;
     }
+
+    .line-coverage a {
+        color: black;
+    }
 </style>
 <script type="text/javascript">
     (function () {
@@ -202,7 +202,7 @@ runStats(stats) ::= <<
         ];
 
         var reservedKeywordsPattern = new RegExp('\\\b(' + reservedKeywords.join('|') + ')\\\b', 'g');
-        var jsStringPattern = /('.*'|".*")/g;
+        var jsStringPattern = /('[^']*'|"[^"]*")/g;
         var jsNumberPattern = /\b(\d+(?:\.\d+)?)\b/g;
 
         function el(type) {
@@ -214,7 +214,61 @@ runStats(stats) ::= <<
             return node;
         }
 
-        function createSourceTable(dataEl) {
+        function maybeAppendMissedLines(id, frag, missed, data) {
+            if (missed.length === 0) {
+                return;
+            }
+
+            var rangeAnchors = [];
+            var range;
+
+            for (var i = 0, len = missed.length; i < len; i++) {
+                var start = missed[i];
+                var end = start;
+
+                range = [start];
+
+                for (var j = i + 1; j < len; j++) {
+                    var missedLineNr = missed[j];
+                    var consecutive = false;
+
+                    // consecutive missed lines
+                    if (missedLineNr === end + 1) {
+                        consecutive = true;
+                    } else {
+                        // let's check if all lines in between are not executable
+                        var dataIdx = end;
+
+                        while (dataIdx < missedLineNr) {
+                            if (data[dataIdx][0] > -1) {
+                                if (data[dataIdx][0] === 0) {
+                                    missedLineNr = dataIdx + 1;
+                                    consecutive = true;
+                                }
+
+                                break;
+                            }
+
+                            dataIdx++;
+                        }
+                    }
+
+                    if (consecutive) {
+                        end = missedLineNr;
+                        i = j;
+                    }
+                }
+
+                range[1] = end;
+
+                var rangeStr = start === end ? start : start + '-' + end;
+                rangeAnchors.push('<a href="' + '#' + id + '-' + start + '">' + rangeStr + '</a>');
+            }
+
+            frag.appendChild(withText(el('div'), 'Missed lines: ' + rangeAnchors.join(', ')));
+        }
+
+        function createSourceTable(id, dataEl) {
             var d = document;
 
             var data = eval(dataEl.innerHTML);
@@ -225,7 +279,8 @@ runStats(stats) ::= <<
 
             var table = el('table');
             table.className = 'line-coverage';
-            frag.appendChild(table);
+
+            var missed = [];
 
             for (var i = 0, len = data.length; i < len; i++) {
                 var tr = el('tr');
@@ -234,12 +289,22 @@ runStats(stats) ::= <<
                 var timesExecuted = record[0];
                 var src = record[1];
                 var executable = timesExecuted > -1;
+                var lineNr = i + 1;
+
+                if (timesExecuted === 0) {
+                    missed.push(lineNr);
+                }
 
                 tr.className = !executable ? 'not-executable' : timesExecuted > 0 ? 'covered' : 'not-covered';
                 table.appendChild(tr);
 
                 var lineNrNode = el('th');
-                lineNrNode.appendChild(withText(el('div'), i + 1));
+
+                var anchor = el('a');
+                anchor.setAttribute('name', id + '-' + lineNr);
+                anchor.appendChild(withText(el('div'), lineNr));
+
+                lineNrNode.appendChild(anchor);
                 tr.appendChild(lineNrNode);
 
                 var timesExecutedNode = el('td');
@@ -259,11 +324,16 @@ runStats(stats) ::= <<
                 tr.appendChild(srcNode);
             }
 
+            maybeAppendMissedLines(id, frag, missed, data);
+            frag.appendChild(table);
+
             td.appendChild(frag.cloneNode(true));
         }
 
-        window.__coverage_toggleSection = function (id) {
+        window.__coverage_toggleSection = function (hash) {
             var d = document;
+            var id = hash.indexOf('-') > -1 ? hash.substring(0, hash.indexOf('-')) : hash;
+
             var srcRow = d.getElementById('__src_' + id);
             if (!srcRow) {
                 return;
@@ -272,14 +342,14 @@ runStats(stats) ::= <<
             var dataEl = d.getElementById('__data_' + id);
 
             if (dataEl) {
-                createSourceTable(dataEl);
+                createSourceTable(id, dataEl);
             }
 
             var show = srcRow.style.display === 'none';
 
             if (show) {
                 srcRow.style.display = '';
-                window.location.hash = "#" + id;
+                window.location.hash = "#" + hash;
             } else {
                 srcRow.style.display = 'none';
                 window.location.hash = '';
