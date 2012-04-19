@@ -43,16 +43,8 @@
     <modules>
         <module>saga-core</module>
         <module>saga-maven-plugin</module>
+        <module>saga-cli</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>all</id>
-            <modules>
-                <module>saga-cli</module>
-            </modules>
-        </profile>
-    </profiles>
 
     <build>
         <pluginManagement>
