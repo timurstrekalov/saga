@@ -7,24 +7,32 @@ import com.google.common.collect.Lists;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.Validate;
 
+import java.io.File;
 import java.util.List;
 
 class FileStats {
 
-    public final String name;
+    public final String fullName;
+    public final String fileName;
+    public final String parentName;
     public final String id;
     public final List<LineCoverageRecord> lineCoverageRecords;
 
-    FileStats(final String name,
+    FileStats(final String fullName,
               final List<LineCoverageRecord> lineCoverageRecords) {
 
-        this.name = name;
+        this.fullName = fullName;
+
+        final File file = new File(fullName);
+        fileName = file.getName();
+        parentName = file.getParent();
+
         this.id = generateId();
         this.lineCoverageRecords = lineCoverageRecords;
     }
 
     private String generateId() {
-        return DigestUtils.md5Hex(name);
+        return DigestUtils.md5Hex(fullName);
     }
 
     public List<LineCoverageRecord> getLineCoverageRecords() {
@@ -57,7 +65,7 @@ class FileStats {
         final List<LineCoverageRecord> r1 = s1.getLineCoverageRecords();
         final List<LineCoverageRecord> r2 = s2.getLineCoverageRecords();
 
-        Validate.isTrue(s1.name.equals(s2.name));
+        Validate.isTrue(s1.fullName.equals(s2.fullName));
         Validate.isTrue(r1.size() == r2.size());
 
         final List<LineCoverageRecord> mergedRecords = Lists.newLinkedList();
@@ -69,6 +77,6 @@ class FileStats {
             mergedRecords.add(LineCoverageRecord.merge(l1, l2));
         }
 
-        return new FileStats(s1.name, mergedRecords);
+        return new FileStats(s1.fullName, mergedRecords);
     }
 }

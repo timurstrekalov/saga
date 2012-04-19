@@ -1,6 +1,6 @@
 fileStats(fileStats) ::= <<
 <tr onclick="__coverage_toggleSection('$fileStats.id$'); return false;">
-    <td><a href="#">$fileStats.name$</a></td>
+    <td><a href="#">$if(fileStats.parentName)$$fileStats.parentName$/$endif$<strong>$fileStats.fileName$</strong></a></td>
     <td class="statements">$fileStats.statements$</td>
     <td class="executed">$fileStats.executed$</td>
     <td class="coverage">$fileStats.coverage$%</td>
