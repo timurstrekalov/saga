@@ -79,7 +79,7 @@ And that's it. Of course, there are some more configuration options, if you feel
     <tbody>
         <tr>
             <td>baseDir</td>
-            <td>*true*</td>
+            <td><strong>true</strong></td>
             <td>The base directory for the test search</td>
             <td>none</td>
         </tr>
