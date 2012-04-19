@@ -104,7 +104,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         environs.initFromContext(contextFactory.enterContext());
 
         final AstRoot root = new Parser(environs).parse(sourceCode, normalizedSourceName, lineNumber);
-        root.visit(new InstrumentingVisitor(data));
+        root.visit(new InstrumentingVisitor(data, lineNumber - 1));
 
         final String treeSource = root.toSource();
         final StringBuilder buf = new StringBuilder(
@@ -188,9 +188,11 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private class InstrumentingVisitor implements NodeVisitor {
 
         private final ScriptData data;
+        private final int lineNumberOffset;
 
-        public InstrumentingVisitor(final ScriptData data) {
+        public InstrumentingVisitor(final ScriptData data, final int lineNumberOffset) {
             this.data = data;
+            this.lineNumberOffset = lineNumberOffset;
         }
 
         @Override
@@ -278,10 +280,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 handleSwitchCase((SwitchCase) node);
             } else if (type == IF && parentType == IF) {
                 flattenElseIf((IfStatement) node, (IfStatement) parent);
-                data.addExecutableLine(node.getLineno(), node.getLength());
+                data.addExecutableLine(getActualLineNumber(node), node.getLength());
             } else if (parentType != CASE) {
                 if (parent.hasChildren()) {
-                    parent.addChildBefore(newInstrumentationNode(node.getLineno()), node);
+                    parent.addChildBefore(newInstrumentationNode(getActualLineNumber(node)), node);
                 } else {
                     // if, else, while, do, for without {} around their respective 'blocks' for some reason
                     // don't have children. Meh. Creating blocks to ease instrumentation.
@@ -302,14 +304,18 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                     }
                 }
 
-                data.addExecutableLine(node.getLineno(), node.getLength());
+                data.addExecutableLine(getActualLineNumber(node), node.getLength());
             }
+        }
+
+        private int getActualLineNumber(final AstNode node) {
+            return node.getLineno() - lineNumberOffset;
         }
 
         private Block newInstrumentedBlock(final AstNode node) {
             final Block block = new Block();
             block.addChild(node);
-            block.addChildBefore(newInstrumentationNode(node.getLineno()), node);
+            block.addChildBefore(newInstrumentationNode(getActualLineNumber(node)), node);
             return block;
         }
 
@@ -329,7 +335,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final List<AstNode> newStatements = Lists.newArrayList();
 
             for (final AstNode statement : switchCase.getStatements()) {
-                final int lineNr = statement.getLineno();
+                final int lineNr = getActualLineNumber(statement);
                 data.addExecutableLine(lineNr, switchCase.getLength());
 
                 newStatements.add(newInstrumentationNode(lineNr));
@@ -376,7 +382,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
             ifStatement.setElsePart(block);
 
-            final int lineNr = elseIfStatement.getLineno();
+            final int lineNr = getActualLineNumber(elseIfStatement);
 
             data.addExecutableLine(lineNr, elseIfStatement.getLength());
             block.addChildBefore(newInstrumentationNode(lineNr), elseIfStatement);
