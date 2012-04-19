@@ -26,6 +26,10 @@ runStats(stats) ::= <<
         width: 100%;
     }
 
+    .stats-header th {
+        color: white;
+    }
+
     .stats-header th,
     .stats td.statements,
     .stats td.executed,
@@ -44,7 +48,7 @@ runStats(stats) ::= <<
     }
 
     .stats > thead > tr:first-child th {
-        background-color: #ccc;
+        background-color: #758691;
     }
 
     .stats > thead th:first-child,
@@ -62,16 +66,20 @@ runStats(stats) ::= <<
     }
 
     .stats > tbody > tr:nth-child(4n + 1) {
-        background-color: #eee;
+        background-color: #e7e8e9;
     }
 
-    .stats > tbody > tr:nth-child(2n + 1):hover {
-        background-color: #ddd;
+    .stats > tbody > tr:nth-child(2n + 1) {
         cursor: pointer;
     }
 
+    .stats > tbody > tr:nth-child(2n + 1):hover {
+        background-color: #b1c7d4;
+    }
+
     a, a:hover, a:visited, a:active {
-        color: #0000ff;
+        color: black;
+        text-decoration: none;
     }
 
     .bar-container {
@@ -82,7 +90,7 @@ runStats(stats) ::= <<
 
     .bar {
         border-radius: 8px;
-        background-color: #555;
+        background-color: black;
 
         padding: 2px;
 
@@ -92,7 +100,7 @@ runStats(stats) ::= <<
     }
 
     .bar > span {
-        background-color: chartreuse;
+        background-color: #aedb4b;
         border-radius: 6px;
         display: block;
         height: 100%;
@@ -105,7 +113,7 @@ runStats(stats) ::= <<
     }
 
     .line-coverage th {
-        border-right: 1px solid #ccc;
+        border-right: 1px solid #758691;
     }
 
     .line-coverage th div,
@@ -143,11 +151,11 @@ runStats(stats) ::= <<
     }
 
     .line-coverage tr.covered td.times-executed div {
-        background-color: lightgreen;
+        background-color: #aedb4b;
     }
 
     .line-coverage tr.not-covered td.times-executed div {
-        background-color: lightpink;
+        background-color: #ff8134;
     }
 
     .line-coverage span.keyword {
@@ -165,6 +173,11 @@ runStats(stats) ::= <<
 
     .line-coverage a {
         color: black;
+    }
+
+    .line-coverage-cell > div > a {
+        color: blue;
+        text-decoration: underline;
     }
 </style>
 <script type="text/javascript">
