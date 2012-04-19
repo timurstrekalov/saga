@@ -17,7 +17,6 @@ import org.stringtemplate.v4.misc.STMessage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -199,8 +198,6 @@ public class CoverageGenerator {
             final Scanner in = new Scanner(data.getSourceCode());
             final NativeObject coverageData = (NativeObject) allCoverageData.get(data.getSourceName());
 
-            final String jsFileName = data.getSourceName();
-
             final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
 
             for (int lineCount = 1, lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext();
@@ -229,14 +226,7 @@ public class CoverageGenerator {
                 lineCoverageRecords.add(new LineCoverageRecord(lineCount, timesLineExecuted, line));
             }
 
-            try {
-                final String name = jsFileName.startsWith("script in ") ? jsFileName :
-                        new URI(jsFileName).normalize().toString();
-
-                runStats.add(new FileStats(name, lineCoverageRecords));
-            } catch (final URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
+            runStats.add(new FileStats(data.getSourceName(), lineCoverageRecords));
         }
 
         return runStats;

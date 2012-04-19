@@ -47,6 +47,8 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         }
     }
 
+    private static final Pattern INLINE_SCRIPT_RE = Pattern.compile("script in (.+) from \\((\\d+), (\\d+)\\) to \\((\\d+), (\\d+)\\)");
+
     private static final ConcurrentMap<String, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
     private static final ConcurrentHashMultiset<String> writtenToDisk = ConcurrentHashMultiset.create();
 
@@ -81,39 +83,27 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final int lineNumber,
             final HtmlElement htmlElement) {
 
-        String resolvedSourceName;
+        final String normalizedSourceName = INLINE_SCRIPT_RE.matcher(sourceName).replaceAll("$1__from_$2_$3_to_$4_$5");
 
-        if (sourceName.startsWith("script in")) {
-            resolvedSourceName = sourceName;
-        } else {
-            try {
-                resolvedSourceName = ResourceUtils.getRelativePath(sourceName,
-                        htmlPage.getWebResponse().getWebRequest().getUrl().toString(), File.separator);
-            } catch (final Exception e) {
-                logger.error(e.getMessage(), e);
-                resolvedSourceName = sourceName;
-            }
-        }
-
-        if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(resolvedSourceName)) {
-            final ScriptData data = instrumentedScriptCache.get(resolvedSourceName);
+        if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(normalizedSourceName)) {
+            final ScriptData data = instrumentedScriptCache.get(normalizedSourceName);
             scriptDataList.add(data);
             return data.getInstrumentedSourceCode();
         }
 
-        if (shouldIgnore(resolvedSourceName)) {
+        if (shouldIgnore(normalizedSourceName)) {
             return sourceCode;
         }
 
         final ScriptData data;
 
-        data = new ScriptData(resolvedSourceName, sourceCode);
+        data = new ScriptData(normalizedSourceName, sourceCode);
         scriptDataList.add(data);
 
         final CompilerEnvirons environs = new CompilerEnvirons();
         environs.initFromContext(contextFactory.enterContext());
 
-        final AstRoot root = new Parser(environs).parse(sourceCode, resolvedSourceName, lineNumber);
+        final AstRoot root = new Parser(environs).parse(sourceCode, normalizedSourceName, lineNumber);
         root.visit(new InstrumentingVisitor(data));
 
         final String treeSource = root.toSource();
@@ -123,7 +113,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 treeSource.length());
 
         buf.append(initializingCode);
-        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, resolvedSourceName));
+        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, normalizedSourceName));
 
         for (final Integer i : data.getLineNumbersOfAllStatements()) {
             buf.append(String.format(arrayInitializer, data.getSourceName(), i));
@@ -135,14 +125,14 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         data.setInstrumentedSourceCode(instrumentedCode);
 
         if (cacheInstrumentedCode) {
-            instrumentedScriptCache.putIfAbsent(resolvedSourceName, data);
+            instrumentedScriptCache.putIfAbsent(normalizedSourceName, data);
         }
 
         if (outputInstrumentedFiles) {
             synchronized (writtenToDisk) {
                 try {
-                    if (!writtenToDisk.contains(resolvedSourceName)) {
-                        final File file = new File(resolvedSourceName);
+                    if (!writtenToDisk.contains(normalizedSourceName)) {
+                        final File file = new File(normalizedSourceName);
                         final File fileOutputDir = new File(outputDir, DigestUtils.md5Hex(file.getParent()));
                         FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
@@ -150,7 +140,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
                         logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
                         IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
-                        writtenToDisk.add(resolvedSourceName);
+                        writtenToDisk.add(normalizedSourceName);
                     }
                 } catch (final IOException e) {
                     throw new RuntimeException(e);

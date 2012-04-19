@@ -6,29 +6,47 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
 
 class FileStats {
 
+    private static final Logger logger = LoggerFactory.getLogger(FileStats.class);
+
     public final String fullName;
+    public final String relativeName;
     public final String fileName;
     public final String parentName;
     public final String id;
     public final List<LineCoverageRecord> lineCoverageRecords;
 
-    FileStats(final String fullName,
-              final List<LineCoverageRecord> lineCoverageRecords) {
-
+    FileStats(final String fullName, final List<LineCoverageRecord> lineCoverageRecords) {
         this.fullName = fullName;
+        this.relativeName = getRelativeName(fullName);
 
-        final File file = new File(fullName);
+        final File file = new File(relativeName);
         fileName = file.getName();
         parentName = file.getParent();
 
         this.id = generateId();
         this.lineCoverageRecords = lineCoverageRecords;
+    }
+
+    private String getRelativeName(String fullName) {
+        String relativeName;
+
+        try {
+            relativeName = ResourceUtils.getRelativePath(fullName,
+                    new File(System.getProperty("user.dir")).toURI().toString(), File.separator);
+        } catch (final Exception e) {
+            logger.debug(e.getMessage(), e);
+            relativeName = fullName;
+        }
+
+        return relativeName;
     }
 
     private String generateId() {
