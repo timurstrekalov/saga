@@ -1,4 +1,4 @@
-![Screenshot of example report](http://i41.tinypic.com/2s78e9f.png)
+![Screenshot of example report](http://i39.tinypic.com/zyitzt.jpg)
 
 What? Another coverage tool?
 ============================
