@@ -1,7 +1,7 @@
+![Example report screenshot](http://i41.tinypic.com/vn2mq8.png)
+
 What? Another coverage tool?
 ============================
-
-![Example report screenshot](http://i41.tinypic.com/vn2mq8.png)
 
 Indeed. I've been using [JSCoverage](http://siliconforks.com/jscoverage/) a lot - and it proved to be a pain to use in
 a Continuous Integration environment. In desperation, I wrote the
