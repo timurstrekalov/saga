@@ -36,7 +36,7 @@ The good things about Saga
     for a unit, that does not necessarily mean that you've covered the unit that much. Actually, it doesn't mean you've
     covered it at all - it just means that some test might have invoked some parts of that unit as a side effect.
 3. It has a pretty coverage report, especially after implementing the suggestions of
-    [this guy](https://github.com/vectart) :)
+    [Marat Dyatko](https://github.com/vectart) :)
 4. It's already in [Maven Central](http://repo1.maven.org/) and constantly synced, so adding it to your build cycle
     is pretty straightforward.
 5. It just works. There's very little configuration, and I'd like to think that the defaults are sensible enough.
