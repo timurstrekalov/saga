@@ -253,8 +253,12 @@ runStats(stats) ::= <<
             "with"
         ];
 
+        String.prototype.reverse = function () {
+            return this.split('').reverse().join('');
+        };
+
         var reservedKeywordsPattern = new RegExp('\\\b(' + reservedKeywords.join('|') + ')\\\b', 'g');
-        var jsStringPattern = /('[^']*'|"[^"]*")/g;
+        var jsStringPattern = /('(?!\\\').*'|"(?!\\\").*")/g;
         var jsNumberPattern = /\b(\d+(?:\.\d+)?)\b/g;
 
         function el(type) {
@@ -367,7 +371,7 @@ runStats(stats) ::= <<
                 var srcNode = el('td');
 
                 var styledSrc = src
-                    .replace(jsStringPattern, '<span class="string">\$1</span>')
+                    .reverse().replace(jsStringPattern, '>naps/<\$1>"gnirts"=ssalc naps<').reverse()
                     .replace(jsNumberPattern, '<span class="number">\$1</span>')
                     .replace(reservedKeywordsPattern, '<span class="keyword">\$1</span>');
 
