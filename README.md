@@ -51,7 +51,7 @@ Add the following piece of code:
     <plugin>
         <groupId>com.github.timurstrekalov</groupId>
         <artifactId>saga-maven-plugin</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.4</version>
         <executions>
             <execution>
                 <phase>verify</phase>
