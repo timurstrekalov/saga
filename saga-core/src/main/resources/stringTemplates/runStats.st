@@ -30,11 +30,18 @@ runStats(stats) ::= <<
         color: white;
     }
 
-    .stats-header th,
+    .stats-header th {
+        text-align: right;
+    }
+    
+    .stats-header th:first-child {
+        text-align: left;
+    }
+
     .stats td.statements,
     .stats td.executed,
     .stats td.coverage {
-        text-align: center;
+        text-align: right;
     }
 
     .stats > thead th,
@@ -44,7 +51,7 @@ runStats(stats) ::= <<
     }
 
     .stats > thead th {
-        font-size: 1.1em;
+        font-size: 0.85em;
     }
 
     .stats > thead > tr:first-child th {
@@ -89,21 +96,42 @@ runStats(stats) ::= <<
     }
 
     .bar {
-        border-radius: 8px;
-        background-color: black;
-
-        padding: 2px;
-
+        background-color: #DDD;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 8px 8px 8px 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.5);
+        height: 7px;
+        padding: 1px;
         position: relative;
-        height: 16px;
         width: 100%;
     }
 
     .bar > span {
-        background-color: #aedb4b;
-        border-radius: 6px;
+        background-color: #AEDB4B;
+        border-radius: 6px 6px 6px 6px;
+        box-shadow: 0 -2px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 -1px 0 rgba(0, 0, 0, 0.15) inset;
         display: block;
         height: 100%;
+    }
+
+    .bar > span:before {
+        position: absolute;
+        width: 25%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        border-right: 1px solid rgba(0,0,0,0.1);
+        content: ' ';
+    }
+    .bar > span:after {
+        position: absolute;
+        width: 25%;
+        height: 100%;
+        left: 50%;
+        top: 0;
+        border-left: 1px solid rgba(0,0,0,0.1);
+        border-right: 1px solid rgba(0,0,0,0.1);
+        content: ' ';
     }
 
     /* line by line coverage styles */
@@ -126,8 +154,8 @@ runStats(stats) ::= <<
     }
 
     .line-coverage td div {
-        padding: 1px 6px;
-        margin: 0px 8px;
+        padding: 2px 6px 2px 4px;
+        margin: 0;
     }
 
     .line-coverage th,
@@ -141,9 +169,11 @@ runStats(stats) ::= <<
         font-family: Courier New;
     }
 
-    .line-coverage th div,
+    .line-coverage th div, 
     .line-coverage td.times-executed div {
-        border-radius: 8px;
+        border-radius: 0 5px 5px 0;
+        color: rgba(0, 0, 0, 0.8);
+        font-size: 0.9em;
     }
 
     .line-coverage td pre {
@@ -175,9 +205,18 @@ runStats(stats) ::= <<
         color: black;
     }
 
+    .line-coverage-cell > div {
+        color: #FF8134;
+    }
+
     .line-coverage-cell > div > a {
-        color: blue;
+        color: #FF8134;
+        font-weight: bold;
         text-decoration: underline;
+    }
+
+    .stats > thead td {
+        font-weight: bold;
     }
 </style>
 <script type="text/javascript">
@@ -322,7 +361,7 @@ runStats(stats) ::= <<
 
                 var timesExecutedNode = el('td');
                 timesExecutedNode.className = 'times-executed';
-                timesExecutedNode.appendChild(withText(el('div'), executable ? timesExecuted : '&nbsp;'));
+                timesExecutedNode.appendChild(withText(el('div'), executable ? (timesExecuted || '!') : '&nbsp;'));
                 tr.appendChild(timesExecutedNode);
 
                 var srcNode = el('td');
@@ -365,7 +404,7 @@ runStats(stats) ::= <<
                 window.location.hash = "#" + hash;
             } else {
                 srcRow.style.display = 'none';
-                window.location.hash = '';
+                window.location.hash = '#closed';
             }
         }
 
@@ -393,7 +432,7 @@ runStats(stats) ::= <<
                 <td>Total</td>
                 <td class="statements">$stats.totalStatements$</td>
                 <td class="executed">$stats.totalExecuted$</td>
-                <td class="coverage">$stats.totalCoverage$%</td>
+                <td class="coverage">$stats.totalCoverage$&thinsp;%</td>
                 <td class="bar-container">
                     <div class="bar">
                         <span style="width: $stats.totalCoverage$%;"></span>

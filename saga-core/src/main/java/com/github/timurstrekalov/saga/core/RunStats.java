@@ -5,9 +5,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 class RunStats implements Iterable<FileStats> {
 
@@ -41,7 +39,16 @@ class RunStats implements Iterable<FileStats> {
     }
 
     public Collection<FileStats> getFileStats() {
-        return fileStatsMap.values();
+        final List<FileStats> result = new ArrayList(fileStatsMap.values());
+        
+        Collections.sort(result, new Comparator<FileStats>() {
+            @Override
+            public int compare(final FileStats s1, final FileStats s2) {
+                return Integer.valueOf(s1.getCoverage()).compareTo(s2.getCoverage());
+            }
+        });
+
+        return result;
     }
 
     public int getTotalStatements() {
