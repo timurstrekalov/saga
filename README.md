@@ -149,3 +149,11 @@ Why the name?
 
 Why not? Actually, it was suggested by my girlfriend after she started reading a book on Viking history. Plus,
 [Maven Central search](search.maven.org) only finds this project's artifacts, so there's no ambiguity.
+
+Why doesn't my Internet Explorer show the report as pretty as it is on the screenshot above?
+============================================================================================
+
+If you're looking at a JS code coverage report with IE, then I'll [put it gently](http://www.stopusingie.com/) and
+not start calling you names, even though I should. In short, Saga will never support IE-compatible reports. No graceful
+degradation, no nothing. Reports may work or they may not - if they do, it's purely coincidental and I cannot be held
+responsible for it.
