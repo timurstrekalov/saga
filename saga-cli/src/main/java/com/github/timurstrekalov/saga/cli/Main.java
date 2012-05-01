@@ -102,7 +102,7 @@ public class Main {
     }
 
     private static void printHelpAndExit(final Options options) {
-        new HelpFormatter().printHelp("java -jar coverage.jar", options, true);
+        new HelpFormatter().printHelp("java -jar saga-cli-<version>-jar-with-dependencies.jar", options, true);
         System.exit(1);
     }
 
