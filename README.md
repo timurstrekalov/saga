@@ -147,6 +147,33 @@ Of course, there are some more configuration options, if you feel like it:
 
 Using some other build tool? [Raise a ticket](https://github.com/timurstrekalov/saga/issues/new)!
 
+Command-line tool
+=================
+
+There's also a command-line utility for those not using Maven. It has pretty much the same configuration options and works just as well.
+
+    usage: java -jar saga-cli-<version>-jar-with-dependencies.jar -b <arg> [-e <arg>] [-f] [-h] -i <arg> [-n <arg>] -o <arg> [-s <arg>] [-t <arg>]
+    
+     -b,--base-dir <arg>                Base directory for test search
+     -e,--exclude <arg>                 Comma-separated list of Ant-style
+                                        paths to the tests to exclude from run
+     -f,--output-instrumented-files     Whether to output instrumented files
+                                        (default is false)
+     -h,--help                          Print this message
+     -i,--include <arg>                 Comma-separated list of Ant-style
+                                        paths to the tests to run
+     -n,--no-instrument-pattern <arg>   Regular expression patterns to match
+                                        classes to exclude from
+                                        instrumentation
+     -o,--output-dir <arg>              The output directory for coverage
+                                        reports
+     -s,--output-strategy <arg>         Coverage report output strategy. One
+                                        of [PER_TEST, TOTAL, BOTH]
+     -t,--thread-count <arg>            The maximum number of threads to use
+                                        (defaults to the number of cores)
+                                        
+A pre-built package containing the executable jar with dependencies can be downloaded from http://code.google.com/p/saga-javascript-coverage/downloads/list.
+
 Why the name?
 =============
 
