@@ -173,7 +173,7 @@ There's also a command-line utility for those not using Maven. It has pretty muc
      -t,--thread-count <arg>            The maximum number of threads to use
                                         (defaults to the number of cores)
                                         
-A pre-built package containing the executable jar with dependencies can be downloaded from http://code.google.com/p/saga-javascript-coverage/downloads/list.
+A pre-built package containing the executable jar with dependencies can be downloaded from [here](http://code.google.com/p/saga-javascript-coverage/downloads/list).
 
 Why the name?
 =============
