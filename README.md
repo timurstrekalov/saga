@@ -152,7 +152,8 @@ Command-line tool
 
 There's also a command-line utility for those not using Maven. It has pretty much the same configuration options and works just as well.
 
-    usage: java -jar saga-cli-<version>-jar-with-dependencies.jar -b <arg> [-e <arg>] [-f] [-h] -i <arg> [-n <arg>] -o <arg> [-s <arg>] [-t <arg>]
+    usage: java -jar saga-cli-<version>-jar-with-dependencies.jar -b <arg> [-e <arg>] [-f] [-h] -i <arg> [-n
+       <arg>] -o <arg> [-s <arg>] [-t <arg>]
     
      -b,--base-dir <arg>                Base directory for test search
      -e,--exclude <arg>                 Comma-separated list of Ant-style
