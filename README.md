@@ -1,3 +1,6 @@
+* auto-gen TOC:
+{:toc}
+
 ![Screenshot of example report](http://i40.tinypic.com/1s1c20.jpg)
 
 What? Another coverage tool?
