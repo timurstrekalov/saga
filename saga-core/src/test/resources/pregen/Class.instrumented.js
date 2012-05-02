@@ -92,10 +92,20 @@ __coverage_data['Class.js__from_6_13_to_6_28'][177] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][178] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][179] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][180] = 0;
-__coverage_data['Class.js__from_6_13_to_6_28'][186] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][183] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][185] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][187] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][188] = 0;
-__coverage_data['Class.js__from_6_13_to_6_28'][190] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][191] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][192] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][195] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][196] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][198] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][200] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][205] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][206] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][207] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][209] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][5]++;
 (function() {
   __coverage_data['Class.js__from_6_13_to_6_28'][7]++;
@@ -340,14 +350,73 @@ do {
     __coverage_data['Class.js__from_6_13_to_6_28'][180]++;
     uselessObject.andThisOneButItsEmpty();
   }
+  __coverage_data['Class.js__from_6_13_to_6_28'][183]++;
+  var h = 0;
+  __coverage_data['Class.js__from_6_13_to_6_28'][185]++;
+  if (a) 
+  if (z) {
+    __coverage_data['Class.js__from_6_13_to_6_28'][187]++;
+    for (h = 0; h < 10; h++) 
+      {
+        __coverage_data['Class.js__from_6_13_to_6_28'][188]++;
+        a++;
+      }
+  } else {
+    __coverage_data['Class.js__from_6_13_to_6_28'][191]++;
+    for (h = 0; h < 10; h++) 
+      {
+        __coverage_data['Class.js__from_6_13_to_6_28'][192]++;
+        if (h == 5) {
+          __coverage_data['Class.js__from_6_13_to_6_28'][192]++;
+          break;
+        }
+      }
+  } else {
+    __coverage_data['Class.js__from_6_13_to_6_28'][195]++;
+    if (z) {
+      __coverage_data['Class.js__from_6_13_to_6_28'][196]++;
+      while (h++ < 10) {
+      }
+    } else {
+      __coverage_data['Class.js__from_6_13_to_6_28'][198]++;
+      for (h = 0; h < 10; h++) {
+      }
+    }
+  }
+  __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+  if (param) 
+  {
+    __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+    a++;
+    __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+    if (!param) 
+    if (true) 
+    if (true) 
+    {
+      __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+      a++;
+      __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+      b++;
+    } else {
+      __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+      a++;
+    } else {
+      __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+      b++;
+      __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+      z++;
+    }
+    __coverage_data['Class.js__from_6_13_to_6_28'][200]++;
+    a += 2;
+  }
 };
 })();
-__coverage_data['Class.js__from_6_13_to_6_28'][186]++;
+__coverage_data['Class.js__from_6_13_to_6_28'][205]++;
 Class.prototype.test = function test() {
-  __coverage_data['Class.js__from_6_13_to_6_28'][187]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][206]++;
   this.qwe = 'asd';
-  __coverage_data['Class.js__from_6_13_to_6_28'][188]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][207]++;
   var d = 111;
-  __coverage_data['Class.js__from_6_13_to_6_28'][190]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][209]++;
   this.qqq = 'bbb';
 };

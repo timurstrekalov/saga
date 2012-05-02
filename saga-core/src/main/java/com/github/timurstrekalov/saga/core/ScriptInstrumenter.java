@@ -275,11 +275,20 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final int type = node.getType();
             final int parentType = parent.getType();
 
+            if (type == WHILE || type == FOR || type == DO) {
+                fixLoops((Loop) node);
+            }
+
             if (type == CASE) {
                 handleSwitchCase((SwitchCase) node);
             } else if (type == IF && parentType == IF) {
-                flattenElseIf((IfStatement) node, (IfStatement) parent);
-                data.addExecutableLine(getActualLineNumber(node), node.getLength());
+                final IfStatement elseIfStatement = (IfStatement) node;
+                final IfStatement ifStatement = (IfStatement) parent;
+
+                if (ifStatement.getElsePart() == elseIfStatement) {
+                    flattenElseIf(elseIfStatement, ifStatement);
+                    data.addExecutableLine(getActualLineNumber(node), node.getLength());
+                }
             } else if (parentType != CASE) {
                 if (parent.hasChildren()) {
                     parent.addChildBefore(newInstrumentationNode(getActualLineNumber(node)), node);
@@ -304,6 +313,16 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 }
 
                 data.addExecutableLine(getActualLineNumber(node), node.getLength());
+            }
+        }
+
+        /**
+         * when loops contain only ';' as body or nothing at all (happens when they are minified), certain
+         * things might go horribly wrong (like the jquery 1.4.2 case)
+         */
+        private void fixLoops(final Loop loop) {
+            if (loop.getBody().getType() == EMPTY) {
+                loop.setBody(new Block());
             }
         }
 

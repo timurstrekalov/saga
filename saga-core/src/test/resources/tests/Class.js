@@ -179,6 +179,25 @@
             uselessObject.andThisOneButItsUgly();
             uselessObject.andThisOneButItsEmpty();
         }
+
+        var h = 0;
+
+        if (a)
+            if (z)
+                for (h = 0; h < 10; h++) {
+                    a++;
+                }
+            else
+                for (h = 0; h < 10; h++) {
+                    if (h == 5) break
+                }
+        else
+            if (z)
+                while (h++ < 10);
+            else
+                for (h = 0; h < 10; h++);
+
+        if (param) {a++;if (!param)if (true)if(true){a++;b++;}else a++;else{b++;z++}a+=2;}
     }
 
 })();
