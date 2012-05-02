@@ -230,6 +230,10 @@ public class CoverageGenerator {
                     // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
                     lineCoverageRecords.add(new LineCoverageRecord(lineNr, timesLineExecuted, line));
                 }
+            } else {
+                for (int lineNr = 1; in.hasNext(); lineNr++) {
+                    lineCoverageRecords.add(new LineCoverageRecord(lineNr,  -1, in.nextLine()));
+                }
             }
 
             runStats.add(new FileStats(data.getSourceName(), lineCoverageRecords));
