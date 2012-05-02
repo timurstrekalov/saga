@@ -215,7 +215,7 @@ Why the name?
 =============
 
 Why not? Actually, it was suggested by my girlfriend after she started reading a book on Viking history. Plus,
-[Maven Central search](search.maven.org) only finds this project's artifacts, so there's no ambiguity.
+[Maven Central search](http://search.maven.org) only finds this project's artifacts, so there's no ambiguity.
 
 Why doesn't my Internet Explorer show the report as nicely as it is on the screenshot above?
 ============================================================================================
