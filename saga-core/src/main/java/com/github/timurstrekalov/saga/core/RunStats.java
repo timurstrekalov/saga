@@ -39,7 +39,7 @@ class RunStats implements Iterable<FileStats> {
     }
 
     public Collection<FileStats> getFileStats() {
-        final List<FileStats> result = new ArrayList(fileStatsMap.values());
+        final List<FileStats> result = new ArrayList<FileStats>(fileStatsMap.values());
         
         Collections.sort(result, new Comparator<FileStats>() {
             @Override

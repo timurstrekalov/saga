@@ -4,9 +4,9 @@
     <groupId>com.github.timurstrekalov</groupId>
     <artifactId>saga-root</artifactId>
     <packaging>pom</packaging>
+
     <version>1.0.6-SNAPSHOT</version>
-    <name>Saga root</name>
-    <description>The root descriptor</description>
+    <description>Better JavaScript code coverage tool</description>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -100,6 +100,11 @@
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
                 <version>1.8.6</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-configuration</groupId>
+                <artifactId>commons-configuration</artifactId>
+                <version>1.8</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -5,6 +5,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.Validate;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
@@ -26,6 +29,16 @@ import java.util.concurrent.*;
 public class CoverageGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(CoverageGenerator.class);
+
+    private static final Configuration config;
+
+    static {
+        try {
+            config = new PropertiesConfiguration("app.properties");
+        } catch (final ConfigurationException e) {
+            throw new RuntimeException("Error loading configuration", e);
+        }
+    }
 
     private static final IncorrectnessListener quietIncorrectnessListener = new IncorrectnessListener() {
         @Override
@@ -255,6 +268,9 @@ public class CoverageGenerator {
         synchronized (stringTemplateGroup) {
             stringTemplateGroup.getInstanceOf("runStats")
                     .add("stats", stats)
+                    .add("name", config.getString("app.name"))
+                    .add("version", config.getString("app.version"))
+                    .add("url", config.getString("app.url"))
                     .write(outputFile, new ErrorLogger());
         }
     }

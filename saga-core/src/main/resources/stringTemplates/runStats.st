@@ -1,4 +1,4 @@
-runStats(stats) ::= <<
+runStats(stats, name, version, url) ::= <<
 <!DOCTYPE html>
 <html>
 <head>
@@ -221,6 +221,18 @@ runStats(stats) ::= <<
 
     .stats > thead td {
         font-weight: bold;
+    }
+
+    .footer {
+        padding-top: 5px;
+        text-align: right;
+        font-style: italic;
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+
+    .footer a {
+        text-decoration: underline;
     }
 </style>
 <script type="text/javascript">
@@ -460,6 +472,7 @@ runStats(stats) ::= <<
             $stats.fileStats:fileStats()$
         </tbody>
     </table>
+    <div class="footer">Generated using <a href="$url$">$name$</a> version $version$</div>
 </body>
 </html>
 >>
