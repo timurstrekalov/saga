@@ -38,10 +38,11 @@ The good things about Saga
 3. It has a pretty coverage report, especially after implementing the suggestions of
     [Marat Dyatko](https://github.com/vectart) :)
 4. It tries to make the most of your processor power by running tests and generating coverage in parallel by default.
-5. It's already in [Maven Central](http://repo1.maven.org/) and constantly synced, so adding it to your build cycle
+5. It can generate coverage even for inline scripts.
+6. It's already in [Maven Central](http://repo1.maven.org/) and constantly synced, so adding it to your build cycle
     is pretty straightforward.
-6. It just works. There's very little configuration, and I'd like to think that the defaults are sensible enough.
-7. It's being actively developed, it's open, it's completely free.
+7. It just works. There's very little configuration, and I'd like to think that the defaults are sensible enough.
+8. It's being actively developed, it's open, it's completely free.
 
 Maven plugin usage
 ==================
