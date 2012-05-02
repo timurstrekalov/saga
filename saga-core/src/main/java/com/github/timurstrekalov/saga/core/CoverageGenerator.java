@@ -200,34 +200,36 @@ public class CoverageGenerator {
 
             final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
 
-            // pad with extra line coverage records if first executable statement is not the first line (comments
-            // at the start of files)
-            for (int lineNr = 1; lineNr < data.getLineNumberOfFirstStatement() && in.hasNext(); lineNr++) {
-                lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
-            }
-
-            for (int lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext(); lineNr++) {
-                final String line = in.nextLine();
-
-                final Double coverageEntry = (Double) coverageData.get(lineNr);
-                final int timesLineExecuted;
-
-                if (coverageEntry == null) {
-                    final int lineLength = line.trim().length();
-
-                    if (lengthCountdown > 0 && lineLength > 0) {
-                        lengthCountdown -= lineLength;
-                        timesLineExecuted = -1;
-                    } else {
-                        timesLineExecuted = data.hasStatement(lineNr) ? 0 : -1;
-                    }
-                } else {
-                    timesLineExecuted = coverageEntry.intValue();
-                    lengthCountdown = data.getStatementLength(lineNr);
+            if (!data.getLineNumbersOfAllStatements().isEmpty()) {
+                // pad with extra line coverage records if first executable statement is not the first line (comments
+                // at the start of files)
+                for (int lineNr = 1; lineNr < data.getLineNumberOfFirstStatement() && in.hasNext(); lineNr++) {
+                    lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
                 }
 
-                // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
-                lineCoverageRecords.add(new LineCoverageRecord(lineNr, timesLineExecuted, line));
+                for (int lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext(); lineNr++) {
+                    final String line = in.nextLine();
+
+                    final Double coverageEntry = (Double) coverageData.get(lineNr);
+                    final int timesLineExecuted;
+
+                    if (coverageEntry == null) {
+                        final int lineLength = line.trim().length();
+
+                        if (lengthCountdown > 0 && lineLength > 0) {
+                            lengthCountdown -= lineLength;
+                            timesLineExecuted = -1;
+                        } else {
+                            timesLineExecuted = data.hasStatement(lineNr) ? 0 : -1;
+                        }
+                    } else {
+                        timesLineExecuted = coverageEntry.intValue();
+                        lengthCountdown = data.getStatementLength(lineNr);
+                    }
+
+                    // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
+                    lineCoverageRecords.add(new LineCoverageRecord(lineNr, timesLineExecuted, line));
+                }
             }
 
             runStats.add(new FileStats(data.getSourceName(), lineCoverageRecords));
