@@ -1,7 +1,6 @@
 package com.github.timurstrekalov.saga.maven;
 
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
-import com.github.timurstrekalov.saga.core.OutputStrategy;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 
@@ -58,7 +57,7 @@ public class SagaMojo extends AbstractMojo {
     /**
      * @parameter
      */
-    private OutputStrategy outputStrategy;
+    private String outputStrategy;
 
     /**
      * @parameter

@@ -145,6 +145,8 @@ Of course, there are some more configuration options, if you feel like it:
     </tbody>
 </table>
 
+Tested on Maven version 2.2.1 & 3.x.x
+
 Using no-instrument patterns
 ----------------------------
 
