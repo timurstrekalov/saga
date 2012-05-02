@@ -73,6 +73,10 @@ class RunStats implements Iterable<FileStats> {
         return Util.toCoverage(getTotalStatements(), getTotalExecuted());
     }
 
+    public boolean getHasStatements() {
+        return getTotalStatements() > 0;
+    }
+
     @Override
     public Iterator<FileStats> iterator() {
         return getFileStats().iterator();

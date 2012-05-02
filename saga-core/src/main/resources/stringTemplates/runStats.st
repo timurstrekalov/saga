@@ -84,6 +84,10 @@ runStats(stats) ::= <<
         background-color: #b1c7d4;
     }
 
+    .stats tr.no-statements {
+        opacity: 0.6;
+    }
+
     a, a:hover, a:visited, a:active {
         color: black;
         text-decoration: none;
@@ -432,15 +436,23 @@ runStats(stats) ::= <<
                 <th>Coverage</th>
                 <th></th>
             </tr>
-            <tr class="stats-header">
+            <tr class="stats-header $if(!stats.hasStatements)$no-statements$endif$">
                 <td>Total</td>
                 <td class="statements">$stats.totalStatements$</td>
                 <td class="executed">$stats.totalExecuted$</td>
-                <td class="coverage">$stats.totalCoverage$&thinsp;%</td>
+                <td class="coverage">
+                    $if(stats.hasStatements)$
+                        $stats.totalCoverage$&thinsp;%
+                    $else$
+                        -
+                    $endif$
+                </td>
                 <td class="bar-container">
-                    <div class="bar">
-                        <span style="width: $stats.totalCoverage$%;"></span>
-                    </div>
+                    $if(stats.hasStatements)$
+                        <div class="bar">
+                            <span style="width: $stats.totalCoverage$%;"></span>
+                        </div>
+                    $endif$
                 </td>
             </tr>
         </thead>

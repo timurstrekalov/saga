@@ -79,6 +79,10 @@ class FileStats {
         return Util.toCoverage(getStatements(), getExecuted());
     }
 
+    public boolean getHasStatements() {
+        return getStatements() > 0;
+    }
+
     static FileStats merge(final FileStats s1, final FileStats s2) {
         final List<LineCoverageRecord> r1 = s1.getLineCoverageRecords();
         final List<LineCoverageRecord> r2 = s2.getLineCoverageRecords();
