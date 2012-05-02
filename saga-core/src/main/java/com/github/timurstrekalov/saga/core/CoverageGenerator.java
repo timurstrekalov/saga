@@ -133,22 +133,22 @@ public class CoverageGenerator {
 
         final List<RunStats> allRunStats = Lists.newLinkedList();
 
-        for (int i = 0; i < tests.size(); i++) {
-            try {
-                final Future<RunStats> future = completionService.take();
-                final RunStats runStats = future.get();
+        try {
+            for (int i = 0; i < tests.size(); i++) {
+                    final Future<RunStats> future = completionService.take();
+                    final RunStats runStats = future.get();
 
-                allRunStats.add(runStats);
-            } catch (final InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (final ExecutionException e) {
-                throw new RuntimeException(e);
+                    allRunStats.add(runStats);
             }
+        } catch (final InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (final ExecutionException e) {
+            throw new RuntimeException(e);
+        } finally {
+            executorService.shutdown();
         }
 
         logger.info("Test run finished");
-
-        executorService.shutdown();
 
         if (outputStrategy.contains(OutputStrategy.TOTAL)) {
             final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
