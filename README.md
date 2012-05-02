@@ -145,6 +145,39 @@ Of course, there are some more configuration options, if you feel like it:
     </tbody>
 </table>
 
+Using no-instrument patterns
+----------------------------
+
+It might be a little confusing, but the no-instrument patterns are actually [regular expressions](http://www.regular-expressions.info/) which *full script paths* are matched against. 
+So, if you had a test which loaded a script like this
+
+    <script src="someScript.js"></script>
+    
+If you wanted to exclude "someScript.js" from instrumentation, you would have to specify a pattern as follows:
+
+    <!-- ... -->
+    
+    <noInstrumentPatterns>
+        <pattern>.+/someScript\.js</pattern>
+    </noInstrumentPatterns>
+    
+    <!-- ... -->
+    
+That is, if you don't care about which file named "someScript.js" gets excluded. If you do (say, you have multiple files named "someScript.js"), you would have to provide more specific patterns, such as
+
+    <!-- ... -->
+    
+    <noInstrumentPatterns>
+        <pattern>.+/onlyExcludeThisOne/someScript\.js</pattern>
+    </noInstrumentPatterns>
+    
+    <!-- ... -->
+    
+And so forth.
+
+Other build tools
+-----------------
+
 Using some other build tool? [Raise a ticket](https://github.com/timurstrekalov/saga/issues/new)!
 
 Command-line tool
