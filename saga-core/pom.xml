@@ -11,7 +11,7 @@
     <artifactId>saga-core</artifactId>
     <packaging>jar</packaging>
     <name>Saga</name>
-    <url>https://github.com/timurstrekalov/saga</url>
+    <url>http://timurstrekalov.github.com/saga/</url>
 
     <build>
         <resources>
