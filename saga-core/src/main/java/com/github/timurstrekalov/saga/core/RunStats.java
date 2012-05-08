@@ -77,6 +77,10 @@ class RunStats implements Iterable<FileStats> {
         return getTotalStatements() > 0;
     }
 
+    public String getBarColor() {
+        return Util.getColor(getTotalCoverage());
+    }
+
     @Override
     public Iterator<FileStats> iterator() {
         return getFileStats().iterator();

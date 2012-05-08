@@ -13,7 +13,7 @@ fileStats(fileStats) ::= <<
     <td class="bar-container">
         $if(fileStats.hasStatements)$
             <div class="bar">
-                <span style="width: $fileStats.coverage$%;"></span>
+                <span style="width: $fileStats.coverage$%; background-color: rgb($fileStats.barColor$);"></span>
             </div>
         $endif$
     </td>

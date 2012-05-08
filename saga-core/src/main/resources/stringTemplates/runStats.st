@@ -462,7 +462,7 @@ runStats(stats, name, version, url) ::= <<
                 <td class="bar-container">
                     $if(stats.hasStatements)$
                         <div class="bar">
-                            <span style="width: $stats.totalCoverage$%;"></span>
+                            <span style="width: $stats.totalCoverage$%; background-color: rgb($stats.barColor$);"></span>
                         </div>
                     $endif$
                 </td>
