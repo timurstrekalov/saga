@@ -9,13 +9,12 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stringtemplate.v4.STErrorListener;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupDir;
-import org.stringtemplate.v4.misc.STMessage;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,38 +24,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.util.logging.Level;
 
 public class CoverageGenerator {
-
-    private static final Logger logger = LoggerFactory.getLogger(CoverageGenerator.class);
 
     private static final Configuration config;
 
     static {
         try {
             config = new PropertiesConfiguration("app.properties");
+
+            // make HtmlUnit shut up
+            LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log",
+                    "org.apache.commons.logging.impl.NoOpLog");
+
+            java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
+            java.util.logging.Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
         } catch (final ConfigurationException e) {
             throw new RuntimeException("Error loading configuration", e);
         }
     }
 
-    private static final IncorrectnessListener quietIncorrectnessListener = new IncorrectnessListener() {
-        @Override
-        public void notify(final String message, final Object origin) {
-            logger.debug(message);
-        }
-    };
-
-    private static final ThreadLocal<WebClient> localClient = new ThreadLocal<WebClient>() {
-        @Override
-        protected WebClient initialValue() {
-            final WebClient client = new WebClient(BrowserVersion.FIREFOX_3_6);
-            client.setIncorrectnessListener(quietIncorrectnessListener);
-            client.setJavaScriptEnabled(true);
-            client.setAjaxController(new NicelyResynchronizingAjaxController());
-            return client;
-        }
-    };
+    private static final Logger logger = LoggerFactory.getLogger(CoverageGenerator.class);
+    private static final ThreadLocal<WebClient> localClient = new SagaWebClient();
 
     private final File baseDir;
     private final String includes;
@@ -125,7 +115,8 @@ public class CoverageGenerator {
 
                         return runStats;
                     } catch (final IOException e) {
-                        throw new RuntimeException(e);
+                        logger.error(e.getMessage(), e);
+                        return null;
                     }
                 }
             });
@@ -135,15 +126,13 @@ public class CoverageGenerator {
 
         try {
             for (int i = 0; i < tests.size(); i++) {
-                    final Future<RunStats> future = completionService.take();
-                    final RunStats runStats = future.get();
+                final Future<RunStats> future = completionService.take();
+                final RunStats runStats = future.get();
 
-                    allRunStats.add(runStats);
+                allRunStats.add(runStats);
             }
-        } catch (final InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (final ExecutionException e) {
-            throw new RuntimeException(e);
+        } catch (final Exception e) {
+            logger.debug(e.getMessage(), e);
         } finally {
             executorService.shutdown();
         }
@@ -271,7 +260,7 @@ public class CoverageGenerator {
                     .add("name", config.getString("app.name"))
                     .add("version", config.getString("app.version"))
                     .add("url", config.getString("app.url"))
-                    .write(outputFile, new ErrorLogger());
+                    .write(outputFile, new LoggingStringTemplateErrorListener());
         }
     }
 
@@ -336,25 +325,4 @@ public class CoverageGenerator {
         }
     }
 
-    private static final class ErrorLogger implements STErrorListener {
-        @Override
-        public void compileTimeError(final STMessage msg) {
-            logger.error(msg.toString());
-        }
-
-        @Override
-        public void runTimeError(final STMessage msg) {
-            logger.error(msg.toString());
-        }
-
-        @Override
-        public void IOError(final STMessage msg) {
-            logger.error(msg.toString());
-        }
-
-        @Override
-        public void internalError(final STMessage msg) {
-            logger.error(msg.toString());
-        }
-    }
 }

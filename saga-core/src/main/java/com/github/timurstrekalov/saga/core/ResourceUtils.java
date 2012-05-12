@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Courtesy of <a href="http://stackoverflow.com/a/3054692/1326795">Don</a>
  */
-public class ResourceUtils {
+class ResourceUtils {
 
     /**
      * Get the relative path from one file to another, specifying the directory separator.
