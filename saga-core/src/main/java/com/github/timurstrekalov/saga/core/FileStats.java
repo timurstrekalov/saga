@@ -16,12 +16,12 @@ class FileStats {
 
     private static final Logger logger = LoggerFactory.getLogger(FileStats.class);
 
-    public final String fullName;
-    public final String relativeName;
-    public final String fileName;
-    public final String parentName;
-    public final String id;
-    public final List<LineCoverageRecord> lineCoverageRecords;
+    private final String fullName;
+    private final String relativeName;
+    private final String fileName;
+    private final String parentName;
+    private final String id;
+    private final List<LineCoverageRecord> lineCoverageRecords;
 
     FileStats(final String fullName, final List<LineCoverageRecord> lineCoverageRecords) {
         this.fullName = fullName;
@@ -105,4 +105,33 @@ class FileStats {
 
         return new FileStats(s1.fullName, mergedRecords);
     }
+
+    public String getFileName() {
+        return normalizeFileSeparators(fileName);
+    }
+
+    public String getFullName() {
+        return normalizeFileSeparators(fullName);
+    }
+
+    public String getRelativeName() {
+        return normalizeFileSeparators(relativeName);
+    }
+
+    public String getParentName() {
+        return normalizeFileSeparators(parentName);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    private String normalizeFileSeparators(final String path) {
+        if (path == null) {
+            return null;
+        }
+
+        return path.replaceAll("\\\\", "/");
+    }
+
 }

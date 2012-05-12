@@ -28,7 +28,7 @@ class RunStats implements Iterable<FileStats> {
     }
 
     void add(final FileStats newStats) {
-        final String key = newStats.fullName;
+        final String key = newStats.getFullName();
         final FileStats oldStats = fileStatsMap.get(key);
 
         if (oldStats != null) {
