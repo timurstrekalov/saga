@@ -7,7 +7,6 @@ import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.*;
-import com.sun.istack.internal.NotNull;
 import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
@@ -163,7 +162,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         return scriptDataList;
     }
 
-    public void setIgnorePatterns(@NotNull final Collection<String> ignorePatterns) {
+    public void setIgnorePatterns(final Collection<String> ignorePatterns) {
         this.ignorePatterns = Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
             @Override
             public Pattern apply(final String input) {
