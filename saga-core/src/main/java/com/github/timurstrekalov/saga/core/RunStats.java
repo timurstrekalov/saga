@@ -9,6 +9,8 @@ import java.util.*;
 
 class RunStats implements Iterable<FileStats> {
 
+    public static final RunStats EMPTY = new RunStats(null, null);
+
     public final File test;
     public final String title;
 

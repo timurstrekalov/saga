@@ -1,10 +1,12 @@
 package com.github.timurstrekalov.saga.core;
 
-import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
+import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -33,13 +35,6 @@ public class CoverageGenerator {
     static {
         try {
             config = new PropertiesConfiguration("app.properties");
-
-            // make HtmlUnit shut up
-            LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log",
-                    "org.apache.commons.logging.impl.NoOpLog");
-
-            java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
-            java.util.logging.Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
         } catch (final ConfigurationException e) {
             throw new RuntimeException("Error loading configuration", e);
         }
@@ -81,6 +76,13 @@ public class CoverageGenerator {
         this.outputDir = outputDir;
 
         stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
+
+        // make HtmlUnit shut up
+        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log",
+                "org.apache.commons.logging.impl.NoOpLog");
+
+        java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
+        java.util.logging.Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
     }
 
     public void run() throws IOException {
@@ -115,8 +117,7 @@ public class CoverageGenerator {
 
                         return runStats;
                     } catch (final IOException e) {
-                        logger.error(e.getMessage(), e);
-                        return null;
+                        return RunStats.EMPTY;
                     }
                 }
             });
@@ -125,14 +126,17 @@ public class CoverageGenerator {
         final List<RunStats> allRunStats = Lists.newLinkedList();
 
         try {
-            for (int i = 0; i < tests.size(); i++) {
-                final Future<RunStats> future = completionService.take();
-                final RunStats runStats = future.get();
+            for (final File test : tests) {
+                try {
+                    final Future<RunStats> future = completionService.take();
+                    final RunStats runStats = future.get();
 
-                allRunStats.add(runStats);
+                    allRunStats.add(runStats);
+                } catch (final Exception e) {
+                    logger.warn("Error running test {}: {}", test.getAbsolutePath(), e.getMessage());
+                    logger.debug(e.getMessage(), e);
+                }
             }
-        } catch (final Exception e) {
-            logger.debug(e.getMessage(), e);
         } finally {
             executorService.shutdown();
         }
@@ -143,8 +147,10 @@ public class CoverageGenerator {
             final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
 
             for (final RunStats runStats : allRunStats) {
-                for (final FileStats fileStats : runStats) {
-                    totalStats.add(fileStats);
+                if (runStats != RunStats.EMPTY) {
+                    for (final FileStats fileStats : runStats) {
+                        totalStats.add(fileStats);
+                    }
                 }
             }
 
@@ -180,13 +186,15 @@ public class CoverageGenerator {
             client.waitForBackgroundJavaScript(30000);
             client.setScriptPreProcessor(null);
 
-            final NativeObject coverageData = (NativeObject) htmlPage.executeJavaScript(coverageVariableName)
+            final Object javaScriptResult = htmlPage.executeJavaScript("window." + coverageVariableName)
                     .getJavaScriptResult();
 
-            return collectAndWriteRunStats(test, instrumenter, coverageData);
+            if (!(javaScriptResult instanceof Undefined)) {
+                return collectAndWriteRunStats(test, instrumenter, (NativeObject) javaScriptResult);
+            }
         }
 
-        return null;
+        return RunStats.EMPTY;
     }
 
     private RunStats collectAndWriteRunStats(

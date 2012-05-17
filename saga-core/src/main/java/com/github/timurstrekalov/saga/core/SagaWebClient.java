@@ -4,6 +4,8 @@ import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.HTMLParserListener;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
 
+import java.io.IOException;
+
 class SagaWebClient extends ThreadLocal<WebClient> {
 
     private static final IncorrectnessListener quietIncorrectnessListener = new QuietIncorrectnessListener();
@@ -13,7 +15,12 @@ class SagaWebClient extends ThreadLocal<WebClient> {
 
     @Override
     protected WebClient initialValue() {
-        final WebClient client = new WebClient(BrowserVersion.FIREFOX_3_6);
+        final WebClient client = new WebClient(BrowserVersion.FIREFOX_3_6) {
+            @Override
+            public WebResponse loadWebResponse(final WebRequest webRequest) throws IOException {
+                return new WebResponseProxy(super.loadWebResponse(webRequest));
+            }
+        };
 
         client.setIncorrectnessListener(quietIncorrectnessListener);
         client.setJavaScriptErrorListener(loggingJsErrorListener);
@@ -25,6 +32,13 @@ class SagaWebClient extends ThreadLocal<WebClient> {
         client.setThrowExceptionOnScriptError(false);
         client.setThrowExceptionOnFailingStatusCode(false);
         client.setPrintContentOnFailingStatusCode(false);
+        client.setWebConnection(new HttpWebConnection(client) {
+            @Override
+            protected WebResponse newWebResponseInstance(final WebResponseData responseData, final long loadTime,
+                                                         final WebRequest request) {
+                return new WebResponseProxy(super.newWebResponseInstance(responseData, loadTime, request));
+            }
+        });
 
         return client;
     }

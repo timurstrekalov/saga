@@ -35,7 +35,7 @@ class QuietJavaScriptErrorListener implements JavaScriptErrorListener {
 
     @Override
     public void loadScriptError(final HtmlPage htmlPage, final URL scriptUrl, final Exception e) {
-        logger.error("Error loading script referenced on page {}. Script URL: {}, message: {}",
+        logger.warn("Error loading script referenced on page {}. Script URL: {}, message: {}",
                 new Object[] { htmlPage.getUrl(), scriptUrl, e.getMessage()});
 
         logger.debug(e.getMessage(), e);

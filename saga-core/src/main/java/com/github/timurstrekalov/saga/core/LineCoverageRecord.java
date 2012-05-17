@@ -2,6 +2,8 @@ package com.github.timurstrekalov.saga.core;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 class LineCoverageRecord {
 
@@ -46,6 +48,15 @@ class LineCoverageRecord {
 
     public boolean isExecutable() {
         return timesExecuted > -1;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("lineNr", lineNr)
+                .append("timesExecuted", timesExecuted)
+                .append("line", line)
+                .toString();
     }
 
 }
