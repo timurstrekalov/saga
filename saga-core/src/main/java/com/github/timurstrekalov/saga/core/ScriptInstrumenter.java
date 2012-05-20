@@ -4,9 +4,11 @@ import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.*;
+import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
@@ -21,9 +23,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
@@ -59,7 +61,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     private final List<ScriptData> scriptDataList = Lists.newLinkedList();
 
-    private Collection<Pattern> ignorePatterns;
+    private Set<Pattern> ignorePatterns;
     private File outputDir;
     private boolean outputInstrumentedFiles;
 
@@ -162,13 +164,8 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         return scriptDataList;
     }
 
-    public void setIgnorePatterns(final Collection<String> ignorePatterns) {
-        this.ignorePatterns = Collections2.transform(ignorePatterns, new Function<String, Pattern>() {
-            @Override
-            public Pattern apply(final String input) {
-                return Pattern.compile(input);
-            }
-        });
+    public void setIgnorePatterns(final Set<Pattern> ignorePatterns) {
+        this.ignorePatterns = ignorePatterns;
     }
 
     public void setOutputInstrumentedFiles(final boolean outputInstrumentedFiles) {

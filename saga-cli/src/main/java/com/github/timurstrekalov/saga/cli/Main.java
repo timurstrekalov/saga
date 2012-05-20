@@ -32,6 +32,9 @@ public class Main {
         final Option outputStrategyOpt = new Option("s", "output-strategy", true,
                 "Coverage report output strategy. One of " + Arrays.toString(OutputStrategy.values()));
 
+        final Option includeInlineScriptsOpt = new Option("d", "include-inline-scripts", false,
+                "Whether to include inline scripts into instrumentation by default (default is false)");
+
         final Option helpOpt = new Option("h", "help", false, "Print this message");
         final Options options = new Options();
 
@@ -43,6 +46,7 @@ public class Main {
         options.addOption(noInstrumentPatternOpt);
         options.addOption(threadCountOpt);
         options.addOption(outputStrategyOpt);
+        options.addOption(includeInlineScriptsOpt);
         options.addOption(helpOpt);
 
         try {
@@ -86,6 +90,10 @@ public class Main {
                     System.err.println("Invalid thread count");
                     printHelpAndExit(options);
                 }
+            }
+
+            if (line.hasOption('d')) {
+                gen.setIncludeInlineScripts(true);
             }
 
             gen.run();

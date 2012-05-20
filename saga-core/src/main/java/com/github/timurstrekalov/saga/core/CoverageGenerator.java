@@ -3,13 +3,17 @@ package com.github.timurstrekalov.saga.core;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.FileUtils;
@@ -21,12 +25,10 @@ import org.stringtemplate.v4.STGroupDir;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 public class CoverageGenerator {
 
@@ -42,13 +44,14 @@ public class CoverageGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(CoverageGenerator.class);
     private static final ThreadLocal<WebClient> localClient = new SagaWebClient();
+    private static final String inlineScriptRe = ".+__from_\\d+_\\d+_to_\\d+_\\d+$";
 
     private final File baseDir;
     private final String includes;
     private final String excludes;
     private final File outputDir;
 
-    private Collection<String> noInstrumentPatterns = Collections.emptyList();
+    private Set<String> noInstrumentPatterns = Sets.newHashSet();
     private boolean outputInstrumentedFiles;
 
     private final STGroup stringTemplateGroup;
@@ -62,6 +65,8 @@ public class CoverageGenerator {
     private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
 
     private int threadCount = Runtime.getRuntime().availableProcessors();
+
+    private boolean includeInlineScripts = false;
 
     public CoverageGenerator(final File baseDir, final String includes, final File outputDir) {
         this(baseDir, includes, null, outputDir);
@@ -96,8 +101,21 @@ public class CoverageGenerator {
             return;
         }
 
+        logger.info("{} tests found", tests.size());
+        threadCount = Math.min(threadCount, tests.size());
+
         logger.info("Using up to {} threads", threadCount);
         logger.info("Output strategy set to {}", outputStrategy);
+
+        if (!includeInlineScripts) {
+            noInstrumentPatterns.add(inlineScriptRe);
+        }
+
+        if (!noInstrumentPatterns.isEmpty()) {
+            logger.info("Using the following no-instrument patterns:\n\t{}", StringUtils.join(noInstrumentPatterns, "\n\t"));
+        }
+
+        final Set<Pattern> ignorePatterns = createPatterns();
 
         final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         final CompletionService<RunStats> completionService = new ExecutorCompletionService<RunStats>(executorService);
@@ -109,7 +127,7 @@ public class CoverageGenerator {
                     logger.info("Running {}", test.getAbsoluteFile().toURI().normalize().getPath());
 
                     try {
-                        final RunStats runStats = runTest(test);
+                        final RunStats runStats = runTest(test, ignorePatterns);
 
                         if (outputStrategy.contains(OutputStrategy.PER_TEST)) {
                             writeRunStats(runStats);
@@ -158,14 +176,23 @@ public class CoverageGenerator {
         }
     }
 
-    private RunStats runTest(final File test) throws IOException {
+    private HashSet<Pattern> createPatterns() {
+        return new HashSet<Pattern>(Collections2.transform(noInstrumentPatterns, new Function<String, Pattern>() {
+            @Override
+            public Pattern apply(final String input) {
+                return Pattern.compile(input);
+            }
+        }));
+    }
+
+    private RunStats runTest(final File test, final Set<Pattern> ignorePatterns) throws IOException {
         final WebClient client = localClient.get();
 
         final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
         final ScriptInstrumenter instrumenter = new ScriptInstrumenter(client.getJavaScriptEngine().getContextFactory(),
                 coverageVariableName);
 
-        instrumenter.setIgnorePatterns(noInstrumentPatterns);
+        instrumenter.setIgnorePatterns(ignorePatterns);
 
         if (outputInstrumentedFiles) {
             FileUtils.mkdir(instrumentedFileDirectory.getAbsolutePath());
@@ -274,7 +301,7 @@ public class CoverageGenerator {
 
     public void setNoInstrumentPatterns(final Collection<String> noInstrumentPatterns) {
         if (noInstrumentPatterns != null) {
-            this.noInstrumentPatterns = noInstrumentPatterns;
+            this.noInstrumentPatterns = new HashSet<String>(noInstrumentPatterns);
         }
     }
 
@@ -330,6 +357,12 @@ public class CoverageGenerator {
         if (threadCount != null) {
             Validate.isTrue(threadCount > 0, "Thread count must be greater than zero");
             this.threadCount = threadCount;
+        }
+    }
+
+    public void setIncludeInlineScripts(final Boolean includeInlineScripts) {
+        if (includeInlineScripts != null) {
+            this.includeInlineScripts = includeInlineScripts;
         }
     }
 

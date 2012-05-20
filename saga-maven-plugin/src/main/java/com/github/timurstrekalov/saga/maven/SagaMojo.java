@@ -64,6 +64,11 @@ public class SagaMojo extends AbstractMojo {
      */
     private Integer threadCount;
 
+    /**
+     * @parameter
+     */
+    private Boolean includeInlineScripts;
+
     public void execute() throws MojoExecutionException {
         try {
 
@@ -74,6 +79,7 @@ public class SagaMojo extends AbstractMojo {
             gen.setNoInstrumentPatterns(noInstrumentPatterns);
             gen.setOutputStrategy(outputStrategy);
             gen.setThreadCount(threadCount);
+            gen.setIncludeInlineScripts(includeInlineScripts);
 
             try {
                 gen.run();
