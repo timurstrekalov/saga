@@ -200,6 +200,17 @@
         if (param) {a++;if (!param)if (true)if(true){a++;b++;}else a++;else{b++;z++}a+=2;}
     }
 
+    // issue #34
+    {
+        if (false);
+    }
+
+    try{
+        if (mynamespace);
+    } catch(ex) {
+        mynamespace = function(){};
+    }
+
 })();
 
 Class.prototype.test = function test() {

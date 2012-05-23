@@ -103,9 +103,13 @@ __coverage_data['Class.js__from_6_13_to_6_28'][196] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][198] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][200] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][205] = 0;
-__coverage_data['Class.js__from_6_13_to_6_28'][206] = 0;
-__coverage_data['Class.js__from_6_13_to_6_28'][207] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][208] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][209] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][211] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][216] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][217] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][218] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][220] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][5]++;
 (function() {
   __coverage_data['Class.js__from_6_13_to_6_28'][7]++;
@@ -410,13 +414,28 @@ do {
     a += 2;
   }
 };
+  {
+    __coverage_data['Class.js__from_6_13_to_6_28'][205]++;
+    if (false) {
+    }
+  }
+  __coverage_data['Class.js__from_6_13_to_6_28'][208]++;
+  try {
+    __coverage_data['Class.js__from_6_13_to_6_28'][209]++;
+    if (mynamespace) {
+    }
+  }  catch (ex) {
+  __coverage_data['Class.js__from_6_13_to_6_28'][211]++;
+  mynamespace = function() {
+};
+}
 })();
-__coverage_data['Class.js__from_6_13_to_6_28'][205]++;
+__coverage_data['Class.js__from_6_13_to_6_28'][216]++;
 Class.prototype.test = function test() {
-  __coverage_data['Class.js__from_6_13_to_6_28'][206]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][217]++;
   this.qwe = 'asd';
-  __coverage_data['Class.js__from_6_13_to_6_28'][207]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][218]++;
   var d = 111;
-  __coverage_data['Class.js__from_6_13_to_6_28'][209]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][220]++;
   this.qqq = 'bbb';
 };

@@ -275,6 +275,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 fixLoops((Loop) node);
             }
 
+            if (type == IF) {
+                fixIf((IfStatement) node);
+            }
+
             if (type == CASE) {
                 handleSwitchCase((SwitchCase) node);
             } else if (type == IF && parentType == IF) {
@@ -313,12 +317,22 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         }
 
         /**
-         * when loops contain only ';' as body or nothing at all (happens when they are minified), certain
-         * things might go horribly wrong (like the jquery 1.4.2 case)
+         * when loops contain only ';' as body or nothing at all (happens when they are minified),
+         * certain things might go horribly wrong (like the jquery 1.4.2 case)
          */
         private void fixLoops(final Loop loop) {
             if (loop.getBody().getType() == EMPTY) {
                 loop.setBody(new Block());
+            }
+        }
+
+        /**
+         * The same as loops (the if (true); case)
+         * @see #fixLoops(net.sourceforge.htmlunit.corejs.javascript.ast.Loop)
+         */
+        private void fixIf(final IfStatement ifStatement) {
+            if (ifStatement.getThenPart().getType() == EMPTY) {
+                ifStatement.setThenPart(new Block());
             }
         }
 

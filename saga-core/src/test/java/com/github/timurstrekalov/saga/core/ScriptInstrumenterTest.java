@@ -47,7 +47,7 @@ public class ScriptInstrumenterTest {
         final ScriptData classJsData = instrumenter.getScriptDataList().get(0);
         assertEquals("Class.js__from_6_13_to_6_28", classJsData.getSourceName());
         assertEquals(5, classJsData.getLineNumberOfFirstStatement());
-        assertEquals(106, classJsData.getNumberOfStatements());
+        assertEquals(110, classJsData.getNumberOfStatements());
         assertEquals(Data.getClassJsInstrumented(), classJsData.getInstrumentedSourceCode());
     }
 
