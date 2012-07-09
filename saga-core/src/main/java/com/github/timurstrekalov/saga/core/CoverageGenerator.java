@@ -1,7 +1,9 @@
 package com.github.timurstrekalov.saga.core;
 
+import com.gargoylesoftware.htmlunit.JavaScriptPage;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -208,19 +210,41 @@ public class CoverageGenerator {
         client.setScriptPreProcessor(instrumenter);
 
         final Page page = client.getPage(test.toURI().toURL());
+        final HtmlPage htmlPage;
 
         if (page instanceof HtmlPage) {
-            final HtmlPage htmlPage = (HtmlPage) page;
+            htmlPage = (HtmlPage) page;
+        } else if (page instanceof JavaScriptPage) {
+            final JavaScriptPage javaScriptPage = (JavaScriptPage) page;
 
-            client.waitForBackgroundJavaScript(30000);
-            client.setScriptPreProcessor(null);
+            final WebResponse webResponse = javaScriptPage.getWebResponse();
 
-            final Object javaScriptResult = htmlPage.executeJavaScript("window." + coverageVariableName)
-                    .getJavaScriptResult();
+            htmlPage = new HtmlPage(javaScriptPage.getUrl(), webResponse, javaScriptPage.getEnclosingWindow());
 
-            if (!(javaScriptResult instanceof Undefined)) {
-                return collectAndWriteRunStats(test, instrumenter, (NativeObject) javaScriptResult);
-            }
+            client.getJavaScriptEngine().execute(htmlPage, webResponse.getContentAsString(),
+                    test.getAbsolutePath(), 1);
+        } else {
+            throw new RuntimeException("Unsupported page type: " + page.getUrl() + " (of class " + page.getClass()
+                    + ")");
+        }
+
+        return collectAndRunStats(client, htmlPage, test, instrumenter);
+    }
+
+    private RunStats collectAndRunStats(
+            final WebClient client,
+            final HtmlPage htmlPage,
+            final File test,
+            final ScriptInstrumenter instrumenter) throws IOException {
+
+        client.waitForBackgroundJavaScript(30000);
+        client.setScriptPreProcessor(null);
+
+        final Object javaScriptResult = htmlPage.executeJavaScript("window." + coverageVariableName)
+                .getJavaScriptResult();
+
+        if (!(javaScriptResult instanceof Undefined)) {
+            return collectAndWriteRunStats(test, instrumenter, (NativeObject) javaScriptResult);
         }
 
         return RunStats.EMPTY;
