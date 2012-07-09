@@ -129,7 +129,9 @@ public class CoverageGenerator {
                     try {
                         final RunStats runStats = runTest(test, ignorePatterns);
 
-                        if (outputStrategy.contains(OutputStrategy.PER_TEST)) {
+                        if (runStats == RunStats.EMPTY) {
+                            logger.warn("No actual test run for file: {}", test);
+                        } else if (outputStrategy.contains(OutputStrategy.PER_TEST)) {
                             writeRunStats(runStats);
                         }
 
