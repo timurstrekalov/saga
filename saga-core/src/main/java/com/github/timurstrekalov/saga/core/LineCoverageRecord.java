@@ -42,6 +42,10 @@ class LineCoverageRecord {
         return timesExecuted;
     }
 
+    public int getTimesExeutedRaw() {
+        return timesExecuted <= 0 ? 0 : timesExecuted;
+    }
+
     public String getLineSource() {
         return StringEscapeUtils.escapeHtml(StringEscapeUtils.escapeJavaScript(line));
     }

@@ -311,17 +311,24 @@ public class CoverageGenerator {
 
         FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
-        final File outputFile = new File(fileOutputDir, stats.getReportName());
-
-        logger.info("Writing coverage report: {}", outputFile.getAbsoluteFile());
+        final File rawOutput = new File(fileOutputDir, stats.getRawReportName());
+        final File htmlOutput = new File(fileOutputDir, stats.getReportName());
 
         synchronized (stringTemplateGroup) {
+            final LoggingStringTemplateErrorListener listener = new LoggingStringTemplateErrorListener();
+
+            logger.info("Writing raw coverage report: {}", rawOutput.getAbsoluteFile());
+            stringTemplateGroup.getInstanceOf("runStatsRaw")
+                    .add("stats", stats)
+                    .write(rawOutput, listener);
+
+            logger.info("Writing html coverage report: {}", htmlOutput.getAbsoluteFile());
             stringTemplateGroup.getInstanceOf("runStats")
                     .add("stats", stats)
                     .add("name", config.getString("app.name"))
                     .add("version", config.getString("app.version"))
                     .add("url", config.getString("app.url"))
-                    .write(outputFile, new LoggingStringTemplateErrorListener());
+                    .write(htmlOutput, listener);
         }
     }
 

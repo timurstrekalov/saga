@@ -29,6 +29,10 @@ class RunStats implements Iterable<FileStats> {
         return test.getName() + "-report.html";
     }
 
+    String getRawReportName() {
+        return test.getName() + "-coverage.dat";
+    }
+
     void add(final FileStats newStats) {
         final String key = newStats.getFullName();
         final FileStats oldStats = fileStatsMap.get(key);
@@ -87,4 +91,5 @@ class RunStats implements Iterable<FileStats> {
     public Iterator<FileStats> iterator() {
         return getFileStats().iterator();
     }
+
 }

@@ -10,6 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.List;
 
 class FileStats {
@@ -55,6 +58,15 @@ class FileStats {
 
     public List<LineCoverageRecord> getLineCoverageRecords() {
         return lineCoverageRecords;
+    }
+
+    public Collection<LineCoverageRecord> getExecutableLineCoverageRecords() {
+        return Collections2.filter(lineCoverageRecords, new Predicate<LineCoverageRecord>() {
+            @Override
+            public boolean apply(final LineCoverageRecord record) {
+                return record.isExecutable();
+            }
+        });
     }
 
     public int getStatements() {
@@ -120,6 +132,14 @@ class FileStats {
 
     public String getParentName() {
         return normalizeFileSeparators(parentName);
+    }
+
+    public String getFilePath() {
+        try {
+            return new File(new URI(getFullName())).getAbsolutePath();
+        } catch (final URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getId() {
