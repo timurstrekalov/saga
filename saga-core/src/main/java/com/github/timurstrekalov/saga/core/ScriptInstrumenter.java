@@ -95,9 +95,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             return sourceCode;
         }
 
-        final ScriptData data;
-
-        data = new ScriptData(normalizedSourceName, sourceCode);
+        final ScriptData data = new ScriptData(normalizedSourceName, sourceCode);
         scriptDataList.add(data);
 
         final CompilerEnvirons environs = new CompilerEnvirons();
