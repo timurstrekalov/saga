@@ -22,6 +22,8 @@
             return param ? y : 0;
         })(param);
 
+        eval("var evaled = 100;");
+
         for(i=2;i<4;i++){i++;}
 
         function thisNeverGetsCalled() {
