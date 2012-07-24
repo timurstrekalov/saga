@@ -35,6 +35,9 @@ public class Main {
         final Option includeInlineScriptsOpt = new Option("d", "include-inline-scripts", false,
                 "Whether to include inline scripts into instrumentation by default (default is false)");
 
+        final Option backgroundJavaScriptTimeoutOpt = new Option("j", "background-javascript-timeout", false,
+                "How long to wait for background JavaScript to finish running (in milliseconds, default is 5 minutes)");
+
         final Option helpOpt = new Option("h", "help", false, "Print this message");
         final Options options = new Options();
 
@@ -48,6 +51,7 @@ public class Main {
         options.addOption(outputStrategyOpt);
         options.addOption(includeInlineScriptsOpt);
         options.addOption(helpOpt);
+        options.addOption(backgroundJavaScriptTimeoutOpt);
 
         try {
             CommandLineParser parser = new GnuParser();
@@ -92,8 +96,19 @@ public class Main {
                 }
             }
 
+
             if (line.hasOption('d')) {
                 gen.setIncludeInlineScripts(true);
+            }
+
+            final String backgroundJavaScriptTimeout = line.getOptionValue('j');
+            if (backgroundJavaScriptTimeout != null) {
+                try {
+                    gen.setBackgroundJavaScriptTimeout(Long.valueOf(backgroundJavaScriptTimeout));
+                } catch (final Exception e) {
+                    System.err.println("Invalid timeout");
+                    printHelpAndExit(options);
+                }
             }
 
             gen.run();

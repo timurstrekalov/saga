@@ -20,14 +20,17 @@ class FileStats {
     private static final Logger logger = LoggerFactory.getLogger(FileStats.class);
 
     private final String fullName;
+    private final List<LineCoverageRecord> lineCoverageRecords;
+    private final boolean separateFile;
+
     private final String relativeName;
     private final String fileName;
     private final String parentName;
     private final String id;
-    private final List<LineCoverageRecord> lineCoverageRecords;
 
-    FileStats(final String fullName, final List<LineCoverageRecord> lineCoverageRecords) {
+    FileStats(final String fullName, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
         this.fullName = fullName;
+        this.separateFile = separateFile;
         this.relativeName = getRelativeName(fullName);
 
         final File file = new File(relativeName);
@@ -38,18 +41,14 @@ class FileStats {
         this.lineCoverageRecords = lineCoverageRecords;
     }
 
-    private String getRelativeName(String fullName) {
-        String relativeName;
-
+    private String getRelativeName(final String fullName) {
         try {
-            relativeName = ResourceUtils.getRelativePath(fullName,
+            return ResourceUtils.getRelativePath(fullName,
                     new File(System.getProperty("user.dir")).toURI().toString(), File.separator);
         } catch (final Exception e) {
             logger.debug(e.getMessage(), e);
-            relativeName = fullName;
+            return fullName;
         }
-
-        return relativeName;
     }
 
     private String generateId() {
@@ -103,8 +102,8 @@ class FileStats {
         final List<LineCoverageRecord> r1 = s1.getLineCoverageRecords();
         final List<LineCoverageRecord> r2 = s2.getLineCoverageRecords();
 
-        Validate.isTrue(s1.fullName.equals(s2.fullName));
-        Validate.isTrue(r1.size() == r2.size());
+        Validate.isTrue(s1.fullName.equals(s2.fullName), "Got different file names: " + s1 + " and " + s2);
+        Validate.isTrue(r1.size() == r2.size(), "Got different numbers of line coverage records: " + s1 + " and " + s2);
 
         final List<LineCoverageRecord> mergedRecords = Lists.newLinkedList();
 
@@ -112,10 +111,14 @@ class FileStats {
             final LineCoverageRecord l1 = r1.get(i);
             final LineCoverageRecord l2 = r2.get(i);
 
-            mergedRecords.add(LineCoverageRecord.merge(l1, l2));
+            try {
+                mergedRecords.add(LineCoverageRecord.merge(l1, l2));
+            } catch (Exception e) {
+                throw new RuntimeException(s1.fullName + " and " + s2.fullName, e);
+            }
         }
 
-        return new FileStats(s1.fullName, mergedRecords);
+        return new FileStats(s1.fullName, mergedRecords, s1.separateFile);
     }
 
     public String getFileName() {
@@ -144,6 +147,10 @@ class FileStats {
 
     public String getId() {
         return id;
+    }
+
+    public boolean isSeparateFile() {
+        return separateFile;
     }
 
     private String normalizeFileSeparators(final String path) {

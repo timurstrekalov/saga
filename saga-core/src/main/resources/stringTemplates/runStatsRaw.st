@@ -1,4 +1,4 @@
 runStatsRaw(stats) ::= <<
-$stats.fileStats:fileStatsRaw(); separator="\n"$
+$stats.fileStatsWithSeparateFileOnly:fileStatsRaw(); separator="\n"$
 
 >>

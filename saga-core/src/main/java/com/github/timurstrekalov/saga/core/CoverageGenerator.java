@@ -70,6 +70,8 @@ public class CoverageGenerator {
 
     private boolean includeInlineScripts = false;
 
+    private long backgroundJavaScriptTimeout = 5 * 60 * 1000;
+
     public CoverageGenerator(final File baseDir, final String includes, final File outputDir) {
         this(baseDir, includes, null, outputDir);
     }
@@ -237,7 +239,7 @@ public class CoverageGenerator {
             final File test,
             final ScriptInstrumenter instrumenter) throws IOException {
 
-        client.waitForBackgroundJavaScript(30000);
+        client.waitForBackgroundJavaScript(backgroundJavaScriptTimeout);
         client.setScriptPreProcessor(null);
 
         final Object javaScriptResult = htmlPage.executeJavaScript("window." + coverageVariableName)
@@ -299,7 +301,7 @@ public class CoverageGenerator {
                 }
             }
 
-            runStats.add(new FileStats(data.getSourceName(), lineCoverageRecords));
+            runStats.add(new FileStats(data.getSourceName(), lineCoverageRecords, data.isSeparateFile()));
         }
 
         return runStats;
@@ -396,6 +398,12 @@ public class CoverageGenerator {
     public void setIncludeInlineScripts(final Boolean includeInlineScripts) {
         if (includeInlineScripts != null) {
             this.includeInlineScripts = includeInlineScripts;
+        }
+    }
+
+    public void setBackgroundJavaScriptTimeout(final Long backgroundJavaScriptTimeout) {
+        if (backgroundJavaScriptTimeout != null) {
+            this.backgroundJavaScriptTimeout = backgroundJavaScriptTimeout;
         }
     }
 

@@ -27,11 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
 class ScriptInstrumenter implements ScriptPreProcessor {
+
+    private static final AtomicInteger evalCounter = new AtomicInteger();
 
     // hack, see http://sourceforge.net/tracker/?func=detail&atid=448266&aid=3106039&group_id=47038
     // still no build with that fix
@@ -51,6 +55,9 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
     private static final Pattern inlineScriptRe = Pattern.compile("script in (.+) from \\((\\d+), (\\d+)\\) to \\((\\d+), (\\d+)\\)");
+    private static final Pattern evalRe = Pattern.compile("(.+)#(\\d+\\(eval\\))");
+    private static final Pattern nonFileRe = Pattern.compile("JavaScriptStringJob");
+
     private static final ConcurrentMap<String, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
     private static final ConcurrentHashMultiset<String> writtenToDisk = ConcurrentHashMultiset.create();
 
@@ -83,7 +90,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final int lineNumber,
             final HtmlElement htmlElement) {
 
-        final String normalizedSourceName = inlineScriptRe.matcher(sourceName).replaceAll("$1__from_$2_$3_to_$4_$5");
+        final String normalizedSourceName = handleEvals(handleInlineScripts(sourceName));
 
         if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(normalizedSourceName)) {
             final ScriptData data = instrumentedScriptCache.get(normalizedSourceName);
@@ -95,7 +102,9 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             return sourceCode;
         }
 
-        final ScriptData data = new ScriptData(normalizedSourceName, sourceCode);
+        final ScriptData data = new ScriptData(normalizedSourceName, sourceCode, isSeparateFile(sourceName,
+                normalizedSourceName));
+
         scriptDataList.add(data);
 
         final CompilerEnvirons environs = new CompilerEnvirons();
@@ -147,6 +156,25 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         }
 
         return instrumentedCode;
+    }
+
+    private boolean isSeparateFile(final String sourceName, final String normalizedSourceName) {
+        return normalizedSourceName.equals(sourceName) && !nonFileRe.matcher(normalizedSourceName).matches();
+    }
+
+    private String handleInlineScripts(final String sourceName) {
+        return inlineScriptRe.matcher(sourceName).replaceAll("$1__from_$2_$3_to_$4_$5");
+    }
+
+    private String handleEvals(final String sourceName) {
+        final Matcher matcher = evalRe.matcher(sourceName);
+
+        if (matcher.find()) {
+            // assign a unique count to an eval statement because they might have the same name, which is bad for us
+            return sourceName + "(" + evalCounter.getAndIncrement() + ")";
+        }
+
+        return sourceName;
     }
 
     private boolean shouldIgnore(final String sourceName) {

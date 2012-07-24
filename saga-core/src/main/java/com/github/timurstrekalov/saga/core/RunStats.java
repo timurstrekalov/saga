@@ -1,7 +1,10 @@
 package com.github.timurstrekalov.saga.core;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import java.io.File;
@@ -45,7 +48,7 @@ class RunStats implements Iterable<FileStats> {
     }
 
     public Collection<FileStats> getFileStats() {
-        final List<FileStats> result = new ArrayList<FileStats>(fileStatsMap.values());
+        final List<FileStats> result = Lists.newLinkedList(fileStatsMap.values());
         
         Collections.sort(result, new Comparator<FileStats>() {
             @Override
@@ -55,6 +58,15 @@ class RunStats implements Iterable<FileStats> {
         });
 
         return result;
+    }
+
+    public Collection<FileStats> getFileStatsWithSeparateFileOnly() {
+        return Lists.newLinkedList(Iterables.filter(getFileStats(), new Predicate<FileStats>() {
+            @Override
+            public boolean apply(final FileStats stats) {
+                return stats.isSeparateFile();
+            }
+        }));
     }
 
     public int getTotalStatements() {

@@ -22,8 +22,8 @@ class LineCoverageRecord {
     }
 
     public static LineCoverageRecord merge(final LineCoverageRecord l1, final LineCoverageRecord l2) {
-        Validate.isTrue(l1.lineNr == l2.lineNr);
-        Validate.isTrue(l1.line.equals(l2.line));
+        Validate.isTrue(l1.lineNr == l2.lineNr, "Got different line numbers: " + l1.lineNr + " and " + l2.lineNr);
+        Validate.isTrue(l1.line.equals(l2.line), "Got different lines: " + l1.line + " and " + l2.line);
 
         final LineCoverageRecord merged = new LineCoverageRecord();
 

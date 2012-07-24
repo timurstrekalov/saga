@@ -10,14 +10,16 @@ class ScriptData {
 
     private final String sourceName;
     private final String sourceCode;
+    private final boolean separateFile;
 
     private final Map<Integer, Integer> statementsWithLengths = Maps.newTreeMap();
 
     private String instrumentedSourceCode;
 
-    ScriptData(final String sourceName, final String sourceCode) {
+    ScriptData(final String sourceName, final String sourceCode, final boolean separateFile) {
         this.sourceName = sourceName;
         this.sourceCode = sourceCode;
+        this.separateFile = separateFile;
     }
 
     void addExecutableLine(final Integer lineNr, final Integer length) {
@@ -79,6 +81,10 @@ class ScriptData {
             return false;
 
         return true;
+    }
+
+    public boolean isSeparateFile() {
+        return separateFile;
     }
 
     @Override
