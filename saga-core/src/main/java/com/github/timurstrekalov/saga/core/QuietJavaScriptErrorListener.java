@@ -1,13 +1,13 @@
 package com.github.timurstrekalov.saga.core;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 class QuietJavaScriptErrorListener implements JavaScriptErrorListener {
 
@@ -15,7 +15,9 @@ class QuietJavaScriptErrorListener implements JavaScriptErrorListener {
 
     @Override
     public void scriptException(final HtmlPage htmlPage, final ScriptException e) {
-        logger.error("Script exception on page {}, message: {}", htmlPage.getUrl(), e.getMessage());
+        logger.error("Script exception on page {}, message: {}, failing line: {}",
+                new Object[] { htmlPage.getUrl(), e.getMessage(), e.getFailingLine() });
+
         logger.debug(e.getMessage(), e);
     }
 

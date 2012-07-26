@@ -1,24 +1,5 @@
 package com.github.timurstrekalov.saga.core;
 
-import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ConcurrentHashMultiset;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
-import net.sourceforge.htmlunit.corejs.javascript.Parser;
-import net.sourceforge.htmlunit.corejs.javascript.Token;
-import net.sourceforge.htmlunit.corejs.javascript.ast.*;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.plexus.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,7 +12,56 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
+import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
+import net.sourceforge.htmlunit.corejs.javascript.Parser;
+import net.sourceforge.htmlunit.corejs.javascript.Token;
+import net.sourceforge.htmlunit.corejs.javascript.ast.AstNode;
+import net.sourceforge.htmlunit.corejs.javascript.ast.AstRoot;
+import net.sourceforge.htmlunit.corejs.javascript.ast.Block;
+import net.sourceforge.htmlunit.corejs.javascript.ast.ElementGet;
+import net.sourceforge.htmlunit.corejs.javascript.ast.ExpressionStatement;
+import net.sourceforge.htmlunit.corejs.javascript.ast.IfStatement;
+import net.sourceforge.htmlunit.corejs.javascript.ast.Loop;
+import net.sourceforge.htmlunit.corejs.javascript.ast.Name;
+import net.sourceforge.htmlunit.corejs.javascript.ast.NodeVisitor;
+import net.sourceforge.htmlunit.corejs.javascript.ast.NumberLiteral;
+import net.sourceforge.htmlunit.corejs.javascript.ast.StringLiteral;
+import net.sourceforge.htmlunit.corejs.javascript.ast.SwitchCase;
+import net.sourceforge.htmlunit.corejs.javascript.ast.UnaryExpression;
+import net.sourceforge.htmlunit.corejs.javascript.ast.VariableDeclaration;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
+import org.codehaus.plexus.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static net.sourceforge.htmlunit.corejs.javascript.Token.BLOCK;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.BREAK;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.CASE;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.CONTINUE;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.DO;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.EMPTY;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.EXPR_RESULT;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.EXPR_VOID;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.FOR;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.FUNCTION;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.IF;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.RETURN;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.SCRIPT;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.SWITCH;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.THROW;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.TRY;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.VAR;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.WHILE;
 
 class ScriptInstrumenter implements ScriptPreProcessor {
 
@@ -102,8 +132,8 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             return sourceCode;
         }
 
-        final ScriptData data = new ScriptData(normalizedSourceName, sourceCode, isSeparateFile(sourceName,
-                normalizedSourceName));
+        final boolean separateFile = isSeparateFile(sourceName, normalizedSourceName);
+        final ScriptData data = new ScriptData(normalizedSourceName, sourceCode, separateFile);
 
         scriptDataList.add(data);
 
@@ -135,7 +165,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             instrumentedScriptCache.putIfAbsent(normalizedSourceName, data);
         }
 
-        if (outputInstrumentedFiles) {
+        if (outputInstrumentedFiles && separateFile) {
             synchronized (writtenToDisk) {
                 try {
                     if (!writtenToDisk.contains(normalizedSourceName)) {
