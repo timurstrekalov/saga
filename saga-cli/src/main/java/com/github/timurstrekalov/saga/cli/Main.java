@@ -26,7 +26,7 @@ public class Main {
                 "Regular expression patterns to match classes to exclude from instrumentation");
         noInstrumentPatternOpt.setArgs(Option.UNLIMITED_VALUES);
 
-        final Option sourcesToPreload = new Option("p", "preload-source", true,
+        final Option sourcesToPreload = new Option("p", "preload-sources", true,
                 "Comma-separated list of Ant-style paths to files to preload");
 
         final Option threadCountOpt = new Option("t", "thread-count", true,
