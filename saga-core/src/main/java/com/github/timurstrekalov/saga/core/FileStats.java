@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 
@@ -138,11 +137,7 @@ class FileStats {
     }
 
     public String getFilePath() {
-        try {
-            return new File(new URI(getFullName())).getAbsolutePath();
-        } catch (final URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        return new File(URI.create(getFullName())).getAbsolutePath();
     }
 
     public String getId() {

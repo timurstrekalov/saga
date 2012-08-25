@@ -26,6 +26,9 @@ public class Main {
                 "Regular expression patterns to match classes to exclude from instrumentation");
         noInstrumentPatternOpt.setArgs(Option.UNLIMITED_VALUES);
 
+        final Option sourcesToPreload = new Option("p", "preload-source", true,
+                "Comma-separated list of Ant-style paths to files to preload");
+
         final Option threadCountOpt = new Option("t", "thread-count", true,
                 "The maximum number of threads to use (defaults to the number of cores)");
 
@@ -52,6 +55,7 @@ public class Main {
         options.addOption(includeInlineScriptsOpt);
         options.addOption(helpOpt);
         options.addOption(backgroundJavaScriptTimeoutOpt);
+        options.addOption(sourcesToPreload);
 
         try {
             CommandLineParser parser = new GnuParser();
@@ -84,6 +88,7 @@ public class Main {
             }
 
             gen.setNoInstrumentPatterns(line.getOptionValues('n'));
+            gen.setSourcesToPreload(line.getOptionValue('p'));
             gen.setOutputStrategy(line.getOptionValue('s'));
 
             final String threadCount = line.getOptionValue('t');
@@ -95,7 +100,6 @@ public class Main {
                     printHelpAndExit(options);
                 }
             }
-
 
             if (line.hasOption('d')) {
                 gen.setIncludeInlineScripts(true);

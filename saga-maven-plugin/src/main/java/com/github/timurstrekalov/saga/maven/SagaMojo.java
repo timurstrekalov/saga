@@ -74,6 +74,11 @@ public class SagaMojo extends AbstractMojo {
      */
     private Long backgroundJavaScriptTimeout;
 
+    /**
+     * @parameter
+     */
+    private String sourcesToPreload;
+
     public void execute() throws MojoExecutionException {
         try {
 
@@ -86,6 +91,7 @@ public class SagaMojo extends AbstractMojo {
             gen.setThreadCount(threadCount);
             gen.setIncludeInlineScripts(includeInlineScripts);
             gen.setBackgroundJavaScriptTimeout(backgroundJavaScriptTimeout);
+            gen.setSourcesToPreload(sourcesToPreload);
 
             try {
                 gen.run();

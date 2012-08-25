@@ -34,6 +34,20 @@ import java.util.regex.Pattern;
 
 public class CoverageGenerator {
 
+    private static final Map<Integer, Double> emptyCoverageMapOfRecords = new HashMap<Integer, Double>() {
+        @Override
+        public Double get(final Object key) {
+            return 0D;
+        }
+    };
+
+    private static final Map<String, Map<Integer, Double>> emptyCoverageMapOfFiles = new HashMap<String, Map<Integer, Double>>() {
+        @Override
+        public Map<Integer, Double> get(final Object key) {
+            return emptyCoverageMapOfRecords;
+        }
+    };
+
     private static final Configuration config;
 
     static {
@@ -71,6 +85,8 @@ public class CoverageGenerator {
     private boolean includeInlineScripts = false;
 
     private long backgroundJavaScriptTimeout = 5 * 60 * 1000;
+
+    private String sourcesToPreload;
 
     public CoverageGenerator(final File baseDir, final String includes, final File outputDir) {
         this(baseDir, includes, null, outputDir);
@@ -170,6 +186,25 @@ public class CoverageGenerator {
         if (outputStrategy.contains(OutputStrategy.TOTAL)) {
             final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
 
+            if (sourcesToPreload != null) {
+                @SuppressWarnings("unchecked")
+                final List<File> filesToPreload = FileUtils.getFiles(baseDir, sourcesToPreload, null);
+
+                final WebClient webClient = localClient.get();
+                final ScriptInstrumenter instrumenter = new ScriptInstrumenter(
+                        webClient.getJavaScriptEngine().getContextFactory(), coverageVariableName);
+
+                for (final File file : filesToPreload) {
+                    instrumenter.preProcess(null, org.apache.commons.io.FileUtils.readFileToString(file),
+                            "file:" + file.getAbsolutePath(), 0, null);
+                }
+
+                for (final ScriptData data : instrumenter.getScriptDataList()) {
+                    final FileStats fileStats = getFileStatsFromScriptData(emptyCoverageMapOfFiles, data);
+                    totalStats.add(fileStats);
+                }
+            }
+
             for (final RunStats runStats : allRunStats) {
                 if (runStats != RunStats.EMPTY) {
                     for (final FileStats fileStats : runStats) {
@@ -252,6 +287,7 @@ public class CoverageGenerator {
         return RunStats.EMPTY;
     }
 
+    @SuppressWarnings("unchecked")
     private RunStats collectAndWriteRunStats(
             final File test,
             final ScriptInstrumenter instrumenter,
@@ -260,51 +296,62 @@ public class CoverageGenerator {
         final RunStats runStats = new RunStats(test);
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
-            final Scanner in = new Scanner(data.getSourceCode());
-            final NativeObject coverageData = (NativeObject) allCoverageData.get(data.getSourceName());
-
-            final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
-
-            if (!data.getLineNumbersOfAllStatements().isEmpty()) {
-                // pad with extra line coverage records if first executable statement is not the first line (comments
-                // at the start of files)
-                for (int lineNr = 1; lineNr < data.getLineNumberOfFirstStatement() && in.hasNext(); lineNr++) {
-                    lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
-                }
-
-                for (int lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext(); lineNr++) {
-                    final String line = in.nextLine();
-
-                    final Double coverageEntry = (Double) coverageData.get(lineNr);
-                    final int timesLineExecuted;
-
-                    if (coverageEntry == null) {
-                        final int lineLength = line.trim().length();
-
-                        if (lengthCountdown > 0 && lineLength > 0) {
-                            lengthCountdown -= lineLength;
-                            timesLineExecuted = -1;
-                        } else {
-                            timesLineExecuted = data.hasStatement(lineNr) ? 0 : -1;
-                        }
-                    } else {
-                        timesLineExecuted = coverageEntry.intValue();
-                        lengthCountdown = data.getStatementLength(lineNr);
-                    }
-
-                    // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
-                    lineCoverageRecords.add(new LineCoverageRecord(lineNr, timesLineExecuted, line));
-                }
-            } else {
-                for (int lineNr = 1; in.hasNext(); lineNr++) {
-                    lineCoverageRecords.add(new LineCoverageRecord(lineNr,  -1, in.nextLine()));
-                }
-            }
-
-            runStats.add(new FileStats(data.getSourceName(), lineCoverageRecords, data.isSeparateFile()));
+            final FileStats fileStats = getFileStatsFromScriptData(allCoverageData, data);
+            runStats.add(fileStats);
         }
 
         return runStats;
+    }
+
+    private FileStats getFileStatsFromScriptData(
+            final Map<String, Map<Integer, Double>> allCoverageData,
+            final ScriptData data) {
+
+        final Scanner in = new Scanner(data.getSourceCode());
+        final Map<Integer, Double> coverageData = allCoverageData.get(data.getSourceName());
+
+        final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
+
+        if (!data.getLineNumbersOfAllStatements().isEmpty()) {
+            // pad with extra line coverage records if first executable statement is not the first line (comments
+            // at the start of files)
+            for (int lineNr = 1; lineNr < data.getLineNumberOfFirstStatement() && in.hasNext(); lineNr++) {
+                lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
+            }
+
+            for (int lineNr = data.getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext(); lineNr++) {
+                final String line = in.nextLine();
+
+                final Double coverageEntry = coverageData.get(lineNr);
+                final int timesLineExecuted;
+
+                if (coverageEntry == null) {
+                    final int lineLength = line.trim().length();
+
+                    if (lengthCountdown > 0 && lineLength > 0) {
+                        lengthCountdown -= lineLength;
+                        timesLineExecuted = -1;
+                    } else {
+                        timesLineExecuted = data.hasStatement(lineNr) ? 0 : -1;
+                    }
+                } else {
+                    timesLineExecuted = coverageEntry.intValue();
+
+                    if (data.getStatementLength(lineNr) != null) {
+                        lengthCountdown = data.getStatementLength(lineNr);
+                    }
+                }
+
+                // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
+                lineCoverageRecords.add(new LineCoverageRecord(lineNr, timesLineExecuted, line));
+            }
+        } else {
+            for (int lineNr = 1; in.hasNext(); lineNr++) {
+                lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
+            }
+        }
+
+        return new FileStats(data.getSourceName(), lineCoverageRecords, data.isSeparateFile());
     }
 
     private void writeRunStats(final RunStats stats) throws IOException {
@@ -336,7 +383,7 @@ public class CoverageGenerator {
 
     public void setNoInstrumentPatterns(final Collection<String> noInstrumentPatterns) {
         if (noInstrumentPatterns != null) {
-            this.noInstrumentPatterns = new HashSet<String>(noInstrumentPatterns);
+            this.noInstrumentPatterns = Sets.newHashSet(noInstrumentPatterns);
         }
     }
 
@@ -404,6 +451,12 @@ public class CoverageGenerator {
     public void setBackgroundJavaScriptTimeout(final Long backgroundJavaScriptTimeout) {
         if (backgroundJavaScriptTimeout != null) {
             this.backgroundJavaScriptTimeout = backgroundJavaScriptTimeout;
+        }
+    }
+
+    public void setSourcesToPreload(final String sourcesToPreload) {
+        if (sourcesToPreload != null) {
+            this.sourcesToPreload = sourcesToPreload;
         }
     }
 
