@@ -79,6 +79,11 @@ public class SagaMojo extends AbstractMojo {
      */
     private String sourcesToPreload;
 
+    /**
+     * @parameter
+     */
+    private String sourcesToPreloadEncoding;
+
     public void execute() throws MojoExecutionException {
         try {
 
@@ -92,6 +97,7 @@ public class SagaMojo extends AbstractMojo {
             gen.setIncludeInlineScripts(includeInlineScripts);
             gen.setBackgroundJavaScriptTimeout(backgroundJavaScriptTimeout);
             gen.setSourcesToPreload(sourcesToPreload);
+            gen.setSourcesToPreloadEncoding(sourcesToPreloadEncoding);
 
             try {
                 gen.run();

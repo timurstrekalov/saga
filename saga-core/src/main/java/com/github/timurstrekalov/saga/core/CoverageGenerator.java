@@ -24,6 +24,7 @@ import org.stringtemplate.v4.STGroupDir;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -70,6 +71,7 @@ public class CoverageGenerator {
     private long backgroundJavaScriptTimeout = 5 * 60 * 1000;
 
     private String sourcesToPreload;
+    private String sourcesToPreloadEncoding = "UTF-8";
 
     public CoverageGenerator(final File baseDir, final String includes, final File outputDir) {
         this(baseDir, includes, null, outputDir);
@@ -172,6 +174,8 @@ public class CoverageGenerator {
             final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
 
             if (sourcesToPreload != null) {
+                logger.info("Using {} to preload sources", sourcesToPreloadEncoding);
+
                 @SuppressWarnings("unchecked")
                 final List<File> filesToPreload = FileUtils.getFiles(baseDir, sourcesToPreload, null);
 
@@ -180,8 +184,10 @@ public class CoverageGenerator {
                         webClient.getJavaScriptEngine().getContextFactory(), coverageVariableName);
 
                 for (final File file : filesToPreload) {
-                    instrumenter.preProcess(null, org.apache.commons.io.FileUtils.readFileToString(file),
-                            "file:" + file.getAbsolutePath(), 0, null);
+                    final String source = org.apache.commons.io.FileUtils.readFileToString(file,
+                            sourcesToPreloadEncoding);
+
+                    instrumenter.preProcess(null, source, "file:" + file.getAbsolutePath(), 0, null);
                 }
 
                 for (final ScriptData data : instrumenter.getScriptDataList()) {
@@ -445,6 +451,12 @@ public class CoverageGenerator {
     public void setSourcesToPreload(final String sourcesToPreload) {
         if (sourcesToPreload != null) {
             this.sourcesToPreload = sourcesToPreload;
+        }
+    }
+
+    public void setSourcesToPreloadEncoding(final String sourcesToPreloadEncoding) {
+        if (sourcesToPreloadEncoding != null) {
+            this.sourcesToPreloadEncoding = sourcesToPreloadEncoding;
         }
     }
 
