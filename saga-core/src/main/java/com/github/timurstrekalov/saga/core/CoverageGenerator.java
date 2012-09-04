@@ -6,10 +6,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 import org.apache.commons.configuration.Configuration;
@@ -33,20 +30,6 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 public class CoverageGenerator {
-
-    private static final Map<Integer, Double> emptyCoverageMapOfRecords = new HashMap<Integer, Double>() {
-        @Override
-        public Double get(final Object key) {
-            return 0D;
-        }
-    };
-
-    private static final Map<String, Map<Integer, Double>> emptyCoverageMapOfFiles = new HashMap<String, Map<Integer, Double>>() {
-        @Override
-        public Map<Integer, Double> get(final Object key) {
-            return emptyCoverageMapOfRecords;
-        }
-    };
 
     private static final Configuration config;
 
@@ -202,7 +185,13 @@ public class CoverageGenerator {
                 }
 
                 for (final ScriptData data : instrumenter.getScriptDataList()) {
-                    final FileStats fileStats = getFileStatsFromScriptData(emptyCoverageMapOfFiles, data);
+                    final Map<Integer, Double> coverageData = Maps.newHashMap();
+
+                    for (final Integer lineNumber : data.getLineNumbersOfAllStatements()) {
+                        coverageData.put(lineNumber, 0D);
+                    }
+
+                    final FileStats fileStats = getFileStatsFromScriptData(coverageData, data);
                     totalStats.add(fileStats);
                 }
             }
@@ -298,19 +287,16 @@ public class CoverageGenerator {
         final RunStats runStats = new RunStats(test);
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
-            final FileStats fileStats = getFileStatsFromScriptData(allCoverageData, data);
+            final Map<Integer, Double> coverageData = (Map) allCoverageData.get(data.getSourceName());
+            final FileStats fileStats = getFileStatsFromScriptData(coverageData, data);
             runStats.add(fileStats);
         }
 
         return runStats;
     }
 
-    private FileStats getFileStatsFromScriptData(
-            final Map<String, Map<Integer, Double>> allCoverageData,
-            final ScriptData data) {
-
+    private FileStats getFileStatsFromScriptData(final Map<Integer, Double> coverageData, final ScriptData data) {
         final Scanner in = new Scanner(data.getSourceCode());
-        final Map<Integer, Double> coverageData = allCoverageData.get(data.getSourceName());
 
         final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
 
