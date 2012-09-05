@@ -1,17 +1,5 @@
 package com.github.timurstrekalov.saga.core;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -21,47 +9,29 @@ import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
-import net.sourceforge.htmlunit.corejs.javascript.ast.AstNode;
-import net.sourceforge.htmlunit.corejs.javascript.ast.AstRoot;
-import net.sourceforge.htmlunit.corejs.javascript.ast.Block;
-import net.sourceforge.htmlunit.corejs.javascript.ast.ElementGet;
-import net.sourceforge.htmlunit.corejs.javascript.ast.ExpressionStatement;
-import net.sourceforge.htmlunit.corejs.javascript.ast.IfStatement;
-import net.sourceforge.htmlunit.corejs.javascript.ast.Loop;
-import net.sourceforge.htmlunit.corejs.javascript.ast.Name;
-import net.sourceforge.htmlunit.corejs.javascript.ast.NodeVisitor;
-import net.sourceforge.htmlunit.corejs.javascript.ast.NumberLiteral;
-import net.sourceforge.htmlunit.corejs.javascript.ast.StringLiteral;
-import net.sourceforge.htmlunit.corejs.javascript.ast.SwitchCase;
-import net.sourceforge.htmlunit.corejs.javascript.ast.UnaryExpression;
-import net.sourceforge.htmlunit.corejs.javascript.ast.VariableDeclaration;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
+import net.sourceforge.htmlunit.corejs.javascript.ast.*;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static net.sourceforge.htmlunit.corejs.javascript.Token.BLOCK;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.BREAK;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.CASE;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.CONTINUE;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.DO;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.EMPTY;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.EXPR_RESULT;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.EXPR_VOID;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.FOR;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.FUNCTION;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.IF;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.RETURN;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.SCRIPT;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.SWITCH;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.THROW;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.TRY;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.VAR;
-import static net.sourceforge.htmlunit.corejs.javascript.Token.WHILE;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
 
 class ScriptInstrumenter implements ScriptPreProcessor {
 
@@ -98,7 +68,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     private final List<ScriptData> scriptDataList = Lists.newLinkedList();
 
-    private Set<Pattern> ignorePatterns;
+    private Collection<Pattern> ignorePatterns;
     private File outputDir;
     private boolean outputInstrumentedFiles;
 
@@ -170,13 +140,14 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 try {
                     if (!writtenToDisk.contains(normalizedSourceName)) {
                         final File file = new File(normalizedSourceName);
-                        final File fileOutputDir = new File(outputDir, DigestUtils.md5Hex(file.getParent()));
+                        final File fileOutputDir = new File(outputDir, Hashing.md5().hashString(file.getParent()).toString());
                         FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
                         final File outputFile = new File(fileOutputDir, file.getName());
 
                         logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
-                        IOUtils.write(instrumentedCode, new FileOutputStream(outputFile));
+                        ByteStreams.write(instrumentedCode.getBytes("UTF-8"), Files.newOutputStreamSupplier(outputFile));
+
                         writtenToDisk.add(normalizedSourceName);
                     }
                 } catch (final IOException e) {
@@ -220,7 +191,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         return scriptDataList;
     }
 
-    public void setIgnorePatterns(final Set<Pattern> ignorePatterns) {
+    public void setIgnorePatterns(final Collection<Pattern> ignorePatterns) {
         this.ignorePatterns = ignorePatterns;
     }
 

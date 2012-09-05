@@ -1,11 +1,11 @@
 package com.github.timurstrekalov.saga.core;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.Validate;
+import com.google.common.hash.Hashing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ class FileStats {
     }
 
     private String generateId() {
-        return DigestUtils.md5Hex(fullName);
+        return Hashing.md5().hashString(fullName).toString();
     }
 
     public List<LineCoverageRecord> getLineCoverageRecords() {
@@ -77,12 +77,12 @@ class FileStats {
     }
 
     public int getExecuted() {
-        return Util.sum(Collections2.transform(lineCoverageRecords, new Function<LineCoverageRecord, Integer>() {
+        return Util.sum(lineCoverageRecords, new Function<LineCoverageRecord, Integer>() {
             @Override
             public Integer apply(final LineCoverageRecord input) {
                 return input.getTimesExecuted() > 0 ? 1 : 0;
             }
-        }));
+        });
     }
 
     public int getCoverage() {
@@ -101,8 +101,8 @@ class FileStats {
         final List<LineCoverageRecord> r1 = s1.getLineCoverageRecords();
         final List<LineCoverageRecord> r2 = s2.getLineCoverageRecords();
 
-        Validate.isTrue(s1.fullName.equals(s2.fullName), "Got different file names: " + s1 + " and " + s2);
-        Validate.isTrue(r1.size() == r2.size(), "Got different numbers of line coverage records: " + s1 + " and " + s2);
+        Preconditions.checkArgument(s1.fullName.equals(s2.fullName), "Got different file names: %s and %s", s1, s2);
+        Preconditions.checkArgument(r1.size() == r2.size(), "Got different numbers of line coverage records: %s and %s", s1, s2);
 
         final List<LineCoverageRecord> mergedRecords = Lists.newLinkedList();
 
@@ -112,8 +112,8 @@ class FileStats {
 
             try {
                 mergedRecords.add(LineCoverageRecord.merge(l1, l2));
-            } catch (Exception e) {
-                throw new RuntimeException(s1.fullName + " and " + s2.fullName, e);
+            } catch (final Exception e) {
+                throw new RuntimeException("Error merging " + s1.fullName + " and " + s2.fullName, e);
             }
         }
 
@@ -156,4 +156,8 @@ class FileStats {
         return path.replaceAll("\\\\", "/");
     }
 
+    @Override
+    public String toString() {
+        return getFullName();
+    }
 }

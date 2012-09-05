@@ -1,7 +1,7 @@
 package com.github.timurstrekalov.saga.core;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
@@ -17,21 +17,15 @@ class LineCoverageRecord {
         this.line = line;
     }
 
-    private LineCoverageRecord() {
-
-    }
-
     public static LineCoverageRecord merge(final LineCoverageRecord l1, final LineCoverageRecord l2) {
-        Validate.isTrue(l1.lineNr == l2.lineNr, "Got different line numbers: " + l1.lineNr + " and " + l2.lineNr);
-        Validate.isTrue(l1.line.equals(l2.line), "Got different lines: " + l1.line + " and " + l2.line);
+        Preconditions.checkArgument(l1.lineNr == l2.lineNr, "Got different line numbers: %d  and %d", l1.lineNr, l2.lineNr);
+        Preconditions.checkArgument(l1.line.equals(l2.line), "Got different lines: %d and %d", l1.line, l2.line);
 
-        final LineCoverageRecord merged = new LineCoverageRecord();
-
-        merged.lineNr = l1.lineNr;
-        merged.timesExecuted = l1.timesExecuted == -1 ? -1 : l1.timesExecuted + l2.timesExecuted;
-        merged.line = l1.line;
-
-        return merged;
+        return new LineCoverageRecord(
+                l1.lineNr,
+                l1.timesExecuted == -1 ? -1 : l1.timesExecuted + l2.timesExecuted,
+                l1.line
+        );
     }
 
     public int getLineNr() {
@@ -40,10 +34,6 @@ class LineCoverageRecord {
 
     public int getTimesExecuted() {
         return timesExecuted;
-    }
-
-    public int getTimesExeutedRaw() {
-        return timesExecuted <= 0 ? 0 : timesExecuted;
     }
 
     public String getLineSource() {

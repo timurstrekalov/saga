@@ -1,5 +1,7 @@
 package com.github.timurstrekalov.saga.core;
 
+import com.google.common.base.Function;
+
 class Util {
 
     private static final int[] red = {219, 75, 75};
@@ -10,11 +12,11 @@ class Util {
         return (int) ((double) totalExecuted / totalStatements * 100);
     }
 
-    static int sum(final Iterable<Integer> ints) {
+    static <T> int sum(final Iterable<T> objects, final Function<T, Integer> transformer) {
         int sum = 0;
 
-        for (final Integer i : ints) {
-            sum += i;
+        for (final T t : objects) {
+            sum += transformer.apply(t);
         }
 
         return sum;

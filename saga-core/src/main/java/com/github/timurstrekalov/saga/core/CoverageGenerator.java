@@ -6,14 +6,16 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
+import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
@@ -78,7 +80,7 @@ public class CoverageGenerator {
     }
 
     public CoverageGenerator(final File baseDir, final String includes, final String excludes, final File outputDir) {
-        Validate.isTrue(baseDir.exists(), "baseDir doesn't exist");
+        Preconditions.checkState(baseDir.exists(), "baseDir doesn't exist");
 
         this.baseDir = baseDir;
         this.includes = includes;
@@ -88,8 +90,7 @@ public class CoverageGenerator {
         stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
 
         // make HtmlUnit shut up
-        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log",
-                "org.apache.commons.logging.impl.NoOpLog");
+        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 
         java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
         java.util.logging.Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
@@ -122,7 +123,7 @@ public class CoverageGenerator {
             logger.info("Using the following no-instrument patterns:\n\t{}", StringUtils.join(noInstrumentPatterns, "\n\t"));
         }
 
-        final Set<Pattern> ignorePatterns = createPatterns();
+        final Collection<Pattern> ignorePatterns = createPatterns();
 
         final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         final CompletionService<RunStats> completionService = new ExecutorCompletionService<RunStats>(executorService);
@@ -179,14 +180,14 @@ public class CoverageGenerator {
                 @SuppressWarnings("unchecked")
                 final List<File> filesToPreload = FileUtils.getFiles(baseDir, sourcesToPreload, null);
 
+                logger.info("Preloading {} files", filesToPreload.size());
+
                 final WebClient webClient = localClient.get();
-                final ScriptInstrumenter instrumenter = new ScriptInstrumenter(
-                        webClient.getJavaScriptEngine().getContextFactory(), coverageVariableName);
+                final ScriptInstrumenter instrumenter = new ScriptInstrumenter(webClient.getJavaScriptEngine().getContextFactory(),
+                        coverageVariableName);
 
                 for (final File file : filesToPreload) {
-                    final String source = org.apache.commons.io.FileUtils.readFileToString(file,
-                            sourcesToPreloadEncoding);
-
+                    final String source = CharStreams.toString(Files.newReaderSupplier(file, Charset.forName(sourcesToPreloadEncoding)));
                     instrumenter.preProcess(null, source, "file:" + file.getAbsolutePath(), 0, null);
                 }
 
@@ -194,7 +195,7 @@ public class CoverageGenerator {
                     final Map<Integer, Double> coverageData = Maps.newHashMap();
 
                     for (final Integer lineNumber : data.getLineNumbersOfAllStatements()) {
-                        coverageData.put(lineNumber, 0D);
+                        coverageData.put(lineNumber, 0.0);
                     }
 
                     final FileStats fileStats = getFileStatsFromScriptData(coverageData, data);
@@ -214,16 +215,16 @@ public class CoverageGenerator {
         }
     }
 
-    private HashSet<Pattern> createPatterns() {
-        return new HashSet<Pattern>(Collections2.transform(noInstrumentPatterns, new Function<String, Pattern>() {
+    private Collection<Pattern> createPatterns() {
+        return Collections2.transform(noInstrumentPatterns, new Function<String, Pattern>() {
             @Override
             public Pattern apply(final String input) {
                 return Pattern.compile(input);
             }
-        }));
+        });
     }
 
-    private RunStats runTest(final File test, final Set<Pattern> ignorePatterns) throws IOException {
+    private RunStats runTest(final File test, final Collection<Pattern> ignorePatterns) throws IOException {
         final WebClient client = localClient.get();
 
         final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
@@ -258,8 +259,7 @@ public class CoverageGenerator {
             client.getJavaScriptEngine().execute(htmlPage, webResponse.getContentAsString(),
                     test.getAbsolutePath(), 1);
         } else {
-            throw new RuntimeException("Unsupported page type: " + page.getUrl() + " (of class " + page.getClass()
-                    + ")");
+            throw new RuntimeException("Unsupported page type: " + page.getUrl() + " (of class " + page.getClass() + ")");
         }
 
         return collectAndRunStats(client, htmlPage, test, instrumenter);
@@ -289,7 +289,6 @@ public class CoverageGenerator {
             final File test,
             final ScriptInstrumenter instrumenter,
             final NativeObject allCoverageData) throws IOException {
-
         final RunStats runStats = new RunStats(test);
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
@@ -307,8 +306,7 @@ public class CoverageGenerator {
         final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
 
         if (!data.getLineNumbersOfAllStatements().isEmpty()) {
-            // pad with extra line coverage records if first executable statement is not the first line (comments
-            // at the start of files)
+            // pad with extra line coverage records if first executable statement is not the first line (comments at the start of files)
             for (int lineNr = 1; lineNr < data.getLineNumberOfFirstStatement() && in.hasNext(); lineNr++) {
                 lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
             }
@@ -336,7 +334,6 @@ public class CoverageGenerator {
                     }
                 }
 
-                // using lineCount instead of lineNr, see ScriptData#getLineNumberOfFirstStatement()
                 lineCoverageRecords.add(new LineCoverageRecord(lineNr, timesLineExecuted, line));
             }
         } else {
@@ -431,7 +428,7 @@ public class CoverageGenerator {
 
     public void setThreadCount(final Integer threadCount) {
         if (threadCount != null) {
-            Validate.isTrue(threadCount > 0, "Thread count must be greater than zero");
+            Preconditions.checkArgument(threadCount > 0, "Thread count must be greater than zero");
             this.threadCount = threadCount;
         }
     }

@@ -3,14 +3,17 @@ package com.github.timurstrekalov.saga.core;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
 
 class RunStats implements Iterable<FileStats> {
+
+    private static final Logger logger = LoggerFactory.getLogger(RunStats.class);
 
     public static final RunStats EMPTY = new RunStats(null, null);
 
@@ -42,6 +45,7 @@ class RunStats implements Iterable<FileStats> {
         try {
             key = newStats.getFilePath();
         } catch (final IllegalArgumentException e) {
+            logger.debug("Could not get file path", e);
             key = newStats.getFullName();
         }
 
@@ -68,30 +72,30 @@ class RunStats implements Iterable<FileStats> {
     }
 
     public Collection<FileStats> getFileStatsWithSeparateFileOnly() {
-        return Lists.newLinkedList(Iterables.filter(getFileStats(), new Predicate<FileStats>() {
+        return Collections2.filter(getFileStats(), new Predicate<FileStats>() {
             @Override
             public boolean apply(final FileStats stats) {
                 return stats.isSeparateFile();
             }
-        }));
+        });
     }
 
     public int getTotalStatements() {
-        return Util.sum(Collections2.transform(fileStatsMap.values(), new Function<FileStats, Integer>() {
+        return Util.sum(fileStatsMap.values(), new Function<FileStats, Integer>() {
             @Override
             public Integer apply(final FileStats input) {
                 return input.getStatements();
             }
-        }));
+        });
     }
 
     public int getTotalExecuted() {
-        return Util.sum(Collections2.transform(fileStatsMap.values(), new Function<FileStats, Integer>() {
+        return Util.sum(fileStatsMap.values(), new Function<FileStats, Integer>() {
             @Override
             public Integer apply(final FileStats input) {
                 return input.getExecuted();
             }
-        }));
+        });
     }
 
     public int getTotalCoverage() {
