@@ -9,7 +9,7 @@ public class FileStatsTest {
 
     @Test
     public void getParentName() {
-        assertEquals("test/path/bla", new FileStats("test\\path\\bla/file.js",
+        assertEquals("test/path/bla", new FileStats(System.getProperty("user.dir") + "\\test\\path\\bla/file.js",
                 Lists.<LineCoverageRecord>newLinkedList(), true).getParentName());
     }
 

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -92,25 +93,37 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
         final String normalizedSourceName = handleEvals(handleInlineScripts(sourceName));
 
-        if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(normalizedSourceName)) {
-            final ScriptData data = instrumentedScriptCache.get(normalizedSourceName);
+        final boolean separateFile = isSeparateFile(sourceName, normalizedSourceName);
+        final String fullSourcePath;
+
+        if (separateFile) {
+            if (htmlPage != null) {
+                fullSourcePath = getFullSourcePath(htmlPage, sourceName);
+            } else {
+                fullSourcePath = new File(normalizedSourceName).getAbsolutePath();
+            }
+        } else {
+            fullSourcePath = normalizedSourceName;
+        }
+
+        if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(fullSourcePath)) {
+            final ScriptData data = instrumentedScriptCache.get(fullSourcePath);
             scriptDataList.add(data);
             return data.getInstrumentedSourceCode();
         }
 
-        if (shouldIgnore(normalizedSourceName)) {
+        if (shouldIgnore(fullSourcePath)) {
             return sourceCode;
         }
 
-        final boolean separateFile = isSeparateFile(sourceName, normalizedSourceName);
-        final ScriptData data = new ScriptData(normalizedSourceName, sourceCode, separateFile);
+        final ScriptData data = new ScriptData(fullSourcePath, sourceCode, separateFile);
 
         scriptDataList.add(data);
 
         final CompilerEnvirons environs = new CompilerEnvirons();
         environs.initFromContext(contextFactory.enterContext());
 
-        final AstRoot root = new Parser(environs).parse(sourceCode, normalizedSourceName, lineNumber);
+        final AstRoot root = new Parser(environs).parse(sourceCode, fullSourcePath, lineNumber);
         root.visit(new InstrumentingVisitor(data, lineNumber - 1));
 
         final String treeSource = root.toSource();
@@ -120,7 +133,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 treeSource.length());
 
         buf.append(initializingCode);
-        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, normalizedSourceName));
+        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, fullSourcePath));
 
         for (final Integer i : data.getLineNumbersOfAllStatements()) {
             buf.append(String.format(arrayInitializer, data.getSourceName(), i));
@@ -132,14 +145,14 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         data.setInstrumentedSourceCode(instrumentedCode);
 
         if (cacheInstrumentedCode) {
-            instrumentedScriptCache.putIfAbsent(normalizedSourceName, data);
+            instrumentedScriptCache.putIfAbsent(fullSourcePath, data);
         }
 
         if (outputInstrumentedFiles && separateFile) {
             synchronized (writtenToDisk) {
                 try {
-                    if (!writtenToDisk.contains(normalizedSourceName)) {
-                        final File file = new File(normalizedSourceName);
+                    if (!writtenToDisk.contains(fullSourcePath)) {
+                        final File file = new File(fullSourcePath);
                         final File fileOutputDir = new File(outputDir, Hashing.md5().hashString(file.getParent()).toString());
                         FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
@@ -148,7 +161,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                         logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
                         ByteStreams.write(instrumentedCode.getBytes("UTF-8"), Files.newOutputStreamSupplier(outputFile));
 
-                        writtenToDisk.add(normalizedSourceName);
+                        writtenToDisk.add(fullSourcePath);
                     }
                 } catch (final IOException e) {
                     throw new RuntimeException(e);
@@ -157,6 +170,20 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         }
 
         return instrumentedCode;
+    }
+
+    private String getFullSourcePath(final HtmlPage htmlPage, final String sourceName) {
+        try {
+            final URI sourceUri = URI.create(sourceName.replaceAll(" ", "%20"));
+
+            if (sourceUri.isAbsolute()) {
+                return new File(sourceUri).getAbsolutePath();
+            }
+
+            return new File(new File(htmlPage.getUrl().toURI()), sourceName).getAbsolutePath();
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean isSeparateFile(final String sourceName, final String normalizedSourceName) {

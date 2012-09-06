@@ -5,15 +5,11 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
 
 class RunStats implements Iterable<FileStats> {
-
-    private static final Logger logger = LoggerFactory.getLogger(RunStats.class);
 
     public static final RunStats EMPTY = new RunStats(null, null);
 
@@ -40,15 +36,7 @@ class RunStats implements Iterable<FileStats> {
     }
 
     void add(final FileStats newStats) {
-        String key;
-
-        try {
-            key = newStats.getFilePath();
-        } catch (final IllegalArgumentException e) {
-            logger.debug("Could not get file path", e);
-            key = newStats.getFullName();
-        }
-
+        final String key = newStats.getFullName();
         final FileStats oldStats = fileStatsMap.get(key);
 
         if (oldStats != null) {

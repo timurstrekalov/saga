@@ -6,17 +6,14 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
 class FileStats {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileStats.class);
+    private static final String USER_DIR = new File(System.getProperty("user.dir")).getAbsolutePath();
 
     private final String fullName;
     private final List<LineCoverageRecord> lineCoverageRecords;
@@ -41,13 +38,7 @@ class FileStats {
     }
 
     private String getRelativeName(final String fullName) {
-        try {
-            return ResourceUtils.getRelativePath(fullName,
-                    new File(System.getProperty("user.dir")).toURI().toString(), File.separator);
-        } catch (final Exception e) {
-            logger.debug(e.getMessage(), e);
-            return fullName;
-        }
+        return isSeparateFile() ? ResourceUtils.getRelativePath(fullName, USER_DIR, File.separator) : fullName;
     }
 
     private String generateId() {
@@ -136,10 +127,6 @@ class FileStats {
         return normalizeFileSeparators(parentName);
     }
 
-    public String getFilePath() {
-        return new File(URI.create(getFullName())).getAbsolutePath();
-    }
-
     public String getId() {
         return id;
     }
@@ -160,4 +147,5 @@ class FileStats {
     public String toString() {
         return getFullName();
     }
+
 }

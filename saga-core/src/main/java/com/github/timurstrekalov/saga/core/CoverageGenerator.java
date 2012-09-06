@@ -124,6 +124,38 @@ public class CoverageGenerator {
         }
 
         final Collection<Pattern> ignorePatterns = createPatterns();
+        final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
+
+        if (outputStrategy.contains(OutputStrategy.TOTAL) && sourcesToPreload != null) {
+            logger.info("Using {} to preload sources", sourcesToPreloadEncoding);
+
+            @SuppressWarnings("unchecked")
+            final List<File> filesToPreload = FileUtils.getFiles(baseDir, sourcesToPreload, null);
+
+            logger.info("Preloading {} files", filesToPreload.size());
+
+            final WebClient webClient = localClient.get();
+            final ScriptInstrumenter instrumenter = new ScriptInstrumenter(webClient.getJavaScriptEngine().getContextFactory(),
+                    coverageVariableName);
+
+            for (final File file : filesToPreload) {
+                logger.debug("Preloading {}", file);
+
+                final String source = CharStreams.toString(Files.newReaderSupplier(file, Charset.forName(sourcesToPreloadEncoding)));
+                instrumenter.preProcess(null, source, file.getAbsolutePath(), 0, null);
+            }
+
+            for (final ScriptData data : instrumenter.getScriptDataList()) {
+                final Map<Integer, Double> coverageData = Maps.newHashMap();
+
+                for (final Integer lineNumber : data.getLineNumbersOfAllStatements()) {
+                    coverageData.put(lineNumber, 0.0);
+                }
+
+                final FileStats fileStats = getFileStatsFromScriptData(coverageData, data);
+                totalStats.add(fileStats);
+            }
+        }
 
         final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         final CompletionService<RunStats> completionService = new ExecutorCompletionService<RunStats>(executorService);
@@ -172,37 +204,6 @@ public class CoverageGenerator {
         logger.info("Test run finished");
 
         if (outputStrategy.contains(OutputStrategy.TOTAL)) {
-            final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
-
-            if (sourcesToPreload != null) {
-                logger.info("Using {} to preload sources", sourcesToPreloadEncoding);
-
-                @SuppressWarnings("unchecked")
-                final List<File> filesToPreload = FileUtils.getFiles(baseDir, sourcesToPreload, null);
-
-                logger.info("Preloading {} files", filesToPreload.size());
-
-                final WebClient webClient = localClient.get();
-                final ScriptInstrumenter instrumenter = new ScriptInstrumenter(webClient.getJavaScriptEngine().getContextFactory(),
-                        coverageVariableName);
-
-                for (final File file : filesToPreload) {
-                    final String source = CharStreams.toString(Files.newReaderSupplier(file, Charset.forName(sourcesToPreloadEncoding)));
-                    instrumenter.preProcess(null, source, "file:" + file.getAbsolutePath(), 0, null);
-                }
-
-                for (final ScriptData data : instrumenter.getScriptDataList()) {
-                    final Map<Integer, Double> coverageData = Maps.newHashMap();
-
-                    for (final Integer lineNumber : data.getLineNumbersOfAllStatements()) {
-                        coverageData.put(lineNumber, 0.0);
-                    }
-
-                    final FileStats fileStats = getFileStatsFromScriptData(coverageData, data);
-                    totalStats.add(fileStats);
-                }
-            }
-
             for (final RunStats runStats : allRunStats) {
                 if (runStats != RunStats.EMPTY) {
                     for (final FileStats fileStats : runStats) {
@@ -255,9 +256,7 @@ public class CoverageGenerator {
             final WebResponse webResponse = javaScriptPage.getWebResponse();
 
             htmlPage = new HtmlPage(javaScriptPage.getUrl(), webResponse, javaScriptPage.getEnclosingWindow());
-
-            client.getJavaScriptEngine().execute(htmlPage, webResponse.getContentAsString(),
-                    test.getAbsolutePath(), 1);
+            client.getJavaScriptEngine().execute(htmlPage, webResponse.getContentAsString(), test.getAbsolutePath(), 1);
         } else {
             throw new RuntimeException("Unsupported page type: " + page.getUrl() + " (of class " + page.getClass() + ")");
         }
