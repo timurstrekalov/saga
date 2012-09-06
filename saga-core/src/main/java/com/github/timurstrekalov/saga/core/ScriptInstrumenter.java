@@ -93,6 +93,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         try {
             final String normalizedSourceName = handleEvals(handleInlineScripts(sourceName));
 
+            if (shouldIgnore(normalizedSourceName)) {
+                return sourceCode;
+            }
+
             final boolean separateFile = isSeparateFile(sourceName, normalizedSourceName);
             final String fullSourcePath;
 
@@ -110,10 +114,6 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 final ScriptData data = instrumentedScriptCache.get(fullSourcePath);
                 scriptDataList.add(data);
                 return data.getInstrumentedSourceCode();
-            }
-
-            if (shouldIgnore(fullSourcePath)) {
-                return sourceCode;
             }
 
             final ScriptData data = new ScriptData(fullSourcePath, sourceCode, separateFile);
