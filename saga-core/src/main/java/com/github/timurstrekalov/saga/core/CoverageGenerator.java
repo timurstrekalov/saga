@@ -5,6 +5,7 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
@@ -124,6 +125,7 @@ public class CoverageGenerator {
         }
 
         final Collection<Pattern> ignorePatterns = createPatterns();
+        final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
         final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
 
         if (outputStrategy.contains(OutputStrategy.TOTAL) && sourcesToPreload != null) {
@@ -135,8 +137,8 @@ public class CoverageGenerator {
             logger.info("Preloading {} files", filesToPreload.size());
 
             final WebClient webClient = localClient.get();
-            final ScriptInstrumenter instrumenter = new ScriptInstrumenter(webClient.getJavaScriptEngine().getContextFactory(),
-                    coverageVariableName);
+            final ScriptInstrumenter instrumenter = newInstrumenter(ignorePatterns, instrumentedFileDirectory,
+                    webClient.getJavaScriptEngine().getContextFactory());
 
             for (final File file : filesToPreload) {
                 logger.debug("Preloading {}", file);
@@ -167,7 +169,7 @@ public class CoverageGenerator {
                     logger.info("Running {}", test.getAbsoluteFile().toURI().normalize().getPath());
 
                     try {
-                        final RunStats runStats = runTest(test, ignorePatterns);
+                        final RunStats runStats = runTest(test, ignorePatterns, instrumentedFileDirectory);
 
                         if (runStats == RunStats.EMPTY) {
                             logger.warn("No actual test run for file: {}", test);
@@ -225,23 +227,11 @@ public class CoverageGenerator {
         });
     }
 
-    private RunStats runTest(final File test, final Collection<Pattern> ignorePatterns) throws IOException {
+    private RunStats runTest(final File test, final Collection<Pattern> ignorePatterns, final File instrumentedFileDirectory)
+            throws IOException {
         final WebClient client = localClient.get();
-
-        final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
-        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(client.getJavaScriptEngine().getContextFactory(),
-                coverageVariableName);
-
-        instrumenter.setIgnorePatterns(ignorePatterns);
-
-        if (outputInstrumentedFiles) {
-            FileUtils.mkdir(instrumentedFileDirectory.getAbsolutePath());
-
-            instrumenter.setOutputDir(instrumentedFileDirectory);
-            instrumenter.setOutputInstrumentedFiles(outputInstrumentedFiles);
-        }
-
-        instrumenter.setCacheInstrumentedCode(cacheInstrumentedCode);
+        final ScriptInstrumenter instrumenter = newInstrumenter(ignorePatterns, instrumentedFileDirectory,
+                client.getJavaScriptEngine().getContextFactory());
 
         client.setScriptPreProcessor(instrumenter);
 
@@ -262,6 +252,27 @@ public class CoverageGenerator {
         }
 
         return collectAndRunStats(client, htmlPage, test, instrumenter);
+    }
+
+    private ScriptInstrumenter newInstrumenter(
+            final Collection<Pattern> ignorePatterns,
+            final File instrumentedFileDirectory,
+            final HtmlUnitContextFactory contextFactory) {
+
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(contextFactory, coverageVariableName);
+
+        instrumenter.setIgnorePatterns(ignorePatterns);
+
+        if (outputInstrumentedFiles) {
+            FileUtils.mkdir(instrumentedFileDirectory.getAbsolutePath());
+
+            instrumenter.setOutputDir(instrumentedFileDirectory);
+            instrumenter.setOutputInstrumentedFiles(outputInstrumentedFiles);
+        }
+
+        instrumenter.setCacheInstrumentedCode(cacheInstrumentedCode);
+
+        return instrumenter;
     }
 
     private RunStats collectAndRunStats(
