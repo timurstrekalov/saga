@@ -90,86 +90,89 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final String sourceName,
             final int lineNumber,
             final HtmlElement htmlElement) {
+        try {
+            final String normalizedSourceName = handleEvals(handleInlineScripts(sourceName));
 
-        final String normalizedSourceName = handleEvals(handleInlineScripts(sourceName));
+            final boolean separateFile = isSeparateFile(sourceName, normalizedSourceName);
+            final String fullSourcePath;
 
-        final boolean separateFile = isSeparateFile(sourceName, normalizedSourceName);
-        final String fullSourcePath;
-
-        if (separateFile) {
-            if (htmlPage != null) {
-                fullSourcePath = getFullSourcePath(htmlPage, sourceName);
+            if (separateFile) {
+                if (htmlPage != null) {
+                    fullSourcePath = getFullSourcePath(htmlPage, sourceName);
+                } else {
+                    fullSourcePath = new File(normalizedSourceName).getAbsolutePath();
+                }
             } else {
-                fullSourcePath = new File(normalizedSourceName).getAbsolutePath();
+                fullSourcePath = normalizedSourceName;
             }
-        } else {
-            fullSourcePath = normalizedSourceName;
-        }
 
-        if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(fullSourcePath)) {
-            final ScriptData data = instrumentedScriptCache.get(fullSourcePath);
+            if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(fullSourcePath)) {
+                final ScriptData data = instrumentedScriptCache.get(fullSourcePath);
+                scriptDataList.add(data);
+                return data.getInstrumentedSourceCode();
+            }
+
+            if (shouldIgnore(fullSourcePath)) {
+                return sourceCode;
+            }
+
+            final ScriptData data = new ScriptData(fullSourcePath, sourceCode, separateFile);
             scriptDataList.add(data);
-            return data.getInstrumentedSourceCode();
-        }
 
-        if (shouldIgnore(fullSourcePath)) {
-            return sourceCode;
-        }
+            final CompilerEnvirons environs = new CompilerEnvirons();
+            environs.initFromContext(contextFactory.enterContext());
 
-        final ScriptData data = new ScriptData(fullSourcePath, sourceCode, separateFile);
+            final AstRoot root = new Parser(environs).parse(sourceCode, fullSourcePath, lineNumber);
+            root.visit(new InstrumentingVisitor(data, lineNumber - 1));
 
-        scriptDataList.add(data);
+            final String treeSource = root.toSource();
+            final StringBuilder buf = new StringBuilder(
+                    initializingCode.length() +
+                    data.getNumberOfStatements() * arrayInitializer.length() +
+                    treeSource.length());
 
-        final CompilerEnvirons environs = new CompilerEnvirons();
-        environs.initFromContext(contextFactory.enterContext());
+            buf.append(initializingCode);
+            buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, fullSourcePath));
 
-        final AstRoot root = new Parser(environs).parse(sourceCode, fullSourcePath, lineNumber);
-        root.visit(new InstrumentingVisitor(data, lineNumber - 1));
+            for (final Integer i : data.getLineNumbersOfAllStatements()) {
+                buf.append(String.format(arrayInitializer, data.getSourceName(), i));
+            }
 
-        final String treeSource = root.toSource();
-        final StringBuilder buf = new StringBuilder(
-                initializingCode.length() +
-                data.getNumberOfStatements() * arrayInitializer.length() +
-                treeSource.length());
+            buf.append(treeSource);
 
-        buf.append(initializingCode);
-        buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, fullSourcePath));
+            final String instrumentedCode = buf.toString();
+            data.setInstrumentedSourceCode(instrumentedCode);
 
-        for (final Integer i : data.getLineNumbersOfAllStatements()) {
-            buf.append(String.format(arrayInitializer, data.getSourceName(), i));
-        }
+            if (cacheInstrumentedCode) {
+                instrumentedScriptCache.putIfAbsent(fullSourcePath, data);
+            }
 
-        buf.append(treeSource);
+            if (outputInstrumentedFiles && separateFile) {
+                synchronized (writtenToDisk) {
+                    try {
+                        if (!writtenToDisk.contains(fullSourcePath)) {
+                            final File file = new File(fullSourcePath);
+                            final File fileOutputDir = new File(outputDir, Hashing.md5().hashString(file.getParent()).toString());
+                            FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
-        final String instrumentedCode = buf.toString();
-        data.setInstrumentedSourceCode(instrumentedCode);
+                            final File outputFile = new File(fileOutputDir, file.getName());
 
-        if (cacheInstrumentedCode) {
-            instrumentedScriptCache.putIfAbsent(fullSourcePath, data);
-        }
+                            logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
+                            ByteStreams.write(instrumentedCode.getBytes("UTF-8"), Files.newOutputStreamSupplier(outputFile));
 
-        if (outputInstrumentedFiles && separateFile) {
-            synchronized (writtenToDisk) {
-                try {
-                    if (!writtenToDisk.contains(fullSourcePath)) {
-                        final File file = new File(fullSourcePath);
-                        final File fileOutputDir = new File(outputDir, Hashing.md5().hashString(file.getParent()).toString());
-                        FileUtils.mkdir(fileOutputDir.getAbsolutePath());
-
-                        final File outputFile = new File(fileOutputDir, file.getName());
-
-                        logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
-                        ByteStreams.write(instrumentedCode.getBytes("UTF-8"), Files.newOutputStreamSupplier(outputFile));
-
-                        writtenToDisk.add(fullSourcePath);
+                            writtenToDisk.add(fullSourcePath);
+                        }
+                    } catch (final IOException e) {
+                        throw new RuntimeException(e);
                     }
-                } catch (final IOException e) {
-                    throw new RuntimeException(e);
                 }
             }
-        }
 
-        return instrumentedCode;
+            return instrumentedCode;
+        } catch (final RuntimeException e) {
+            logger.error("Exception caught while instrumenting code", e);
+            return sourceCode;
+        }
     }
 
     private String getFullSourcePath(final HtmlPage htmlPage, final String sourceName) {
@@ -182,7 +185,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
             return new File(new File(htmlPage.getUrl().toURI()), sourceName).getAbsolutePath();
         } catch (final Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error getting full path for " + sourceName + " at " + htmlPage.getUrl(), e);
         }
     }
 
