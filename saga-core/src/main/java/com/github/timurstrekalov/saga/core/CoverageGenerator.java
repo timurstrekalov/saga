@@ -117,7 +117,7 @@ public class CoverageGenerator {
         if (!includeInlineScripts) {
             noInstrumentPatterns.add(inlineScriptRe);
             noInstrumentPatterns.add(".+JavaScriptStringJob");
-            noInstrumentPatterns.add(".+#\\d\\(eval\\)\\(\\d+\\)");
+            noInstrumentPatterns.add(".+#\\d+\\(eval\\)\\(\\d+\\)");
         }
 
         if (!noInstrumentPatterns.isEmpty()) {
