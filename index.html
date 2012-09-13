@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'/>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+    <meta name="description" content="Saga : Better code coverage tool for JavaScript"/>
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Saga : Better code coverage tool for JavaScript</title>
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-31382741-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') +
+        '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+
+    </script>
+    <script type="text/javascript">
+        /* <![CDATA[ */
+        (function() {
+        var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+        s.type = 'text/javascript';
+        s.async = true;
+        s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+        t.parentNode.insertBefore(s, t);
+        })();
+        /* ]]> */
+    </script>
+    <script type="text/javascript">
+        (function() {
+        var po = document.createElement('script');
+        po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(po, s);
+        })();
+    </script>
+    <script type="text/javascript">var switchTo5x=true;</script>
+    <script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
+    <script type="text/javascript">stLight.options({publisher: "9242d2e4-984e-4809-aaef-25052f738624"}); </script>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div id="header_wrap" class="outer">
+    <header class="inner">
+        <a id="forkme_banner" href="https://github.com/timurstrekalov/saga">View on GitHub</a>
+        <a id="build_health" href="http://travis-ci.org/timurstrekalov/saga"><img
+                src="https://secure.travis-ci.org/timurstrekalov/saga.png?branch=master"/></a>
+
+        <h1 id="project_title">Saga</h1>
+        <h2 id="project_tagline">Better code coverage tool for JavaScript</h2>
+
+        <div class="button">
+            <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="http://timurstrekalov.github.com/saga/"></a>
+            <noscript><a href="http://flattr.com/thing/663494/Saga-Better-code-coverage-tool-for-JavaScript" target="_blank">
+                <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" /></a></noscript>
+        </div>
+
+        <section id="downloads">
+            <a class="zip_download_link" href="https://github.com/timurstrekalov/saga/zipball/master">Download this
+                project as a .zip file</a>
+            <a class="tar_download_link" href="https://github.com/timurstrekalov/saga/tarball/master">Download this
+                project as a tar.gz file</a>
+        </section>
+    </header>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main_content_wrap" class="outer">
+<section id="main_content" class="inner">
+<p><a href="downloads/total-report.html" target="_blank"><img class="screenshot"
+        src="images/screenshot.png" alt="Screenshot of example report"></a></p>
+
+<h1 class="toc">What? Another coverage tool?</h1>
+
+<p>Indeed. I've been using <a href="http://siliconforks.com/jscoverage/">JSCoverage</a> a lot - and it proved to be a
+    pain to use in
+    a Continuous Integration environment. In desperation, I wrote the
+    <a href="https://github.com/timurstrekalov/jscoverage-maven-plugin">jscoverage-maven-plugin</a>, a
+    <a href="http://maven.apache.org/">Maven</a> wrapper around JSCoverage, which did the job, except for some huge
+    drawbacks:</p>
+
+<ol>
+    <li>It directly depended on JSCoverage.</li>
+    <li>It only generated the statements/executed/coverage report, even though JSCoverage itself made it possible to see
+        a line-by-line coverage report. Of course, I simply used jscoverage-server when I needed to see the lines I
+        missed
+        when writing tests, but, again, it's a hassle.
+    </li>
+    <li>The user had to provide the path to the jscoverage binary, which most people would frown upon -
+        it's just too much of a hassle. Of course, I could ship the binaries for all platforms together with the plugin
+        and decide which one to use during runtime, but this just sounds sketchy every time I think about it...
+    </li>
+    <li>It wasn't deployed to any Maven repository, so everyone would have to build it themselves.</li>
+</ol>
+<p>Having JSCoverage as a dependency proved to be painful as well:</p>
+
+<ol>
+    <li>It's native - that alone makes it a pain when it comes to CI.</li>
+    <li>JSCoverage, as most (all?) tools only provide the total coverage report, whereas I often find myself wishing I
+        could
+        also get a coverage report for every test run.
+    </li>
+    <li>It doesn't seem to be under any active development</li>
+</ol>
+<h1 class="toc">The good things about Saga</h1>
+
+<ol>
+    <li>It's Java. Wait, scratch that, that's not necessarily a good thing. However, it's written in Java for a reason:
+        the
+        idea was that it should be extremely simple to integrate it with Maven and any other build tool. Another reason
+        is
+        the fact that it heavily relies on <a href="http://htmlunit.sourceforge.net/">HtmlUnit</a> and its internals for
+        running
+        tests and instrumentation.
+    </li>
+    <li>It can generate both total coverage and per-test reports. The good thing about it is that you get more accurate
+        results - unit tests are designed to cover specific units. If your total coverage report shows you high coverage
+        for a unit, that does not necessarily mean that you've covered the unit that much. Actually, it doesn't mean
+        you've
+        covered it at all - it just means that some test might have invoked some parts of that unit as a side effect.
+    </li>
+    <li>
+        It's the only tool that lets you generate accurate coverage reports by allowing you to specify files that you
+        absolutely want to see in your coverage report (via the "sourcesToPreload" parameter)
+    </li>
+    <li>It has an <a href="downloads/total-report.html" target="_blank">awesome coverage report</a>, especially after
+        implementing the suggestions of
+        <a href="https://github.com/vectart">Marat Dyatko</a> :)
+    </li>
+    <li>It tries to make the most of your processor power by running tests and generating coverage concurrently by
+        default.
+    </li>
+    <li>It can generate coverage even for inline scripts.</li>
+    <li>It's already in <a href="http://repo1.maven.org/">Maven Central</a> and constantly synced, so adding it to your
+        build cycle
+        is pretty straightforward.
+    </li>
+    <li>It just works. There's very little configuration, and I'd like to think that the defaults are sensible enough.
+    </li>
+    <li>It's being actively developed, it's open, it's completely free.</li>
+</ol>
+<h1 class="toc">Maven plugin usage</h1>
+
+<p>Add the following piece of code to your POM:</p>
+
+<pre><code>&lt;plugin&gt;
+    &lt;groupId&gt;com.github.timurstrekalov&lt;/groupId&gt;
+    &lt;artifactId&gt;saga-maven-plugin&lt;/artifactId&gt;
+    &lt;version&gt;1.2.3&lt;/version&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;phase&gt;verify&lt;/phase&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;coverage&lt;/goal&gt;
+            &lt;/goals&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+    &lt;configuration&gt;
+        &lt;baseDir&gt;${testsBaseDir}&lt;/baseDir&gt;
+        &lt;includes&gt;
+            **/set1/*-TestRunner.html,
+            **/set2/*-TestRunner.html
+        &lt;/includes&gt;
+        &lt;outputDir&gt;${project.build.directory}/coverage&lt;/outputDir&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+</code></pre>
+
+<p>And that's it. Wait, you also have to do</p>
+
+<pre><code>mvn verify</code></pre>
+
+<p>Of course, there are some more configuration options, if you feel like it:</p>
+
+<table>
+    <tr>
+        <th>Parameter name</th>
+        <th>Description</th>
+        <th>Default value</th>
+    </tr>
+    <tr>
+        <td><strong>baseDir</strong></td>
+        <td>The base directory for the test search</td>
+        <td>none</td>
+    </tr>
+    <tr>
+        <td><strong>includes</strong></td>
+        <td>
+            A comma-separated list of
+            <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a> to include in
+            the search for test runners
+        </td>
+        <td>none</td>
+    </tr>
+    <tr>
+        <td>excludes</td>
+        <td>
+            A comma-separated list of
+            <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a> to exclude from
+            the search for test runners
+        </td>
+        <td>none</td>
+    </tr>
+    <tr>
+        <td><strong>outputDir</strong></td>
+        <td>The output directory for coverage reports</td>
+        <td>none</td>
+    </tr>
+    <tr>
+        <td>outputInstrumentedFiles</td>
+        <td>Whether to output instrumented files. Will be written to ${outputDir}/instrumented</td>
+        <td>false</td>
+    </tr>
+    <tr>
+        <td>noInstrumentPatterns</td>
+        <td>A list of regular expressions to match source file paths to be excluded from instrumentation</td>
+        <td>none</td>
+    </tr>
+    <tr>
+        <td>cacheInstrumentedCode</td>
+        <td>
+            Whether to cache instrumented source code. It's entirely possible that two tests might load some of the
+            same resources - this would prevent them from being instrumented every time, but rather cache them for
+            the whole coverage run.
+        </td>
+        <td>true</td>
+    </tr>
+    <tr>
+        <td>outputStrategy</td>
+        <td>One of TOTAL, PER_TEST or BOTH. Pretty self-explanatory.</td>
+        <td>TOTAL</td>
+    </tr>
+    <tr>
+        <td>threadCount</td>
+        <td>The maximum number of threads to use.</td>
+        <td>
+            <pre>Runtime
+  .getRuntime()
+  .availableProcessors()</pre>
+        </td>
+    </tr>
+    <tr>
+        <td>includeInlineScripts</td>
+        <td>Whether to include inline scripts into instrumentation</td>
+        <td>false</td>
+    </tr>
+    <tr>
+        <td>backgroundJavaScriptTimeout</td>
+        <td>How long to wait for background JS jobs to finish (in milliseconds)</td>
+        <td>300000</td>
+    </tr>
+    <tr>
+        <td>sourcesToPreload</td>
+        <td>A comma-separated list of
+            <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a> to exclude from
+            the search for sources to preload (useful to generate total coverage even though your tests might
+            not reference certain files, especially when you simply don't have tests for classes but you DO want to see
+            them). Paths are expected to be provided relative to the base directory.
+        </td>
+        <td>none</td>
+    </tr>
+    <tr>
+        <td>sourcesToPreloadEncoding</td>
+        <td>Encoding to use when preloading sources.</td>
+        <td>UTF-8</td>
+    </tr>
+</table>
+<p>Tested on Maven version 2.2.1 &amp; 3.x.x</p>
+
+<h2 class="toc">Using no-instrument patterns</h2>
+
+<p>It might be a little confusing, but the no-instrument patterns are actually <a
+        href="http://www.regular-expressions.info/">regular expressions</a> which <em>full script paths</em> are matched
+    against.
+    So, if you had a test which loaded a script like this</p>
+
+<pre><code>&lt;script src="someScript.js"&gt;&lt;/script&gt;</code></pre>
+
+<p>If you wanted to exclude "someScript.js" from instrumentation, you would have to specify a pattern as follows:</p>
+
+<pre><code>&lt;!-- ... --&gt;
+
+&lt;noInstrumentPatterns&gt;
+    &lt;pattern&gt;.+/someScript\.js&lt;/pattern&gt;
+&lt;/noInstrumentPatterns&gt;
+
+&lt;!-- ... --&gt;
+</code></pre>
+
+<p>That is, if you don't care about which file named "someScript.js" gets excluded. If you do (say, you have multiple files named "someScript.js"), you would have to provide more specific patterns, such as</p>
+
+<pre><code>&lt;!-- ... --&gt;
+
+&lt;noInstrumentPatterns&gt;
+    &lt;pattern&gt;.+/onlyExcludeThisOne/someScript\.js&lt;/pattern&gt;
+&lt;/noInstrumentPatterns&gt;
+
+&lt;!-- ... --&gt;
+</code></pre>
+
+<p>And so forth.</p>
+
+<p>
+    Still something unclear? Check out the <a href="downloads/saga-maven-plugin-sample.zip">sample project</a>.<br/>
+    Using <a href="http://searls.github.com/jasmine-maven-plugin/">jasmine-maven-plugin</a>? Good, you should be! There's a <a href="downloads/saga-with-jasmine-sample.zip">Jasmine with Saga sample project</a> for that as well.<br/><br/>
+
+    Just unzip them and run your regular "mvn clean verify".
+</p>
+
+<h2 class="toc">Other build tools</h2>
+
+<p>Using some other build tool? <a href="https://github.com/timurstrekalov/saga/issues/new">Raise a ticket</a>!</p>
+
+<h1 class="toc">Command-line tool</h1>
+
+<p>There's also a command-line utility for those not using Maven. It has pretty much the same configuration options and
+    works just as well.</p>
+
+<pre><code>usage: java -jar saga-cli-&lt;version&gt;-jar-with-dependencies.jar
+    -b &lt;arg&gt;
+    -i &lt;arg&gt;
+    -o &lt;arg&gt;
+    [-d] [-f] [-h]
+    [-e &lt;arg&gt;]
+    [-n &lt;arg&gt;]
+    [-s &lt;arg&gt;]
+    [-t &lt;arg&gt;]
+    [-j &lt;arg&gt;]
+    [-p &lt;arg&gt;]
+
+ -b,--base-dir &lt;arg&gt;                            Base directory for test search
+
+ -d,--include-inline-scripts                    Whether to include inline scripts into
+                                                instrumentation by default (default is
+                                                false)
+
+ -e,--exclude &lt;arg&gt;                             Comma-separated list of Ant-style
+                                                paths to the tests to exclude from run
+
+ -f,--output-instrumented-files                 Whether to output instrumented files
+                                                (default is false)
+
+ -h,--help                                      Print this message
+
+ -i,--include &lt;arg&gt;                             Comma-separated list of Ant-style
+                                                paths to the tests to run
+
+ -n,--no-instrument-pattern &lt;arg&gt;               Regular expression patterns to match
+                                                classes to exclude from
+                                                instrumentation
+
+ -o,--output-dir &lt;arg&gt;                          The output directory for coverage
+                                                reports
+
+ -s,--output-strategy &lt;arg&gt;                     Coverage report output strategy. One
+                                                of [PER_TEST, TOTAL, BOTH]
+
+ -t,--thread-count &lt;arg&gt;                        The maximum number of threads to use
+                                                (defaults to the number of cores)
+
+ -j,--background-javascript-timeout &lt;arg&gt;       How long to wait for background JS 
+                                                jobs to finish
+
+ -p,--preload-sources &lt;arg&gt;                     Comma-separated list of Ant-style
+                                                paths to files to preload
+</code></pre>
+
+<p>Download a <a href="http://saga-javascript-coverage.googlecode.com/files/saga-cli-1.2.3.zip">pre-built package</a> containing the latest executable jar with dependencies.</p>
+
+<p>Need an <a href="http://code.google.com/p/saga-javascript-coverage/downloads/list">older version</a>?</p>
+
+<h2 class="toc">Why the name?</h2>
+
+<p>Why not? Actually, it was suggested by my girlfriend after she started reading a book on Viking history. Plus,
+    <a href="http://search.maven.org">Maven Central search</a> only finds this project's artifacts, so there's no
+    ambiguity.</p>
+
+<h2 class="toc">Why doesn't Internet Explorer render my report as nicely?</h2>
+
+<p>If you're looking at a JS code coverage report with IE, then I'll <a href="http://www.stopusingie.com/">put it
+    gently</a> and
+    not start calling you names, even though I should. In short, Saga will never support IE-compatible reports. No
+    graceful
+    degradation, no nothing. Reports may work or they may not - if they do, it's purely coincidental and I cannot be
+    held
+    responsible for it.</p>
+
+</section>
+</div>
+
+<!-- FOOTER  -->
+<div id="footer_wrap" class="outer">
+    <footer class="inner">
+        <div>
+            <span class='st_sharethis_large' displayText='ShareThis'></span>
+            <span class='st_facebook_large' displayText='Facebook'></span>
+            <span class='st_twitter_large' displayText='Tweet'></span>
+            <span class='st_linkedin_large' displayText='LinkedIn'></span>
+            <span class='st_googleplus_large' displayText='Google +'></span>
+            <span class='st_digg_large' displayText='Digg'></span>
+            <span class='st_reddit_large' displayText='Reddit'></span>
+            <span class='st_email_large' displayText='Email'></span>
+        </div>
+
+        <p class="copyright">Saga maintained by <a href="https://github.com/timurstrekalov">timurstrekalov</a></p>
+
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+    </footer>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
+<script src="https://raw.github.com/epeli/underscore.string/master/dist/underscore.string.min.js"></script>
+<script>
+    $(function () {
+        $('h1.toc,h2.toc').each(function () {
+            var el = $(this);
+            var text = el.text();
+            var slugified = _.str.slugify(text);
+            el.html($('<a href="#' + slugified + '" name="' + slugified + '">' + text + '</a>'));
+        });
+    });
+</script>
+
+</body>
+</html>

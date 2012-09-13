@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Total coverage report</title>
+<style>
+    body {
+        margin: 0;
+        padding: 18px 10px;
+        font: 0.8125em Verdana, sans-serif;
+    }
+
+    h1 {
+        font-size: 1.2em;
+        margin: 0;
+        padding-left: 10px;
+        padding-bottom: 5px;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    .stats {
+        width: 100%;
+    }
+
+    .stats-header th {
+        color: white;
+    }
+
+    .stats-header th {
+        text-align: right;
+    }
+
+    .stats-header th:first-child {
+        text-align: left;
+    }
+
+    .stats td.statements,
+    .stats td.executed,
+    .stats td.coverage {
+        text-align: right;
+    }
+
+    .stats > thead th,
+    .stats > thead td,
+    .stats > tbody > tr > td {
+        padding: 4px 10px;
+    }
+
+    .stats > thead th {
+        font-size: 0.85em;
+    }
+
+    .stats > thead > tr:first-child th {
+        background-color: #758691;
+    }
+
+    .stats > thead th:first-child,
+    .stats > thead td:first-child,
+    .stats > tbody > tr > td:first-child {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+    }
+
+    .stats > thead th:last-child,
+    .stats > thead td:last-child,
+    .stats > tbody > tr > td:last-child {
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+
+    .stats > tbody > tr:nth-child(4n + 1) {
+        background-color: #e7e8e9;
+    }
+
+    .stats > tbody > tr:nth-child(2n + 1) {
+        cursor: pointer;
+    }
+
+    .stats > tbody > tr:nth-child(2n + 1):hover {
+        background-color: #b1c7d4;
+    }
+
+    .stats tr.no-statements {
+        opacity: 0.6;
+    }
+
+    a, a:hover, a:visited, a:active {
+        color: black;
+        text-decoration: none;
+    }
+
+    .bar-container {
+        padding: 2px;
+        padding-right: 8px;
+        width: 15%;
+    }
+
+    .bar {
+        background-color: #DDD;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 8px 8px 8px 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.5);
+        height: 7px;
+        padding: 1px;
+        position: relative;
+        width: 100%;
+    }
+
+    .bar > span {
+        background-color: #AEDB4B;
+        border-radius: 6px 6px 6px 6px;
+        box-shadow: 0 -2px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 -1px 0 rgba(0, 0, 0, 0.15) inset;
+        display: block;
+        height: 100%;
+    }
+
+    .bar > span:before {
+        position: absolute;
+        width: 25%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        border-right: 1px solid rgba(0,0,0,0.1);
+        content: ' ';
+    }
+    .bar > span:after {
+        position: absolute;
+        width: 25%;
+        height: 100%;
+        left: 50%;
+        top: 0;
+        border-left: 1px solid rgba(0,0,0,0.1);
+        border-right: 1px solid rgba(0,0,0,0.1);
+        content: ' ';
+    }
+
+    /* line by line coverage styles */
+
+    .line-coverage {
+        margin: 10px 0px;
+    }
+
+    .line-coverage th {
+        border-right: 1px solid #758691;
+    }
+
+    .line-coverage th div,
+    .line-coverage td div {
+        text-align: center;
+    }
+
+    .line-coverage th div {
+        margin: 0px 10px 0px 4px;
+    }
+
+    .line-coverage td div {
+        padding: 2px 6px 2px 4px;
+        margin: 0;
+    }
+
+    .line-coverage th,
+    .line-coverage td,
+    .line-coverage pre {
+        padding: 0;
+        margin: 0;
+
+        font-size: 1.05em;
+        font-weight: normal;
+        font-family: Courier New;
+    }
+
+    .line-coverage th div, 
+    .line-coverage td.times-executed div {
+        border-radius: 0 5px 5px 0;
+        color: rgba(0, 0, 0, 0.8);
+        font-size: 0.9em;
+    }
+
+    .line-coverage td pre {
+        margin-left: 8px;
+    }
+
+    .line-coverage tr.covered td.times-executed div {
+        background-color: #aedb4b;
+    }
+
+    .line-coverage tr.not-covered td.times-executed div {
+        background-color: #ff8134;
+    }
+
+    .line-coverage span.keyword {
+        color: #000080;
+        font-weight: bold;
+    }
+
+    .line-coverage span.string {
+        color: #008000;
+    }
+
+    .line-coverage span.number {
+        color: #0000ff;
+    }
+
+    .line-coverage a {
+        color: black;
+    }
+
+    .line-coverage-cell > div {
+        color: #FF8134;
+    }
+
+    .line-coverage-cell > div > a {
+        color: #FF8134;
+        font-weight: bold;
+        text-decoration: underline;
+    }
+
+    .stats > thead td {
+        font-weight: bold;
+    }
+
+    .footer {
+        padding-top: 5px;
+        text-align: right;
+        font-style: italic;
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+
+    .footer a {
+        text-decoration: underline;
+    }
+</style>
+<script type="text/javascript">
+    (function () {
+        var reservedKeywords = [
+            "break",
+            "case",
+            "catch",
+            "continue",
+            "debugger",
+            "default",
+            "delete",
+            "do",
+            "else",
+            "false",
+            "finally",
+            "for",
+            "function",
+            "if",
+            "in",
+            "instanceof",
+            "new",
+            "null",
+            "return",
+            "switch",
+            "this",
+            "true",
+            "throw",
+            "try",
+            "typeof",
+            "var",
+            "void",
+            "while",
+            "with"
+        ];
+
+        String.prototype.reverse = function () {
+            return this.split('').reverse().join('');
+        };
+
+        var reservedKeywordsPattern = new RegExp('\\b(' + reservedKeywords.join('|') + ')\\b', 'g');
+        var jsStringPattern = /('(?!\\').*'|"(?!\\").*")/g;
+        var jsNumberPattern = /\b(\d+(?:\.\d+)?)\b/g;
+
+        function el(type) {
+            return document.createElement(type);
+        }
+
+        function withText(node, text) {
+            node.innerHTML = text;
+            return node;
+        }
+
+        function maybeAppendMissedLines(id, frag, missed, data) {
+            if (missed.length === 0) {
+                return;
+            }
+
+            var rangeAnchors = [];
+            var range;
+
+            for (var i = 0, len = missed.length; i < len; i++) {
+                var start = missed[i];
+                var end = start;
+
+                range = [start];
+
+                for (var j = i + 1; j < len; j++) {
+                    var missedLineNr = missed[j];
+                    var consecutive = false;
+
+                    // consecutive missed lines
+                    if (missedLineNr === end + 1) {
+                        consecutive = true;
+                    } else {
+                        // let's check if all lines in between are not executable
+                        var dataIdx = end;
+
+                        while (dataIdx < missedLineNr) {
+                            if (data[dataIdx][0] > -1) {
+                                if (data[dataIdx][0] === 0) {
+                                    missedLineNr = dataIdx + 1;
+                                    consecutive = true;
+                                }
+
+                                break;
+                            }
+
+                            dataIdx++;
+                        }
+                    }
+
+                    if (consecutive) {
+                        end = missedLineNr;
+                        i = j;
+                    }
+                }
+
+                range[1] = end;
+
+                var rangeStr = start === end ? start : start + '-' + end;
+                rangeAnchors.push('<a href="' + '#' + id + '-' + start + '">' + rangeStr + '</a>');
+            }
+
+            frag.appendChild(withText(el('div'), 'Missed lines: ' + rangeAnchors.join(', ')));
+        }
+
+        function createSourceTable(id, dataEl) {
+            var d = document;
+
+            var data = eval(dataEl.innerHTML);
+            var td = dataEl.parentNode;
+            td.removeChild(dataEl);
+
+            var frag = d.createDocumentFragment();
+
+            var table = el('table');
+            table.className = 'line-coverage';
+
+            var missed = [];
+
+            for (var i = 0, len = data.length; i < len; i++) {
+                var tr = el('tr');
+                var record = data[i];
+
+                var timesExecuted = record[0];
+                var src = record[1];
+                var executable = timesExecuted > -1;
+                var lineNr = i + 1;
+
+                if (timesExecuted === 0) {
+                    missed.push(lineNr);
+                }
+
+                tr.className = !executable ? 'not-executable' : timesExecuted > 0 ? 'covered' : 'not-covered';
+                table.appendChild(tr);
+
+                var lineNrNode = el('th');
+
+                var anchor = el('a');
+                anchor.setAttribute('name', id + '-' + lineNr);
+                anchor.appendChild(withText(el('div'), lineNr));
+
+                lineNrNode.appendChild(anchor);
+                tr.appendChild(lineNrNode);
+
+                var timesExecutedNode = el('td');
+                timesExecutedNode.className = 'times-executed';
+                timesExecutedNode.appendChild(withText(el('div'), executable ? (timesExecuted || '!') : '&nbsp;'));
+                tr.appendChild(timesExecutedNode);
+
+                var srcNode = el('td');
+
+                var styledSrc = src
+                    .reverse().replace(jsStringPattern, '>naps/<$1>"gnirts"=ssalc naps<').reverse()
+                    .replace(jsNumberPattern, '<span class="number">$1</span>')
+                    .replace(reservedKeywordsPattern, '<span class="keyword">$1</span>');
+
+                srcNode.appendChild(withText(el('pre'), styledSrc));
+
+                tr.appendChild(srcNode);
+            }
+
+            maybeAppendMissedLines(id, frag, missed, data);
+            frag.appendChild(table);
+
+            td.appendChild(frag.cloneNode(true));
+        }
+
+        window.__coverage_toggleSection = function (hash) {
+            var d = document;
+            var id = hash.indexOf('-') > -1 ? hash.substring(0, hash.indexOf('-')) : hash;
+
+            var srcRow = d.getElementById('__src_' + id);
+            if (!srcRow) {
+                return;
+            }
+
+            var dataEl = d.getElementById('__data_' + id);
+
+            if (dataEl) {
+                createSourceTable(id, dataEl);
+            }
+
+            var show = srcRow.style.display === 'none';
+
+            if (show) {
+                srcRow.style.display = '';
+                window.location.hash = "#" + hash;
+            } else {
+                srcRow.style.display = 'none';
+                window.location.hash = '#closed';
+            }
+        }
+
+        window.onload = function () {
+            if (window.location.hash) {
+                __coverage_toggleSection(window.location.hash.substr(1));
+            }
+        };
+
+    })();
+</script>
+</head>
+<body>
+    <h1>Total coverage report</h1>
+    <table class="stats">
+        <thead>
+            <tr class="stats-header">
+                <th>File</th>
+                <th>Statements</th>
+                <th>Executed</th>
+                <th>Coverage</th>
+                <th></th>
+            </tr>
+            <tr class="stats-header ">
+                <td>Total</td>
+                <td class="statements">117</td>
+                <td class="executed">99</td>
+                <td class="coverage">
+                        84&thinsp;%
+                </td>
+                <td class="bar-container">
+                        <div class="bar">
+                            <span style="width: 84%; background-color: rgb(188, 219, 75);"></span>
+                        </div>
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="no-statements" onclick="__coverage_toggleSection('ec09797ae5c9b7f1edc2ba6bc3788b24'); return false;">
+                <td><a href="#">saga-core/src/test/resources/tests/<strong>Empty.js</strong></a></td>
+                <td class="statements">0</td>
+                <td class="executed">0</td>
+                <td class="coverage">
+                        -
+                </td>
+                <td class="bar-container">
+                </td>
+            </tr>
+            <tr id="__src_ec09797ae5c9b7f1edc2ba6bc3788b24" style="display: none;">
+                <td class="line-coverage-cell" colspan="5"><p id="__data_ec09797ae5c9b7f1edc2ba6bc3788b24">[]</p></td>
+            </tr><tr class="no-statements" onclick="__coverage_toggleSection('1250b0edcc5416c726d9da6b2aba09b9'); return false;">
+                <td><a href="#">saga-core/src/test/resources/tests/<strong>OnlyComments.js</strong></a></td>
+                <td class="statements">0</td>
+                <td class="executed">0</td>
+                <td class="coverage">
+                        -
+                </td>
+                <td class="bar-container">
+                </td>
+            </tr>
+            <tr id="__src_1250b0edcc5416c726d9da6b2aba09b9" style="display: none;">
+                <td class="line-coverage-cell" colspan="5"><p id="__data_1250b0edcc5416c726d9da6b2aba09b9">[[-1,'\/**'],[-1,' * Some multiline comment'],[-1,' *\/'],[-1,''],[-1,'\/\/ some other comment here']]</p></td>
+            </tr><tr  onclick="__coverage_toggleSection('b7f15a0ac4fb3114c102d2d89d59af1d'); return false;">
+                <td><a href="#">saga-core/src/test/resources/tests/pkg/<strong>NotReferencedButWanted.js</strong></a></td>
+                <td class="statements">3</td>
+                <td class="executed">0</td>
+                <td class="coverage">
+                        0&thinsp;%
+                </td>
+                <td class="bar-container">
+                        <div class="bar">
+                            <span style="width: 0%; background-color: rgb(219, 75, 75);"></span>
+                        </div>
+                </td>
+            </tr>
+            <tr id="__src_b7f15a0ac4fb3114c102d2d89d59af1d" style="display: none;">
+                <td class="line-coverage-cell" colspan="5"><p id="__data_b7f15a0ac4fb3114c102d2d89d59af1d">[[0,'function a() {'],[0,'    var degree = \&quot;\u00B0\&quot;;'],[0,'    return 0;'],[-1,'}']]</p></td>
+            </tr><tr  onclick="__coverage_toggleSection('6515943f59547c64723b226ed3e4c536'); return false;">
+                <td><a href="#">saga-core/src/test/resources/tests/<strong>Class.js</strong></a></td>
+                <td class="statements">111</td>
+                <td class="executed">96</td>
+                <td class="coverage">
+                        86&thinsp;%
+                </td>
+                <td class="bar-container">
+                        <div class="bar">
+                            <span style="width: 86%; background-color: rgb(186, 219, 75);"></span>
+                        </div>
+                </td>
+            </tr>
+            <tr id="__src_6515943f59547c64723b226ed3e4c536" style="display: none;">
+                <td class="line-coverage-cell" colspan="5"><p id="__data_6515943f59547c64723b226ed3e4c536">[[-1,'\/**'],[-1,' * Multiline comment just in case: used to be a bug'],[-1,' *\/'],[-1,' \/\/ or any comment, for that matter'],[2,'(function () {'],[-1,''],[2,'    \'use strict\';'],[-1,''],[2,'    window.Class = function (param) {'],[3,'        var a = 1;'],[3,'        var b = a + 122;'],[3,'        var c = {'],[-1,'            a: a,'],[-1,'            b: b,'],[-1,'            g: undefined,'],[-1,'            j: null'],[-1,'        };'],[-1,''],[3,'        var z = (function (param) {'],[3,'            var y = a + b;'],[3,'            delete b[\'z\'];'],[3,'            return param ? y : 0;'],[-1,'        })(param);'],[-1,''],[3,'        eval(\&quot;var evaled = 100;\&quot;);'],[-1,''],[6,'        for(i=2;i&lt;4;i++){i++;}'],[-1,''],[3,'        function thisNeverGetsCalled() {'],[0,'            this.shouldNeverBeSet = \'qwe \\\'\';'],[-1,'        };'],[-1,''],[3,'        (function (param) {'],[3,'            a++;'],[-1,''],[3,'            if (param) {'],[2,'                b--;'],[-1,'            }'],[-1,'        })(param);'],[-1,''],[3,'        a++;'],[3,'        c.a++;'],[3,'        b[\&quot;b\&quot;]++;'],[-1,''],[3,'        var uselessObject = {'],[-1,'            neverGetsCalledEither: function () {'],[0,'                this.b = \&quot;q \\\&quot; we\&quot;;'],[-1,'            },'],[-1,''],[-1,'            butThisOneDoes: function () {'],[2,'                a++;'],[-1,'            },'],[-1,''],[2,'            andThisOneButItsUgly: function () {a++;},'],[-1,''],[-1,'            andThisOneButItsEmpty: function () {}'],[-1,'        };'],[-1,''],[3,'        var e = function () {'],[0,'            this.e = \&quot;aaaaa\&quot;;'],[-1,'        };'],[-1,''],[3,'        if (param) {'],[2,'            this.test();'],[-1,'        }'],[-1,''],[3,'        var m1 = {},'],[-1,'            m2 = null,'],[-1,'            m3 = \'asd\','],[-1,'            m4 = \'qwe\';'],[-1,''],[3,'        if (param)'],[2,'            a++;'],[-1,'        else'],[1,'            b++'],[-1,''],[3,'        if (!param)'],[1,'            b++;'],[-1,'        else'],[2,'            a++'],[-1,''],[3,'        while (true === false)'],[0,'            b++'],[-1,''],[3,'        var s = 1;'],[-1,''],[3,'        while (++s &lt; 10)'],[12,'            s++'],[-1,''],[3,'        for (var j = 0; j &lt; 20; j++)'],[60,'            s += 2;'],[-1,''],[9,'        for (var k = 0; k &lt; 2; k++) s+=1'],[-1,''],[3,'        do'],[18,'            s += 3;'],[-1,'        while (s &lt; 70)'],[-1,''],[3,'        var v = void 0;'],[3,'        var vv = void 0xff;'],[3,'        var vvv = void(0);'],[-1,''],[3,'        this.data = {'],[-1,'            getsCalledOnTheSecondRun: function () {'],[2,'                var a = \'lll\';'],[2,'                a += 1;'],[-1,''],[2,'                if (param === true) {'],[0,'                    a += 2;'],[2,'                } else if (typeof param === \'boolean\') {'],[1,'                    a += 10;'],[1,'                } else if (param !== undefined) {'],[1,'                    b += 7;'],[-1,'                } else {'],[0,'                    a = \'kkk\';'],[-1,'                }'],[-1,''],[2,'                if (param) {'],[1,'                    b++;'],[-1,'                } else {'],[1,'                    a++;'],[-1,'                }'],[-1,'            },'],[-1,''],[-1,'            a: 123'],[-1,'        }'],[-1,''],[3,'        if (false) {'],[-1,'            \/\/ testing consecutive ranges of missed lines'],[0,'            a++;'],[0,'            b++;'],[0,'            z++;'],[-1,''],[0,'            a++;'],[0,'            b++;'],[-1,''],[0,'            var h = \'qwe\';'],[-1,'        }'],[-1,''],[3,'        for (var i = 0; i &lt; 25; i++) {'],[15,'            b++;'],[-1,''],[15,'            switch (i) {'],[-1,'                case 1:'],[3,'                    break;'],[-1,'                case 2:'],[3,'                    a++;'],[3,'                    b++;'],[3,'                    break;'],[-1,'                case 3:'],[-1,'                case 4:'],[-1,'                case 5:'],[6,'                    b++;'],[-1,'                default:'],[9,'                    b++;'],[-1,'            }'],[-1,''],[15,'            if (i === 4) {'],[3,'                break;'],[-1,'            }'],[-1,'        }'],[-1,''],[3,'        do {'],[584,'            a++;'],[-1,'        } while (a &lt; 200);'],[-1,''],[3,'        while (true) {'],[3,'            b++;'],[3,'            break;'],[-1,'        }'],[-1,''],[3,'        try {'],[3,'            a++;'],[3,'            throw new Error(\'asd\');'],[-1,'        } catch (e) {'],[3,'            b++;'],[-1,'        }'],[-1,''],[3,'        if (param) {'],[2,'            uselessObject.butThisOneDoes();'],[2,'            uselessObject.andThisOneButItsUgly();'],[2,'            uselessObject.andThisOneButItsEmpty();'],[-1,'        }'],[-1,''],[3,'        var h = 0;'],[-1,''],[3,'        if (a)'],[-1,'            if (z)'],[2,'                for (h = 0; h &lt; 10; h++) {'],[20,'                    a++;'],[-1,'                }'],[-1,'            else'],[1,'                for (h = 0; h &lt; 10; h++) {'],[7,'                    if (h == 5) break'],[-1,'                }'],[-1,'        else'],[0,'            if (z)'],[0,'                while (h++ &lt; 10);'],[-1,'            else'],[0,'                for (h = 0; h &lt; 10; h++);'],[-1,''],[9,'        if (param) {a++;if (!param)if (true)if(true){a++;b++;}else a++;else{b++;z++}a+=2;}'],[-1,'    }'],[-1,''],[-1,'    \/\/ issue #34'],[-1,'    {'],[2,'        if (false);'],[-1,'    }'],[-1,''],[2,'    try{'],[2,'        if (mynamespace);'],[-1,'    } catch(ex) {'],[2,'        mynamespace = function(){};'],[-1,'    }'],[-1,''],[-1,'})();'],[-1,''],[2,'Class.prototype.test = function test() {'],[2,'    this.qwe = \'asd\';'],[2,'    var d = 111;'],[-1,''],[2,'    this.qqq = \'bbb\';'],[-1,'}']]</p></td>
+            </tr><tr  onclick="__coverage_toggleSection('a0a94ef97fd6d7a2e53722e81a261c1f'); return false;">
+                <td><a href="#">saga-core/src/test/resources/tests/<strong>ClassTest.js</strong></a></td>
+                <td class="statements">1</td>
+                <td class="executed">1</td>
+                <td class="coverage">
+                        100&thinsp;%
+                </td>
+                <td class="bar-container">
+                        <div class="bar">
+                            <span style="width: 100%; background-color: rgb(174, 219, 75);"></span>
+                        </div>
+                </td>
+            </tr>
+            <tr id="__src_a0a94ef97fd6d7a2e53722e81a261c1f" style="display: none;">
+                <td class="line-coverage-cell" colspan="5"><p id="__data_a0a94ef97fd6d7a2e53722e81a261c1f">[[1,'new Class(true);']]</p></td>
+            </tr><tr  onclick="__coverage_toggleSection('1a416fe908bb8ea2f9ebb07650e5783c'); return false;">
+                <td><a href="#">saga-core/src/test/resources/tests/pkg/<strong>ClassTest2.js</strong></a></td>
+                <td class="statements">2</td>
+                <td class="executed">2</td>
+                <td class="coverage">
+                        100&thinsp;%
+                </td>
+                <td class="bar-container">
+                        <div class="bar">
+                            <span style="width: 100%; background-color: rgb(174, 219, 75);"></span>
+                        </div>
+                </td>
+            </tr>
+            <tr id="__src_1a416fe908bb8ea2f9ebb07650e5783c" style="display: none;">
+                <td class="line-coverage-cell" colspan="5"><p id="__data_1a416fe908bb8ea2f9ebb07650e5783c">[[1,'new Class(false).data.getsCalledOnTheSecondRun();'],[1,'new Class({}).data.getsCalledOnTheSecondRun();']]</p></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="footer">Generated using <a href="http://timurstrekalov.github.com/saga/">Saga</a> version 1.2.3</div>
+</body>
+</html>
