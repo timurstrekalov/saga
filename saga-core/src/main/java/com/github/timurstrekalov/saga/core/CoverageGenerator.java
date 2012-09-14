@@ -13,9 +13,6 @@ import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.FileUtils;
@@ -35,12 +32,13 @@ import java.util.regex.Pattern;
 
 public class CoverageGenerator {
 
-    private static final Configuration config;
+    private static final Properties config;
 
     static {
         try {
-            config = new PropertiesConfiguration("app.properties");
-        } catch (final ConfigurationException e) {
+            config = new Properties();
+            config.load(CoverageGenerator.class.getResourceAsStream("app.properties"));
+        } catch (final IOException e) {
             throw new RuntimeException("Error loading configuration", e);
         }
     }
@@ -375,9 +373,9 @@ public class CoverageGenerator {
             logger.info("Writing html coverage report: {}", htmlOutput.getAbsoluteFile());
             stringTemplateGroup.getInstanceOf("runStats")
                     .add("stats", stats)
-                    .add("name", config.getString("app.name"))
-                    .add("version", config.getString("app.version"))
-                    .add("url", config.getString("app.url"))
+                    .add("name", config.getProperty("app.name"))
+                    .add("version", config.getProperty("app.version"))
+                    .add("url", config.getProperty("app.url"))
                     .write(htmlOutput, listener);
         }
     }
