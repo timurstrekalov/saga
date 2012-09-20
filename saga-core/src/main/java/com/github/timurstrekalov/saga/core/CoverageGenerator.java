@@ -37,7 +37,7 @@ public class CoverageGenerator {
     static {
         try {
             config = new Properties();
-            config.load(CoverageGenerator.class.getResourceAsStream("app.properties"));
+            config.load(CoverageGenerator.class.getResourceAsStream("/app.properties"));
         } catch (final IOException e) {
             throw new RuntimeException("Error loading configuration", e);
         }
