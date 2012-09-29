@@ -213,6 +213,12 @@
         mynamespace = function(){};
     }
 
+    // issue #54
+    someLabel:
+    for (var l = 0; l < 5; l++) {
+        l++;
+    }
+
 })();
 
 Class.prototype.test = function test() {

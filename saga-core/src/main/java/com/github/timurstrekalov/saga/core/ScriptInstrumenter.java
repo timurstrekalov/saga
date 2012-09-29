@@ -351,6 +351,11 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                     data.addExecutableLine(getActualLineNumber(node), node.getLength());
                 }
             } else if (parentType != CASE) {
+                // issue #54
+                if (parent.getClass() == LabeledStatement.class) {
+                    return;
+                }
+
                 if (parent.hasChildren()) {
                     parent.addChildBefore(newInstrumentationNode(getActualLineNumber(node)), node);
                 } else {
@@ -369,7 +374,8 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                     } else if (parentType == WHILE || parentType == FOR || parentType == DO) {
                         ((Loop) parent).setBody(block);
                     } else {
-                        logger.warn("Cannot handle node with parent that has no children, source:\n{}", parent.toSource());
+                        logger.warn("Cannot handle node with parent that has no children, parent class: {}, parent source:\n{}",
+                                parent.getClass(), parent.toSource());
                     }
                 }
 

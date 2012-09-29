@@ -107,10 +107,12 @@ __coverage_data['Class.js__from_6_13_to_6_28'][207] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][210] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][211] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][213] = 0;
-__coverage_data['Class.js__from_6_13_to_6_28'][218] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][217] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][219] = 0;
-__coverage_data['Class.js__from_6_13_to_6_28'][220] = 0;
-__coverage_data['Class.js__from_6_13_to_6_28'][222] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][224] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][225] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][226] = 0;
+__coverage_data['Class.js__from_6_13_to_6_28'][228] = 0;
 __coverage_data['Class.js__from_6_13_to_6_28'][5]++;
 (function() {
   __coverage_data['Class.js__from_6_13_to_6_28'][7]++;
@@ -432,13 +434,20 @@ do {
   mynamespace = function() {
 };
 }
+  __coverage_data['Class.js__from_6_13_to_6_28'][217]++;
+  someLabel:
+    for (var l = 0; l < 5; l++) 
+      {
+        __coverage_data['Class.js__from_6_13_to_6_28'][219]++;
+        l++;
+      }
 })();
-__coverage_data['Class.js__from_6_13_to_6_28'][218]++;
+__coverage_data['Class.js__from_6_13_to_6_28'][224]++;
 Class.prototype.test = function test() {
-  __coverage_data['Class.js__from_6_13_to_6_28'][219]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][225]++;
   this.qwe = 'asd';
-  __coverage_data['Class.js__from_6_13_to_6_28'][220]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][226]++;
   var d = 111;
-  __coverage_data['Class.js__from_6_13_to_6_28'][222]++;
+  __coverage_data['Class.js__from_6_13_to_6_28'][228]++;
   this.qqq = 'bbb';
 };
