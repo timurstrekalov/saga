@@ -1,0 +1,84 @@
+import org.gradle.api.artifacts.maven.MavenDeployment
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'idea'
+
+def projectVersion = '1.2.7-SNAPSHOT'
+
+group = 'com.github.timurstrekalov'
+version = projectVersion
+ext.packaging = 'jar'
+
+def isReleaseBuild
+def repositoryUrl
+
+if (hasProperty("release")) {
+    isReleaseBuild = true
+    repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+
+    signing {
+        sign configurations.archives
+    }
+} else {
+    isReleaseBuild = false
+    repositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+
+    task signArchives {
+        // do nothing
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile gradleApi()
+    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.0.1'
+
+    compile group: 'com.github.timurstrekalov', name: 'saga-core', version: projectVersion
+}
+
+task groovydocJar(type: Jar, dependsOn: groovydoc) {
+    classifier = 'javadoc'
+    from 'build/docs/groovydoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives groovydocJar
+    archives sourcesJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            if (isReleaseBuild) {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            }
+
+            repository(url: repositoryUrl) {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'Gradle Saga Plugin'
+                packaging 'jar'
+                description 'Gradle Plugin for Saga'
+                parent {
+                    groupId 'com.github.timurstrekalov'
+                    artifactId 'saga-root'
+                    version projectVersion
+                }
+            }
+        }
+    }
+}
