@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +101,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
             if (separateFile) {
                 if (htmlPage != null) {
-                    fullSourcePath = getFullSourcePath(htmlPage, sourceName);
+                    fullSourcePath = Util.getFullSourcePath(htmlPage, sourceName);
                 } else {
                     fullSourcePath = new File(normalizedSourceName).getAbsolutePath();
                 }
@@ -177,20 +176,6 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
     private String escapePath(final String path) {
         return path.replaceAll("\\\\", "\\\\\\\\");
-    }
-
-    private String getFullSourcePath(final HtmlPage htmlPage, final String sourceName) {
-        try {
-            final URI sourceUri = URI.create(sourceName.replaceAll(" ", "%20"));
-
-            if (sourceUri.isAbsolute()) {
-                return new File(sourceUri).getAbsolutePath();
-            }
-
-            return new File(new File(htmlPage.getUrl().toURI()), sourceName).getAbsolutePath();
-        } catch (final Exception e) {
-            throw new RuntimeException("Error getting full path for " + sourceName + " at " + htmlPage.getUrl(), e);
-        }
     }
 
     private boolean isSeparateFile(final String sourceName, final String normalizedSourceName) {

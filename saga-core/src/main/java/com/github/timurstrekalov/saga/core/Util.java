@@ -1,6 +1,10 @@
 package com.github.timurstrekalov.saga.core;
 
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
+
+import java.io.File;
+import java.net.URI;
 
 class Util {
 
@@ -34,6 +38,23 @@ class Util {
 
         // TODO use join
         return String.format("%d, %d, %d", color[0], color[1], color[2]);
+    }
+
+    static String getFullSourcePath(final HtmlPage htmlPage, final String sourceName) {
+        try {
+            final URI sourceUri = URI.create(sourceName.replaceAll(" ", "%20"));
+
+            if (sourceUri.isAbsolute()) {
+                return new File(URI.create(sourceUri.getScheme() + "://" + sourceUri.getPath())).getAbsolutePath();
+            }
+
+            final URI uri = htmlPage.getUrl().toURI();
+            final URI pageUriWithoutQuery = URI.create(uri.getScheme() + "://" + uri.getPath());
+
+            return new File(new File(pageUriWithoutQuery).getParent(), URI.create(sourceName).getPath()).getAbsolutePath();
+        } catch (final Exception e) {
+            throw new RuntimeException("Error getting full path for " + sourceName + " at " + htmlPage.getUrl(), e);
+        }
     }
 
 }
