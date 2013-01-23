@@ -48,7 +48,7 @@ class ResourceUtils {
 
         int commonIndex = 0;
         while (commonIndex < target.length && commonIndex < base.length
-                && target[commonIndex].equals(base[commonIndex])) {
+                && target[commonIndex].equalsIgnoreCase(base[commonIndex])) {
             common.append(target[commonIndex] + pathSeparator);
             commonIndex++;
         }
