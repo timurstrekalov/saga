@@ -27,11 +27,11 @@ class SagaWebClient extends ThreadLocal<WebClient> {
         client.setHTMLParserListener(quietHtmlParserListener);
         client.setCssErrorHandler(quietCssErrorHandler);
 
-        client.setJavaScriptEnabled(true);
+        client.getOptions().setJavaScriptEnabled(true);
         client.setAjaxController(new NicelyResynchronizingAjaxController());
-        client.setThrowExceptionOnScriptError(false);
-        client.setThrowExceptionOnFailingStatusCode(false);
-        client.setPrintContentOnFailingStatusCode(false);
+        client.getOptions().setThrowExceptionOnScriptError(false);
+        client.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        client.getOptions().setPrintContentOnFailingStatusCode(false);
         client.setWebConnection(new HttpWebConnection(client) {
             @Override
             protected WebResponse newWebResponseInstance(final WebResponseData responseData, final long loadTime,

@@ -27,7 +27,7 @@ public class UtilTest {
         final String sourceName = "file:/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js?_dc=1351820085178";
         final String fullSourcePath = Util.getFullSourcePath(htmlPage, sourceName);
 
-        assertThat(fullSourcePath, equalTo("/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js"));
+        assertThat(fullSourcePath, equalTo("D:\\repos\\git\\ops\\ops-ext4\\target\\jasmine\\src\\app\\utils\\FieldLayout.js"));
     }
 
     @Test
@@ -39,7 +39,7 @@ public class UtilTest {
         final String sourceName = "src/app/utils/FieldLayout.js?_dc=1351820085178";
         final String fullSourcePath = Util.getFullSourcePath(htmlPage, sourceName);
 
-        assertThat(fullSourcePath, equalTo("/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js"));
+        assertThat(fullSourcePath, equalTo("D:\\repos\\git\\ops\\ops-ext4\\target\\jasmine\\src\\app\\utils\\FieldLayout.js"));
     }
 
 }
