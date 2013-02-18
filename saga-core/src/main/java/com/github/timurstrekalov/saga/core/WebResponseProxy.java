@@ -6,6 +6,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import org.apache.http.HttpStatus;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -34,11 +35,11 @@ class WebResponseProxy extends WebResponse {
         }
     }
 
-    @Override
-    @Deprecated
-    public WebRequest getRequestSettings() {
-        return delegate.getRequestSettings();
-    }
+//    @Deprecated
+//    public WebRequest getRequestSettings() {
+//        //return delegate.getRequestSettings();
+//        return delegate.getWebRequest();
+//    }
 
     @Override
     public WebRequest getWebRequest() {
@@ -95,15 +96,16 @@ class WebResponseProxy extends WebResponse {
     }
 
     @Override
-    public InputStream getContentAsStream() {
+    public InputStream getContentAsStream() throws IOException {
         return delegate.getContentAsStream();
     }
 
-    @Override
-    @Deprecated
-    public byte[] getContentAsBytes() {
-        return delegate.getContentAsBytes();
-    }
+
+//    @Deprecated
+//    public byte[] getContentAsBytes() throws UnsupportedEncodingException {
+//        //return delegate.getContentAsBytes();
+//        return this.getContentAsString().getBytes();
+//    }
 
     @Override
     public long getLoadTime() {
