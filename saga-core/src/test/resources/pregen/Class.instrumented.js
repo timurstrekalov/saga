@@ -137,23 +137,22 @@ __coverage_data['Class.js__from_6_13_to_6_28'][5]++;
   __coverage_data['Class.js__from_6_13_to_6_28'][25]++;
   eval("var evaled = 100;");
   __coverage_data['Class.js__from_6_13_to_6_28'][27]++;
-  for (i = 2; i < 4; i++) 
-    {
-      __coverage_data['Class.js__from_6_13_to_6_28'][27]++;
-      i++;
-    }
+  for (i = 2; i < 4; i++) {
+    __coverage_data['Class.js__from_6_13_to_6_28'][27]++;
+    i++;
+  }
   __coverage_data['Class.js__from_6_13_to_6_28'][29]++;
   function thisNeverGetsCalled() {
     __coverage_data['Class.js__from_6_13_to_6_28'][30]++;
     this.shouldNeverBeSet = 'qwe \'';
   }
-    __coverage_data['Class.js__from_6_13_to_6_28'][33]++;
+  ;
+  __coverage_data['Class.js__from_6_13_to_6_28'][33]++;
   (function(param) {
   __coverage_data['Class.js__from_6_13_to_6_28'][34]++;
   a++;
   __coverage_data['Class.js__from_6_13_to_6_28'][36]++;
-  if (param) 
-  {
+  if (param) {
     __coverage_data['Class.js__from_6_13_to_6_28'][37]++;
     b--;
   }
@@ -182,8 +181,7 @@ __coverage_data['Class.js__from_6_13_to_6_28'][5]++;
   this.e = "aaaaa";
 };
   __coverage_data['Class.js__from_6_13_to_6_28'][63]++;
-  if (param) 
-  {
+  if (param) {
     __coverage_data['Class.js__from_6_13_to_6_28'][64]++;
     this.test();
   }
@@ -228,16 +226,16 @@ __coverage_data['Class.js__from_6_13_to_6_28'][5]++;
     s += 1;
   }
   __coverage_data['Class.js__from_6_13_to_6_28'][95]++;
-do {
+  do {
     __coverage_data['Class.js__from_6_13_to_6_28'][96]++;
     s += 3;
   } while (s < 70);
   __coverage_data['Class.js__from_6_13_to_6_28'][99]++;
-  var v = void 0;
+  var v = void  0;
   __coverage_data['Class.js__from_6_13_to_6_28'][100]++;
-  var vv = void 255;
+  var vv = void  255;
   __coverage_data['Class.js__from_6_13_to_6_28'][101]++;
-  var vvv = void(0);
+  var vvv = void (0);
   __coverage_data['Class.js__from_6_13_to_6_28'][103]++;
   this.data = {getsCalledOnTheSecondRun: function() {
   __coverage_data['Class.js__from_6_13_to_6_28'][105]++;
@@ -245,20 +243,17 @@ do {
   __coverage_data['Class.js__from_6_13_to_6_28'][106]++;
   a += 1;
   __coverage_data['Class.js__from_6_13_to_6_28'][108]++;
-  if (param === true) 
-  {
+  if (param === true) {
     __coverage_data['Class.js__from_6_13_to_6_28'][109]++;
     a += 2;
   } else {
     __coverage_data['Class.js__from_6_13_to_6_28'][110]++;
-    if (typeof param === 'boolean') 
-    {
+    if (typeof param === 'boolean') {
       __coverage_data['Class.js__from_6_13_to_6_28'][111]++;
       a += 10;
     } else {
       __coverage_data['Class.js__from_6_13_to_6_28'][112]++;
-      if (param !== undefined) 
-      {
+      if (param !== undefined) {
         __coverage_data['Class.js__from_6_13_to_6_28'][113]++;
         b += 7;
       } else {
@@ -268,8 +263,7 @@ do {
     }
   }
   __coverage_data['Class.js__from_6_13_to_6_28'][118]++;
-  if (param) 
-  {
+  if (param) {
     __coverage_data['Class.js__from_6_13_to_6_28'][119]++;
     b++;
   } else {
@@ -278,8 +272,7 @@ do {
   }
 }, a: 123};
   __coverage_data['Class.js__from_6_13_to_6_28'][128]++;
-  if (false) 
-  {
+  if (false) {
     __coverage_data['Class.js__from_6_13_to_6_28'][130]++;
     a++;
     __coverage_data['Class.js__from_6_13_to_6_28'][131]++;
@@ -294,51 +287,48 @@ do {
     var h = 'qwe';
   }
   __coverage_data['Class.js__from_6_13_to_6_28'][140]++;
-  for (var i = 0; i < 25; i++) 
-    {
-      __coverage_data['Class.js__from_6_13_to_6_28'][141]++;
-      b++;
-      __coverage_data['Class.js__from_6_13_to_6_28'][143]++;
-      switch (i) {
-        case 1:
-          __coverage_data['Class.js__from_6_13_to_6_28'][145]++;
-          break;
-        case 2:
-          __coverage_data['Class.js__from_6_13_to_6_28'][147]++;
-          a++;
-          __coverage_data['Class.js__from_6_13_to_6_28'][148]++;
-          b++;
-          __coverage_data['Class.js__from_6_13_to_6_28'][149]++;
-          break;
-        case 3:
-        case 4:
-        case 5:
-          __coverage_data['Class.js__from_6_13_to_6_28'][153]++;
-          b++;
-        default:
-          __coverage_data['Class.js__from_6_13_to_6_28'][155]++;
-          b++;
-      }
-      __coverage_data['Class.js__from_6_13_to_6_28'][158]++;
-      if (i === 4) 
-      {
-        __coverage_data['Class.js__from_6_13_to_6_28'][159]++;
+  for (var i = 0; i < 25; i++) {
+    __coverage_data['Class.js__from_6_13_to_6_28'][141]++;
+    b++;
+    __coverage_data['Class.js__from_6_13_to_6_28'][143]++;
+    switch (i) {
+      case 1:
+        __coverage_data['Class.js__from_6_13_to_6_28'][145]++;
         break;
-      }
+      case 2:
+        __coverage_data['Class.js__from_6_13_to_6_28'][147]++;
+        a++;
+        __coverage_data['Class.js__from_6_13_to_6_28'][148]++;
+        b++;
+        __coverage_data['Class.js__from_6_13_to_6_28'][149]++;
+        break;
+      case 3:
+      case 4:
+      case 5:
+        __coverage_data['Class.js__from_6_13_to_6_28'][153]++;
+        b++;
+      default:
+        __coverage_data['Class.js__from_6_13_to_6_28'][155]++;
+        b++;
     }
+    __coverage_data['Class.js__from_6_13_to_6_28'][158]++;
+    if (i === 4) {
+      __coverage_data['Class.js__from_6_13_to_6_28'][159]++;
+      break;
+    }
+  }
   __coverage_data['Class.js__from_6_13_to_6_28'][163]++;
-do {
+  do {
     __coverage_data['Class.js__from_6_13_to_6_28'][164]++;
     a++;
   } while (a < 200);
   __coverage_data['Class.js__from_6_13_to_6_28'][167]++;
-  while (true) 
-    {
-      __coverage_data['Class.js__from_6_13_to_6_28'][168]++;
-      b++;
-      __coverage_data['Class.js__from_6_13_to_6_28'][169]++;
-      break;
-    }
+  while (true) {
+    __coverage_data['Class.js__from_6_13_to_6_28'][168]++;
+    b++;
+    __coverage_data['Class.js__from_6_13_to_6_28'][169]++;
+    break;
+  }
   __coverage_data['Class.js__from_6_13_to_6_28'][172]++;
   try {
     __coverage_data['Class.js__from_6_13_to_6_28'][173]++;
@@ -350,8 +340,7 @@ do {
   b++;
 }
   __coverage_data['Class.js__from_6_13_to_6_28'][179]++;
-  if (param) 
-  {
+  if (param) {
     __coverage_data['Class.js__from_6_13_to_6_28'][180]++;
     uselessObject.butThisOneDoes();
     __coverage_data['Class.js__from_6_13_to_6_28'][181]++;
@@ -363,24 +352,23 @@ do {
   var h = 0;
   __coverage_data['Class.js__from_6_13_to_6_28'][187]++;
   if (a) 
-  if (z) {
+    if (z) {
     __coverage_data['Class.js__from_6_13_to_6_28'][189]++;
-    for (h = 0; h < 10; h++) 
-      {
-        __coverage_data['Class.js__from_6_13_to_6_28'][190]++;
-        a++;
-      }
+    for (h = 0; h < 10; h++) {
+      __coverage_data['Class.js__from_6_13_to_6_28'][190]++;
+      a++;
+    }
   } else {
     __coverage_data['Class.js__from_6_13_to_6_28'][193]++;
-    for (h = 0; h < 10; h++) 
-      {
+    for (h = 0; h < 10; h++) {
+      __coverage_data['Class.js__from_6_13_to_6_28'][194]++;
+      if (h == 5) {
         __coverage_data['Class.js__from_6_13_to_6_28'][194]++;
-        if (h == 5) {
-          __coverage_data['Class.js__from_6_13_to_6_28'][194]++;
-          break;
-        }
+        break;
       }
-  } else {
+    }
+  }
+  else {
     __coverage_data['Class.js__from_6_13_to_6_28'][197]++;
     if (z) {
       __coverage_data['Class.js__from_6_13_to_6_28'][198]++;
@@ -393,15 +381,13 @@ do {
     }
   }
   __coverage_data['Class.js__from_6_13_to_6_28'][202]++;
-  if (param) 
-  {
+  if (param) {
     __coverage_data['Class.js__from_6_13_to_6_28'][202]++;
     a++;
     __coverage_data['Class.js__from_6_13_to_6_28'][202]++;
     if (!param) 
-    if (true) 
-    if (true) 
-    {
+      if (true) 
+      if (true) {
       __coverage_data['Class.js__from_6_13_to_6_28'][202]++;
       a++;
       __coverage_data['Class.js__from_6_13_to_6_28'][202]++;
@@ -409,7 +395,8 @@ do {
     } else {
       __coverage_data['Class.js__from_6_13_to_6_28'][202]++;
       a++;
-    } else {
+    }
+    else {
       __coverage_data['Class.js__from_6_13_to_6_28'][202]++;
       b++;
       __coverage_data['Class.js__from_6_13_to_6_28'][202]++;
@@ -436,11 +423,10 @@ do {
 }
   __coverage_data['Class.js__from_6_13_to_6_28'][217]++;
   someLabel:
-    for (var l = 0; l < 5; l++) 
-      {
-        __coverage_data['Class.js__from_6_13_to_6_28'][219]++;
-        l++;
-      }
+    for (var l = 0; l < 5; l++) {
+      __coverage_data['Class.js__from_6_13_to_6_28'][219]++;
+      l++;
+    }
 })();
 __coverage_data['Class.js__from_6_13_to_6_28'][224]++;
 Class.prototype.test = function test() {
