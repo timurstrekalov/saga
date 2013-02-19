@@ -1,18 +1,27 @@
 package com.github.timurstrekalov.saga.core;
 
-import com.gargoylesoftware.htmlunit.JavaScriptPage;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
-import com.google.common.io.CharStreams;
-import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
+
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.FileUtils;
@@ -21,14 +30,22 @@ import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupDir;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.regex.Pattern;
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.JavaScriptPage;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 
 public class CoverageGenerator {
 
@@ -73,7 +90,9 @@ public class CoverageGenerator {
 
     private String sourcesToPreload;
     private String sourcesToPreloadEncoding = "UTF-8";
-
+    
+    private BrowserVersion browserVersion = BrowserVersion.FIREFOX_3_6;
+    
     public CoverageGenerator(final File baseDir, final String includes, final File outputDir) {
         this(baseDir, includes, null, outputDir);
     }
@@ -98,7 +117,6 @@ public class CoverageGenerator {
     public void run() throws IOException {
         FileUtils.mkdir(outputDir.getAbsolutePath());
 
-        @SuppressWarnings("unchecked")
         final List<File> tests = FileUtils.getFiles(baseDir, includes, excludes);
 
         if (tests.isEmpty()) {
@@ -129,7 +147,6 @@ public class CoverageGenerator {
         if (outputStrategy.contains(OutputStrategy.TOTAL) && sourcesToPreload != null) {
             logger.info("Using {} to preload sources", sourcesToPreloadEncoding);
 
-            @SuppressWarnings("unchecked")
             final List<File> filesToPreload = FileUtils.getFiles(baseDir, sourcesToPreload, null);
 
             logger.info("Preloading {} files", filesToPreload.size());
@@ -300,6 +317,7 @@ public class CoverageGenerator {
         final RunStats runStats = new RunStats(test);
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
+            @SuppressWarnings("rawtypes")
             final Map<Integer, Double> coverageData = (Map) allCoverageData.get(data.getSourceName());
             final FileStats fileStats = getFileStatsFromScriptData(coverageData, data);
             runStats.add(fileStats);
@@ -465,4 +483,14 @@ public class CoverageGenerator {
         }
     }
 
+    public void setBrowserVersion(final String browserVersion){
+        if(browserVersion !=null){
+            try {
+                this.browserVersion = (BrowserVersion) BrowserVersion.class.getField(browserVersion).get(BrowserVersion.class);
+                ((SagaWebClient)localClient).setBrowserVersion(this.browserVersion);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }

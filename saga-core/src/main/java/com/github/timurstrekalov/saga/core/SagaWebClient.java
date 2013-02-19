@@ -1,10 +1,18 @@
 package com.github.timurstrekalov.saga.core;
 
-import com.gargoylesoftware.htmlunit.*;
+import java.io.IOException;
+
+import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.HttpWebConnection;
+import com.gargoylesoftware.htmlunit.IncorrectnessListener;
+import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
+import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.WebResponseData;
 import com.gargoylesoftware.htmlunit.html.HTMLParserListener;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
-
-import java.io.IOException;
 
 class SagaWebClient extends ThreadLocal<WebClient> {
 
@@ -13,9 +21,12 @@ class SagaWebClient extends ThreadLocal<WebClient> {
     private static final HTMLParserListener quietHtmlParserListener = new QuietHtmlParserListener();
     private static final SilentCssErrorHandler quietCssErrorHandler = new SilentCssErrorHandler();
 
+    private BrowserVersion browserVersion = BrowserVersion.FIREFOX_3_6;
+
     @Override
     protected WebClient initialValue() {
-        final WebClient client = new WebClient(BrowserVersion.FIREFOX_3_6) {
+        @SuppressWarnings("serial")
+        final WebClient client = new WebClient(this.browserVersion) {
             @Override
             public WebResponse loadWebResponse(final WebRequest webRequest) throws IOException {
                 return new WebResponseProxy(super.loadWebResponse(webRequest));
@@ -43,4 +54,7 @@ class SagaWebClient extends ThreadLocal<WebClient> {
         return client;
     }
 
+    public void setBrowserVersion(BrowserVersion browserVersion){
+        this.browserVersion = browserVersion;
+    }
 }
