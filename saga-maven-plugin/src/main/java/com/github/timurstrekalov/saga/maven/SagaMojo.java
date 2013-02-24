@@ -1,98 +1,119 @@
 package com.github.timurstrekalov.saga.maven;
 
+import com.github.timurstrekalov.saga.core.CoverageGenerator;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-
-import com.github.timurstrekalov.saga.core.CoverageGenerator;
-
-/**
- * @goal coverage
- * @phase verify
- * @threadSafe
- */
+@Mojo(name = "coverage", defaultPhase = LifecyclePhase.VERIFY, threadSafe = true)
 public class SagaMojo extends AbstractMojo {
 
     /**
-     * @parameter
-     * @required
+     * The base directory for the test search.
      */
+    @Parameter(required = true)
     private File baseDir;
 
     /**
-     * @description A comma-separated list of Ant-style paths to tests to be run
-     * @parameter
-     * @required
+     * A comma-separated list of <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a>
+     * to include in the search for test runners.
      */
+    @Parameter(required = true)
     private String includes;
 
     /**
-     * @description A comma-separated list of Ant-style paths to exclude from the test run
-     * @parameter
+     * A comma-separated list of <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a>
+     * to exclude from the search for test runners.
      */
+    @Parameter
     private String excludes;
 
     /**
-     * @parameter
-     * @required
+     * The output directory for coverage reports.
      */
+    @Parameter(required = true)
     private File outputDir;
 
     /**
-     * @parameter
+     * Whether to output instrumented files. Will be written to ${outputDir}/instrumented.
      */
+    @Parameter(defaultValue = "false")
     private Boolean outputInstrumentedFiles;
 
     /**
-     * @parameter
+     * A list of regular expressions to match source file paths to be excluded from instrumentation.
      */
+    @Parameter
     private String[] noInstrumentPatterns;
 
     /**
-     * @parameter
+     * Whether to cache instrumented source code. It's entirely possible that two tests might load some of the same
+     * resources - this would prevent them from being instrumented every time, but rather cache them for the whole
+     * coverage run.
      */
+    @Parameter(defaultValue = "true")
     private Boolean cacheInstrumentedCode;
 
     /**
-     * @parameter
+     * One of TOTAL, PER_TEST or BOTH. Pretty self-explanatory.
      */
+    @Parameter(defaultValue = "TOTAL")
     private String outputStrategy;
 
     /**
-     * @parameter
+     * The maximum number of threads to use.
      */
+    @Parameter
     private Integer threadCount;
 
     /**
-     * @parameter
+     * Whether to include inline scripts into instrumentation.
      */
+    @Parameter(defaultValue = "false")
     private Boolean includeInlineScripts;
 
     /**
-     * @parameter
+     * How long to wait for background JS jobs to finish (in milliseconds).
      */
+    @Parameter(defaultValue = "300000")
     private Long backgroundJavaScriptTimeout;
 
     /**
-     * @parameter
+     * A comma-separated list of <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a>
+     * to exclude from the search for sources to preload (useful to generate total coverage even though your tests might
+     * not reference certain files, especially when you simply don't have tests for classes but you DO want to see them).
+     * Paths are expected to be provided relative to the base directory.
      */
+    @Parameter
     private String sourcesToPreload;
 
     /**
-     * @parameter
+     * Encoding to use when preloading sources.
      */
+    @Parameter(defaultValue = "UTF-8")
     private String sourcesToPreloadEncoding;
 
     /**
-     * Determines the browser and version profile that HtmlUnit will simulate. 
-     * This maps 1-to-1 with the public static instances found in {@link com.gargoylesoftware.htmlunit.BrowserVersion}.
-     * Some valid examples: FIREFOX_3_6, FIREFOX_10, INTERNET_EXPLORER_6, 
-     *   INTERNET_EXPLORER_7, INTERNET_EXPLORER_8, CHROME_16
+     * Determines the browser and version profile that HtmlUnit will simulate. This maps 1-to-1 with the public static
+     * instances found in <a href="http://htmlunit.sourceforge.net/apidocs/com/gargoylesoftware/htmlunit/BrowserVersion.html">com.gargoylesoftware.htmlunit.BrowserVersion</a>.
+     * <br/><br/>
      *
-     * @parameter default-value="FIREFOX_3_6"
+     * Some valid examples:
+     * <ul>
+     *     <li>FIREFOX_3_6</li>
+     *     <li>FIREFOX_10</li>
+     *     <li>INTERNET_EXPLORER_6</li>
+     *     <li>INTERNET_EXPLORER_7</li>
+     *     <li>INTERNET_EXPLORER_8</li>
+     *     <li>CHROME_16</li>
+     * </ul>
      */
+    @Parameter(defaultValue = "FIREFOX_3_6")
     private String browserVersion;
     
     @Override
