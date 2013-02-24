@@ -75,6 +75,10 @@ public class CoverageGenerator {
     }
 
     public CoverageGenerator(final File baseDir, final String includes, final String excludes, final File outputDir) {
+        Preconditions.checkNotNull(baseDir, "baseDir cannot be null");
+        Preconditions.checkNotNull(outputDir, "outputDir cannot be null");
+        Preconditions.checkNotNull(includes, "includes cannot be null");
+
         Preconditions.checkState(baseDir.exists(), "baseDir doesn't exist");
 
         this.baseDir = baseDir;
@@ -445,11 +449,14 @@ public class CoverageGenerator {
     public void setBrowserVersion(final String browserVersionAsString) {
         if (browserVersionAsString != null) {
             try {
+                logger.info("Setting {} as browser version", browserVersionAsString);
+
                 final BrowserVersion browserVersion = (BrowserVersion) BrowserVersion.class.getField(
                         browserVersionAsString).get(BrowserVersion.class);
 
                 localClient.setBrowserVersion(browserVersion);
             } catch (final Exception e) {
+                logger.error("Invalid browser version: {}", browserVersionAsString);
                 throw new RuntimeException(e);
             }
         }

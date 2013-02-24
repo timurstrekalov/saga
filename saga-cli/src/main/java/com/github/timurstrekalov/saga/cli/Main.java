@@ -26,8 +26,11 @@ public class Main {
                 "Regular expression patterns to match classes to exclude from instrumentation");
         noInstrumentPatternOpt.setArgs(Option.UNLIMITED_VALUES);
 
-        final Option sourcesToPreload = new Option("p", "preload-sources", true,
+        final Option sourcesToPreloadOpt = new Option("p", "preload-sources", true,
                 "Comma-separated list of Ant-style paths to files to preload");
+
+        final Option sourcesToPreloadEncodingOpt = new Option(null, "preload-sources-encoding", true,
+                "Encoding to use when preloading sources");
 
         final Option threadCountOpt = new Option("t", "thread-count", true,
                 "The maximum number of threads to use (defaults to the number of cores)");
@@ -38,8 +41,11 @@ public class Main {
         final Option includeInlineScriptsOpt = new Option("d", "include-inline-scripts", false,
                 "Whether to include inline scripts into instrumentation by default (default is false)");
 
-        final Option backgroundJavaScriptTimeoutOpt = new Option("j", "background-javascript-timeout", false,
+        final Option backgroundJavaScriptTimeoutOpt = new Option("j", "background-javascript-timeout", true,
                 "How long to wait for background JavaScript to finish running (in milliseconds, default is 5 minutes)");
+
+        final Option browserVersionOpt = new Option("v", "browser-version", true,
+                "Determines the browser and version profile that HtmlUnit will simulate");
 
         final Option helpOpt = new Option("h", "help", false, "Print this message");
         final Options options = new Options();
@@ -54,8 +60,10 @@ public class Main {
         options.addOption(outputStrategyOpt);
         options.addOption(includeInlineScriptsOpt);
         options.addOption(helpOpt);
+        options.addOption(sourcesToPreloadOpt);
+        options.addOption(sourcesToPreloadEncodingOpt);
         options.addOption(backgroundJavaScriptTimeoutOpt);
-        options.addOption(sourcesToPreload);
+        options.addOption(browserVersionOpt);
 
         try {
             CommandLineParser parser = new GnuParser();
@@ -69,29 +77,29 @@ public class Main {
             options.addOption(includeOpt);
             options.addOption(outputDirOpt);
 
-            if (line.hasOption('h')) {
+            if (line.hasOption(helpOpt.getOpt())) {
                 printHelpAndExit(options);
             }
 
             parser = new GnuParser();
             line = parser.parse(options, args);
 
-            final File baseDir = new File(line.getOptionValue('b'));
-            final String includes = line.getOptionValue('i');
-            final String excludes = line.getOptionValue('e');
-            final File outputDir = new File(line.getOptionValue('o'));
+            final File baseDir = new File(line.getOptionValue(baseDirOpt.getOpt()));
+            final String includes = line.getOptionValue(includeOpt.getOpt());
+            final String excludes = line.getOptionValue(excludeOpt.getOpt());
+            final File outputDir = new File(line.getOptionValue(outputDirOpt.getOpt()));
 
             final CoverageGenerator gen = new CoverageGenerator(baseDir, includes, excludes, outputDir);
 
-            if (line.hasOption('f')) {
+            if (line.hasOption(outputInstrumentedFilesOpt.getOpt())) {
                 gen.setOutputInstrumentedFiles(true);
             }
 
-            gen.setNoInstrumentPatterns(line.getOptionValues('n'));
-            gen.setSourcesToPreload(line.getOptionValue('p'));
-            gen.setOutputStrategy(line.getOptionValue('s'));
+            gen.setNoInstrumentPatterns(line.getOptionValues(noInstrumentPatternOpt.getOpt()));
+            gen.setSourcesToPreload(line.getOptionValue(sourcesToPreloadOpt.getOpt()));
+            gen.setOutputStrategy(line.getOptionValue(outputStrategyOpt.getOpt()));
 
-            final String threadCount = line.getOptionValue('t');
+            final String threadCount = line.getOptionValue(threadCountOpt.getOpt());
             if (threadCount != null) {
                 try {
                     gen.setThreadCount(Integer.parseInt(threadCount));
@@ -101,11 +109,11 @@ public class Main {
                 }
             }
 
-            if (line.hasOption('d')) {
+            if (line.hasOption(includeInlineScriptsOpt.getOpt())) {
                 gen.setIncludeInlineScripts(true);
             }
 
-            final String backgroundJavaScriptTimeout = line.getOptionValue('j');
+            final String backgroundJavaScriptTimeout = line.getOptionValue(backgroundJavaScriptTimeoutOpt.getOpt());
             if (backgroundJavaScriptTimeout != null) {
                 try {
                     gen.setBackgroundJavaScriptTimeout(Long.valueOf(backgroundJavaScriptTimeout));
@@ -114,6 +122,9 @@ public class Main {
                     printHelpAndExit(options);
                 }
             }
+
+            final String browserVersion = line.getOptionValue(browserVersionOpt.getOpt());
+            gen.setBrowserVersion(browserVersion);
 
             gen.run();
         } catch (final MissingOptionException e) {

@@ -28,4 +28,6 @@ class SagaPluginExtension {
 
     String sourcesToPreloadEncoding
 
+    String browserVersion
+
 }

@@ -12,7 +12,7 @@ class SagaPlugin implements Plugin<Project> {
     void apply(final Project project) {
         project.extensions.create(PLUGIN_NAME, SagaPluginExtension)
         project.task('coverage') << {
-            final def cfg = project[PLUGIN_NAME]
+            final SagaPluginExtension cfg = (SagaPluginExtension) project[PLUGIN_NAME]
 
             final def gen = new CoverageGenerator(cfg.baseDir, cfg.includes, cfg.excludes, cfg.outputDir)
 
@@ -25,6 +25,7 @@ class SagaPlugin implements Plugin<Project> {
             gen.backgroundJavaScriptTimeout = cfg.backgroundJavaScriptTimeout
             gen.sourcesToPreload = cfg.sourcesToPreload
             gen.sourcesToPreloadEncoding = cfg.sourcesToPreloadEncoding
+            gen.browserVersion = cfg.browserVersion
 
             gen.run()
         }
