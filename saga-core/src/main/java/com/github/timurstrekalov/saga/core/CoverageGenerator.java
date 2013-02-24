@@ -1,27 +1,15 @@
 package com.github.timurstrekalov.saga.core;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.regex.Pattern;
-
+import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.*;
+import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 import net.sourceforge.htmlunit.corejs.javascript.NativeObject;
 import net.sourceforge.htmlunit.corejs.javascript.Undefined;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.FileUtils;
@@ -30,22 +18,14 @@ import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupDir;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.JavaScriptPage;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.io.CharStreams;
-import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 public class CoverageGenerator {
 
@@ -61,8 +41,12 @@ public class CoverageGenerator {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CoverageGenerator.class);
-    private static final ThreadLocal<WebClient> localClient = new SagaWebClient();
-    private static final String inlineScriptRe = ".+__from_\\d+_\\d+_to_\\d+_\\d+$";
+    private static final SagaWebClient localClient = new SagaWebClient();
+
+    private static final String COVERAGE_VARIABLE_NAME = "__coverage_data";
+    private static final String TOTAL_REPORT_NAME = "total";
+    private static final String INSTRUMENTED_FILE_DIRECTORY_NAME = "instrumented";
+    private static final String INLINE_SCRIPT_RE = ".+__from_\\d+_\\d+_to_\\d+_\\d+$";
 
     private final File baseDir;
     private final String includes;
@@ -73,11 +57,6 @@ public class CoverageGenerator {
     private boolean outputInstrumentedFiles;
 
     private final STGroup stringTemplateGroup;
-
-    private String coverageVariableName = "__coverage_data";
-
-    private String reportName = "total";
-    private String instrumentedFileDirectoryName = "instrumented";
     private boolean cacheInstrumentedCode = true;
 
     private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
@@ -90,9 +69,7 @@ public class CoverageGenerator {
 
     private String sourcesToPreload;
     private String sourcesToPreloadEncoding = "UTF-8";
-    
-    private BrowserVersion browserVersion = BrowserVersion.FIREFOX_3_6;
-    
+
     public CoverageGenerator(final File baseDir, final String includes, final File outputDir) {
         this(baseDir, includes, null, outputDir);
     }
@@ -131,7 +108,7 @@ public class CoverageGenerator {
         logger.info("Output strategy set to {}", outputStrategy);
 
         if (!includeInlineScripts) {
-            noInstrumentPatterns.add(inlineScriptRe);
+            noInstrumentPatterns.add(INLINE_SCRIPT_RE);
             noInstrumentPatterns.add(".+JavaScriptStringJob");
             noInstrumentPatterns.add(".+#\\d+\\(eval\\)\\(\\d+\\)");
         }
@@ -141,8 +118,8 @@ public class CoverageGenerator {
         }
 
         final Collection<Pattern> ignorePatterns = createPatterns();
-        final File instrumentedFileDirectory = new File(outputDir, instrumentedFileDirectoryName);
-        final RunStats totalStats = new RunStats(new File(outputDir, reportName), "Total coverage report");
+        final File instrumentedFileDirectory = new File(outputDir, INSTRUMENTED_FILE_DIRECTORY_NAME);
+        final RunStats totalStats = new RunStats(new File(outputDir, TOTAL_REPORT_NAME), "Total coverage report");
 
         if (outputStrategy.contains(OutputStrategy.TOTAL) && sourcesToPreload != null) {
             logger.info("Using {} to preload sources", sourcesToPreloadEncoding);
@@ -274,7 +251,7 @@ public class CoverageGenerator {
             final File instrumentedFileDirectory,
             final HtmlUnitContextFactory contextFactory) {
 
-        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(contextFactory, coverageVariableName);
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(contextFactory, COVERAGE_VARIABLE_NAME);
 
         instrumenter.setIgnorePatterns(ignorePatterns);
 
@@ -299,7 +276,7 @@ public class CoverageGenerator {
         client.waitForBackgroundJavaScript(backgroundJavaScriptTimeout);
         client.setScriptPreProcessor(null);
 
-        final Object javaScriptResult = htmlPage.executeJavaScript("window." + coverageVariableName)
+        final Object javaScriptResult = htmlPage.executeJavaScript("window." + COVERAGE_VARIABLE_NAME)
                 .getJavaScriptResult();
 
         if (!(javaScriptResult instanceof Undefined)) {
@@ -416,24 +393,6 @@ public class CoverageGenerator {
         }
     }
 
-    public void setReportName(final String reportName) {
-        if (reportName != null) {
-            this.reportName = reportName;
-        }
-    }
-
-    public void setInstrumentedFileDirectoryName(final String instrumentedFileDirectoryName) {
-        if (instrumentedFileDirectoryName != null) {
-            this.instrumentedFileDirectoryName = instrumentedFileDirectoryName;
-        }
-    }
-
-    public void setCoverageVariableName(final String coverageVariableName) {
-        if (coverageVariableName != null) {
-            this.coverageVariableName = coverageVariableName;
-        }
-    }
-
     public void setCacheInstrumentedCode(final Boolean cacheInstrumentedCode) {
         if (cacheInstrumentedCode != null) {
             this.cacheInstrumentedCode = cacheInstrumentedCode;
@@ -483,14 +442,17 @@ public class CoverageGenerator {
         }
     }
 
-    public void setBrowserVersion(final String browserVersion){
-        if(browserVersion !=null){
+    public void setBrowserVersion(final String browserVersionAsString) {
+        if (browserVersionAsString != null) {
             try {
-                this.browserVersion = (BrowserVersion) BrowserVersion.class.getField(browserVersion).get(BrowserVersion.class);
-                ((SagaWebClient)localClient).setBrowserVersion(this.browserVersion);
-            } catch (Exception e) {
+                final BrowserVersion browserVersion = (BrowserVersion) BrowserVersion.class.getField(
+                        browserVersionAsString).get(BrowserVersion.class);
+
+                localClient.setBrowserVersion(browserVersion);
+            } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
         }
     }
+
 }

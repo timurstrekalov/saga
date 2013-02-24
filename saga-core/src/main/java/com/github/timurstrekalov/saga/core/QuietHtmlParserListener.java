@@ -10,16 +10,6 @@ class QuietHtmlParserListener implements HTMLParserListener {
 
     private static final Logger logger = LoggerFactory.getLogger(QuietHtmlParserListener.class);
 
-    @Deprecated
-    public void error(final String message, final URL url, final int line, final int column, final String key) {
-        this.error(message, url, null, line, column, key);
-    }
-
-    @Deprecated
-    public void warning(final String message, final URL url, final int line, final int column, final String key) {
-    	this.warning(message, url, null, line, column, key);
-    }
-
     @Override
     public void error(final String message, final URL url, final String html, final int line, final int column, final String key) {
         logger.debug(message);
