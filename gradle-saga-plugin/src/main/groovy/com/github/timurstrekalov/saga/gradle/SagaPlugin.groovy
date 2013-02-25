@@ -26,6 +26,7 @@ class SagaPlugin implements Plugin<Project> {
             gen.sourcesToPreload = cfg.sourcesToPreload
             gen.sourcesToPreloadEncoding = cfg.sourcesToPreloadEncoding
             gen.browserVersion = cfg.browserVersion
+            gen.reportFormats = cfg.reportFormats
 
             gen.run()
         }

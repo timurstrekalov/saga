@@ -30,4 +30,6 @@ class SagaPluginExtension {
 
     String browserVersion
 
+    String reportFormats
+
 }

@@ -3,8 +3,14 @@ package com.github.timurstrekalov.saga.core;
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.github.timurstrekalov.saga.core.reporter.CsvReporter;
+import com.github.timurstrekalov.saga.core.reporter.HtmlReporter;
+import com.github.timurstrekalov.saga.core.reporter.RawReporter;
+import com.github.timurstrekalov.saga.core.reporter.Reporter;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.collect.*;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
@@ -15,12 +21,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stringtemplate.v4.STGroup;
-import org.stringtemplate.v4.STGroupDir;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.*;
@@ -29,19 +32,13 @@ import java.util.regex.Pattern;
 
 public class CoverageGenerator {
 
-    private static final Properties config;
-
-    static {
-        try {
-            config = new Properties();
-            config.load(CoverageGenerator.class.getResourceAsStream("/app.properties"));
-        } catch (final IOException e) {
-            throw new RuntimeException("Error loading configuration", e);
-        }
-    }
-
     private static final Logger logger = LoggerFactory.getLogger(CoverageGenerator.class);
     private static final SagaWebClient localClient = new SagaWebClient();
+    private static final Map<ReportFormat, Reporter> reporters = ImmutableMap.<ReportFormat, Reporter>builder()
+            .put(ReportFormat.HTML, new HtmlReporter())
+            .put(ReportFormat.RAW, new RawReporter())
+            .put(ReportFormat.CSV, new CsvReporter())
+            .build();
 
     private static final String COVERAGE_VARIABLE_NAME = "__coverage_data";
     private static final String TOTAL_REPORT_NAME = "total";
@@ -56,7 +53,6 @@ public class CoverageGenerator {
     private Set<String> noInstrumentPatterns = Sets.newHashSet();
     private boolean outputInstrumentedFiles;
 
-    private final STGroup stringTemplateGroup;
     private boolean cacheInstrumentedCode = true;
 
     private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
@@ -69,6 +65,8 @@ public class CoverageGenerator {
 
     private String sourcesToPreload;
     private String sourcesToPreloadEncoding = "UTF-8";
+
+    private Set<ReportFormat> reportFormats = ImmutableSet.of(ReportFormat.HTML, ReportFormat.RAW);
 
     public CoverageGenerator(final File baseDir, final String includes, final File outputDir) {
         this(baseDir, includes, null, outputDir);
@@ -85,8 +83,6 @@ public class CoverageGenerator {
         this.includes = includes;
         this.excludes = excludes;
         this.outputDir = outputDir;
-
-        stringTemplateGroup = new STGroupDir("stringTemplates", '$', '$');
 
         // make HtmlUnit shut up
         LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
@@ -353,30 +349,17 @@ public class CoverageGenerator {
     }
 
     private void writeRunStats(final RunStats stats) throws IOException {
-        final URI relativeTestUri = baseDir.toURI().relativize(stats.test.toURI());
-        final File fileOutputDir = new File(new File(outputDir.toURI().resolve(relativeTestUri)).getParent());
-
-        FileUtils.mkdir(fileOutputDir.getAbsolutePath());
-
-        final File rawOutput = new File(fileOutputDir, stats.getRawReportName());
-        final File htmlOutput = new File(fileOutputDir, stats.getReportName());
-
-        synchronized (stringTemplateGroup) {
-            final LoggingStringTemplateErrorListener listener = new LoggingStringTemplateErrorListener();
-
-            logger.info("Writing raw coverage report: {}", rawOutput.getAbsoluteFile());
-            stringTemplateGroup.getInstanceOf("runStatsRaw")
-                    .add("stats", stats)
-                    .write(rawOutput, listener);
-
-            logger.info("Writing html coverage report: {}", htmlOutput.getAbsoluteFile());
-            stringTemplateGroup.getInstanceOf("runStats")
-                    .add("stats", stats)
-                    .add("name", config.getProperty("app.name"))
-                    .add("version", config.getProperty("app.version"))
-                    .add("url", config.getProperty("app.url"))
-                    .write(htmlOutput, listener);
+        for (final ReportFormat reportFormat : reportFormats) {
+            reporterFor(reportFormat).writeReport(baseDir, outputDir, stats);
         }
+    }
+
+    private Reporter reporterFor(final ReportFormat reportFormat) {
+        if (!reporters.containsKey(reportFormat)) {
+            throw new IllegalStateException("Missing reporter for format: " + reportFormat);
+        }
+
+        return reporters.get(reportFormat);
     }
 
     public void setNoInstrumentPatterns(final Collection<String> noInstrumentPatterns) {
@@ -460,6 +443,23 @@ public class CoverageGenerator {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public void setReportFormats(final String reportFormatString) {
+        if (reportFormatString == null) {
+            return;
+        }
+
+        final Iterable<String> reportFormats = Splitter.on(",").split(reportFormatString);
+
+        logger.info("Setting {} as report formats", Joiner.on(", ").join(reportFormats));
+
+        this.reportFormats = Sets.newHashSet(Iterables.transform(reportFormats, new Function<String, ReportFormat>() {
+            @Override
+            public ReportFormat apply(final String input) {
+                return ReportFormat.valueOf(input.trim().toUpperCase());
+            }
+        }));
     }
 
 }

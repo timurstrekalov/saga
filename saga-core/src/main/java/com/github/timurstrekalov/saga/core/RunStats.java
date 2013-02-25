@@ -9,7 +9,7 @@ import com.google.common.collect.Maps;
 import java.io.File;
 import java.util.*;
 
-class RunStats implements Iterable<FileStats> {
+public class RunStats implements Iterable<FileStats> {
 
     public static final RunStats EMPTY = new RunStats(null, null);
 
@@ -27,12 +27,8 @@ class RunStats implements Iterable<FileStats> {
         this.title = title;
     }
 
-    String getReportName() {
-        return test.getName() + "-report.html";
-    }
-
-    String getRawReportName() {
-        return test.getName() + "-coverage.dat";
+    public String getTestName() {
+        return test.getName();
     }
 
     void add(final FileStats newStats) {

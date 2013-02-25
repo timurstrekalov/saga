@@ -47,6 +47,9 @@ public class Main {
         final Option browserVersionOpt = new Option("v", "browser-version", true,
                 "Determines the browser and version profile that HtmlUnit will simulate");
 
+        final Option reportFormatsOpt = new Option(null, "report-formats", true,
+                "A comma-separated list of formats of the reports to be generated. Valid values are: HTML, RAW, CSV");
+
         final Option helpOpt = new Option("h", "help", false, "Print this message");
         final Options options = new Options();
 
@@ -64,6 +67,7 @@ public class Main {
         options.addOption(sourcesToPreloadEncodingOpt);
         options.addOption(backgroundJavaScriptTimeoutOpt);
         options.addOption(browserVersionOpt);
+        options.addOption(reportFormatsOpt);
 
         try {
             CommandLineParser parser = new GnuParser();
@@ -123,8 +127,8 @@ public class Main {
                 }
             }
 
-            final String browserVersion = line.getOptionValue(browserVersionOpt.getOpt());
-            gen.setBrowserVersion(browserVersion);
+            gen.setBrowserVersion(line.getOptionValue(browserVersionOpt.getOpt()));
+            gen.setReportFormats(line.getOptionValue(reportFormatsOpt.getOpt()));
 
             gen.run();
         } catch (final MissingOptionException e) {

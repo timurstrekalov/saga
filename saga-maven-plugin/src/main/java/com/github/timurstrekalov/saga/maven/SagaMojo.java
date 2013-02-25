@@ -115,6 +115,17 @@ public class SagaMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "FIREFOX_3_6")
     private String browserVersion;
+
+    /**
+     * A comma-separated list of formats of the reports to be generated. Valid values are:
+     * <ul>
+     *     <li>HTML</li>
+     *     <li>RAW</li>
+     *     <li>CSV</li>
+     * </ul>
+     */
+    @Parameter(defaultValue = "HTML, RAW")
+    private String reportFormats;
     
     @Override
     public void execute() throws MojoExecutionException {
@@ -132,6 +143,7 @@ public class SagaMojo extends AbstractMojo {
             gen.setSourcesToPreload(sourcesToPreload);
             gen.setSourcesToPreloadEncoding(sourcesToPreloadEncoding);
             gen.setBrowserVersion(browserVersion);
+            gen.setReportFormats(reportFormats);
 
             try {
                 gen.run();
