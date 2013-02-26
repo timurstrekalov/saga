@@ -81,29 +81,29 @@ public class Main {
             options.addOption(includeOpt);
             options.addOption(outputDirOpt);
 
-            if (line.hasOption(helpOpt.getOpt())) {
+            if (line.hasOption(helpOpt.getLongOpt())) {
                 printHelpAndExit(options);
             }
 
             parser = new GnuParser();
             line = parser.parse(options, args);
 
-            final File baseDir = new File(line.getOptionValue(baseDirOpt.getOpt()));
-            final String includes = line.getOptionValue(includeOpt.getOpt());
-            final String excludes = line.getOptionValue(excludeOpt.getOpt());
-            final File outputDir = new File(line.getOptionValue(outputDirOpt.getOpt()));
+            final File baseDir = new File(line.getOptionValue(baseDirOpt.getLongOpt()));
+            final String includes = line.getOptionValue(includeOpt.getLongOpt());
+            final String excludes = line.getOptionValue(excludeOpt.getLongOpt());
+            final File outputDir = new File(line.getOptionValue(outputDirOpt.getLongOpt()));
 
             final CoverageGenerator gen = new CoverageGenerator(baseDir, includes, excludes, outputDir);
 
-            if (line.hasOption(outputInstrumentedFilesOpt.getOpt())) {
+            if (line.hasOption(outputInstrumentedFilesOpt.getLongOpt())) {
                 gen.setOutputInstrumentedFiles(true);
             }
 
-            gen.setNoInstrumentPatterns(line.getOptionValues(noInstrumentPatternOpt.getOpt()));
-            gen.setSourcesToPreload(line.getOptionValue(sourcesToPreloadOpt.getOpt()));
-            gen.setOutputStrategy(line.getOptionValue(outputStrategyOpt.getOpt()));
+            gen.setNoInstrumentPatterns(line.getOptionValues(noInstrumentPatternOpt.getLongOpt()));
+            gen.setSourcesToPreload(line.getOptionValue(sourcesToPreloadOpt.getLongOpt()));
+            gen.setOutputStrategy(line.getOptionValue(outputStrategyOpt.getLongOpt()));
 
-            final String threadCount = line.getOptionValue(threadCountOpt.getOpt());
+            final String threadCount = line.getOptionValue(threadCountOpt.getLongOpt());
             if (threadCount != null) {
                 try {
                     gen.setThreadCount(Integer.parseInt(threadCount));
@@ -113,11 +113,11 @@ public class Main {
                 }
             }
 
-            if (line.hasOption(includeInlineScriptsOpt.getOpt())) {
+            if (line.hasOption(includeInlineScriptsOpt.getLongOpt())) {
                 gen.setIncludeInlineScripts(true);
             }
 
-            final String backgroundJavaScriptTimeout = line.getOptionValue(backgroundJavaScriptTimeoutOpt.getOpt());
+            final String backgroundJavaScriptTimeout = line.getOptionValue(backgroundJavaScriptTimeoutOpt.getLongOpt());
             if (backgroundJavaScriptTimeout != null) {
                 try {
                     gen.setBackgroundJavaScriptTimeout(Long.valueOf(backgroundJavaScriptTimeout));
@@ -127,8 +127,8 @@ public class Main {
                 }
             }
 
-            gen.setBrowserVersion(line.getOptionValue(browserVersionOpt.getOpt()));
-            gen.setReportFormats(line.getOptionValue(reportFormatsOpt.getOpt()));
+            gen.setBrowserVersion(line.getOptionValue(browserVersionOpt.getLongOpt()));
+            gen.setReportFormats(line.getOptionValue(reportFormatsOpt.getLongOpt()));
 
             gen.run();
         } catch (final MissingOptionException e) {
