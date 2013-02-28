@@ -16,8 +16,12 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources</directory>
+                <directory>src/main/filtered-resources</directory>
                 <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
             </resource>
         </resources>
     </build>
@@ -58,6 +62,11 @@
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>5.4.0</version>
         </dependency>
     </dependencies>
 

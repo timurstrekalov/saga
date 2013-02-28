@@ -1,5 +1,9 @@
 package com.github.timurstrekalov.saga.core;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -7,11 +11,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-
-class FileStats {
+public class FileStats {
 
     private static final String USER_DIR = new File(System.getProperty("user.dir")).getAbsolutePath();
 
@@ -86,6 +86,10 @@ class FileStats {
 
     public String getBarColor() {
         return Util.getColor(getCoverage());
+    }
+
+    public int getBarColorAsArgb() {
+        return Util.getColorAsArgb(getCoverage());
     }
 
     static FileStats merge(final FileStats s1, final FileStats s2) {

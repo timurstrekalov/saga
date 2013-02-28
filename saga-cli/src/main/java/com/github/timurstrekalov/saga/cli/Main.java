@@ -1,16 +1,31 @@
 package com.github.timurstrekalov.saga.cli;
 
-import com.github.timurstrekalov.saga.core.CoverageGenerator;
-import com.github.timurstrekalov.saga.core.OutputStrategy;
-import org.apache.commons.cli.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.github.timurstrekalov.saga.core.CoverageGenerator;
+import com.github.timurstrekalov.saga.core.CoverageGenerators;
+import com.github.timurstrekalov.saga.core.OutputStrategy;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.MissingOptionException;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.UnrecognizedOptionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Main {
 
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(final String[] args) throws IOException, ParseException {
+        logger.debug("Starting...");
+
         final Option baseDirOpt = new Option("b", "base-dir", true, "Base directory for test search");
         final Option includeOpt = new Option("i", "include", true,
                 "Comma-separated list of Ant-style paths to the tests to run");
@@ -69,9 +84,13 @@ public class Main {
         options.addOption(browserVersionOpt);
         options.addOption(reportFormatsOpt);
 
+        logger.debug("Finished configuring options");
+
         try {
             CommandLineParser parser = new GnuParser();
             CommandLine line = parser.parse(options, args, false);
+
+            logger.debug("Parsed the arguments, take 1");
 
             baseDirOpt.setRequired(true);
             includeOpt.setRequired(true);
@@ -88,12 +107,14 @@ public class Main {
             parser = new GnuParser();
             line = parser.parse(options, args);
 
+            logger.debug("Parsed the arguments, take 2");
+
             final File baseDir = new File(line.getOptionValue(baseDirOpt.getLongOpt()));
             final String includes = line.getOptionValue(includeOpt.getLongOpt());
             final String excludes = line.getOptionValue(excludeOpt.getLongOpt());
             final File outputDir = new File(line.getOptionValue(outputDirOpt.getLongOpt()));
 
-            final CoverageGenerator gen = new CoverageGenerator(baseDir, includes, excludes, outputDir);
+            final CoverageGenerator gen = CoverageGenerators.newInstance(baseDir, includes, excludes, outputDir);
 
             if (line.hasOption(outputInstrumentedFilesOpt.getLongOpt())) {
                 gen.setOutputInstrumentedFiles(true);
@@ -129,6 +150,8 @@ public class Main {
 
             gen.setBrowserVersion(line.getOptionValue(browserVersionOpt.getLongOpt()));
             gen.setReportFormats(line.getOptionValue(reportFormatsOpt.getLongOpt()));
+
+            logger.debug("Configured the coverage generator, running");
 
             gen.run();
         } catch (final MissingOptionException e) {

@@ -13,7 +13,7 @@ public class RawReporter extends AbstractStringTemplateBasedReporter {
     }
 
     @Override
-    protected void writeReportInternal(final File outputFile, final RunStats runStats) throws IOException {
+    protected void writeReportThreadSafe(final File outputFile, final RunStats runStats) throws IOException {
         stringTemplateGroup.getInstanceOf("runStatsRaw")
                 .add("stats", runStats)
                 .write(outputFile, listener);

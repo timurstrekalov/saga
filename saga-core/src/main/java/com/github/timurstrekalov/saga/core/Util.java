@@ -1,10 +1,11 @@
 package com.github.timurstrekalov.saga.core;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.google.common.base.Function;
-
 import java.io.File;
 import java.net.URI;
+
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 
 class Util {
 
@@ -27,6 +28,11 @@ class Util {
     }
 
     static String getColor(final int coverage) {
+        final int color = getColorAsArgb(coverage);
+        return Joiner.on(", ").join(color >> 16 & 0xff, color >> 8 & 0xff, color & 0xff);
+    }
+
+    static int getColorAsArgb(final int coverage) {
         final int[] from = coverage < 50 ? red : yellow;
         final int[] to = coverage < 50 ? yellow : green;
         final double prc = (coverage - (coverage < 50 ? 0 : 50)) / 50.0;
@@ -36,8 +42,7 @@ class Util {
             color[i] = (int) ((to[i] - from[i]) * prc + from[i]);
         }
 
-        // TODO use join
-        return String.format("%d, %d, %d", color[0], color[1], color[2]);
+        return 0xff << 24 | color[0] << 16 | color[1] << 8 | color[2];
     }
 
     static String getFullSourcePath(final HtmlPage htmlPage, final String sourceName) {

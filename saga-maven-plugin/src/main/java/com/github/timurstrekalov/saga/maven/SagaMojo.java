@@ -1,14 +1,15 @@
 package com.github.timurstrekalov.saga.maven;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
+import com.github.timurstrekalov.saga.core.CoverageGenerators;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-
-import java.io.File;
-import java.io.IOException;
 
 @Mojo(name = "coverage", defaultPhase = LifecyclePhase.VERIFY, threadSafe = true)
 public class SagaMojo extends AbstractMojo {
@@ -131,7 +132,7 @@ public class SagaMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException {
         try {
 
-            final CoverageGenerator gen = new CoverageGenerator(baseDir, includes, excludes, outputDir);
+            final CoverageGenerator gen = CoverageGenerators.newInstance(baseDir, includes, excludes, outputDir);
 
             gen.setOutputInstrumentedFiles(outputInstrumentedFiles);
             gen.setCacheInstrumentedCode(cacheInstrumentedCode);

@@ -15,7 +15,8 @@ public enum ReportFormat {
             return "dat";
         }
     },
-    CSV;
+    CSV,
+    PDF;
 
     public String getSuffix() {
         return "report";

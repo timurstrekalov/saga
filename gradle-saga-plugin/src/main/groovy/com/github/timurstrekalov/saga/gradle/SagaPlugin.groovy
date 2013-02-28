@@ -1,6 +1,5 @@
 package com.github.timurstrekalov.saga.gradle
-
-import com.github.timurstrekalov.saga.core.CoverageGenerator
+import com.github.timurstrekalov.saga.core.CoverageGenerators
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -14,7 +13,7 @@ class SagaPlugin implements Plugin<Project> {
         project.task('coverage') << {
             final SagaPluginExtension cfg = (SagaPluginExtension) project[PLUGIN_NAME]
 
-            final def gen = new CoverageGenerator(cfg.baseDir, cfg.includes, cfg.excludes, cfg.outputDir)
+            final def gen = CoverageGenerators.newInstance(cfg.baseDir, cfg.includes, cfg.excludes, cfg.outputDir)
 
             gen.outputInstrumentedFiles = cfg.outputInstrumentedFiles
             gen.cacheInstrumentedCode = cfg.cacheInstrumentedCode

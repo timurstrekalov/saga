@@ -1,13 +1,18 @@
 package com.github.timurstrekalov.saga.core;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
-import java.io.File;
-import java.util.*;
 
 public class RunStats implements Iterable<FileStats> {
 
@@ -42,7 +47,7 @@ public class RunStats implements Iterable<FileStats> {
         }
     }
 
-    public Collection<FileStats> getFileStats() {
+    public List<FileStats> getFileStats() {
         final List<FileStats> result = Lists.newLinkedList(fileStatsMap.values());
         
         Collections.sort(result, new Comparator<FileStats>() {
@@ -66,6 +71,7 @@ public class RunStats implements Iterable<FileStats> {
 
     public int getTotalStatements() {
         return Util.sum(fileStatsMap.values(), new Function<FileStats, Integer>() {
+
             @Override
             public Integer apply(final FileStats input) {
                 return input.getStatements();
@@ -92,6 +98,10 @@ public class RunStats implements Iterable<FileStats> {
 
     public String getBarColor() {
         return Util.getColor(getTotalCoverage());
+    }
+
+    public int getBarColorAsArgb() {
+        return Util.getColorAsArgb(getTotalCoverage());
     }
 
     @Override
