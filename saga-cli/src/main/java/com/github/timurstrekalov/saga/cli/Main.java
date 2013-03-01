@@ -63,7 +63,7 @@ public class Main {
                 "Determines the browser and version profile that HtmlUnit will simulate");
 
         final Option reportFormatsOpt = new Option(null, "report-formats", true,
-                "A comma-separated list of formats of the reports to be generated. Valid values are: HTML, RAW, CSV");
+                "A comma-separated list of formats of the reports to be generated. Valid values are: HTML, RAW, CSV, PDF");
 
         final Option sortByOpt = new Option(null, "sort-by", true,
                 "The column to sort by, one of 'file', 'statements', 'executed' or 'coverage' (default is 'coverage')");

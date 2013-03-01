@@ -123,6 +123,7 @@ public class SagaMojo extends AbstractMojo {
      *     <li>HTML</li>
      *     <li>RAW</li>
      *     <li>CSV</li>
+     *     <li>PDF</li>
      * </ul>
      */
     @Parameter(defaultValue = "HTML, RAW")
