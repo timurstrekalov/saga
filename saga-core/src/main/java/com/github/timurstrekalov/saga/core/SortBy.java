@@ -32,4 +32,6 @@ public enum SortBy implements Comparator<FileStats> {
         }
     };
 
+    public abstract int compare(FileStats s1, FileStats s2);
+
 }
