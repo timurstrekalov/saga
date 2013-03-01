@@ -127,6 +127,18 @@ public class SagaMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "HTML, RAW")
     private String reportFormats;
+
+    /**
+     * The column to sort by, one of 'file', 'statements', 'executed' or 'coverage'.
+     */
+    @Parameter(defaultValue = "coverage")
+    private String sortBy;
+
+    /**
+     * The order of sorting, one of 'asc' or 'ascending', 'desc' or 'descending'.
+     */
+    @Parameter(defaultValue = "ascending")
+    private String order;
     
     @Override
     public void execute() throws MojoExecutionException {
@@ -145,6 +157,8 @@ public class SagaMojo extends AbstractMojo {
             gen.setSourcesToPreloadEncoding(sourcesToPreloadEncoding);
             gen.setBrowserVersion(browserVersion);
             gen.setReportFormats(reportFormats);
+            gen.setSortBy(sortBy);
+            gen.setOrder(order);
 
             try {
                 gen.run();

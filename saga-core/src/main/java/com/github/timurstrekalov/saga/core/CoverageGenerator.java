@@ -33,4 +33,8 @@ public interface CoverageGenerator {
 
     void setReportFormats(String reportFormatString);
 
+    void setSortBy(String sortBy);
+
+    void setOrder(String order);
+
 }

@@ -65,6 +65,12 @@ public class Main {
         final Option reportFormatsOpt = new Option(null, "report-formats", true,
                 "A comma-separated list of formats of the reports to be generated. Valid values are: HTML, RAW, CSV");
 
+        final Option sortByOpt = new Option(null, "sort-by", true,
+                "The column to sort by, one of 'file', 'statements', 'executed' or 'coverage' (default is 'coverage')");
+
+        final Option orderOpt = new Option(null, "order", true,
+                "The order of sorting, one of 'asc' or 'ascending', 'desc' or 'descending' (default is 'ascending')");
+
         final Option helpOpt = new Option("h", "help", false, "Print this message");
         final Options options = new Options();
 
@@ -83,6 +89,8 @@ public class Main {
         options.addOption(backgroundJavaScriptTimeoutOpt);
         options.addOption(browserVersionOpt);
         options.addOption(reportFormatsOpt);
+        options.addOption(sortByOpt);
+        options.addOption(orderOpt);
 
         logger.debug("Finished configuring options");
 
@@ -150,6 +158,8 @@ public class Main {
 
             gen.setBrowserVersion(line.getOptionValue(browserVersionOpt.getLongOpt()));
             gen.setReportFormats(line.getOptionValue(reportFormatsOpt.getLongOpt()));
+            gen.setSortBy(line.getOptionValue(sortByOpt.getLongOpt()));
+            gen.setOrder(line.getOptionValue(orderOpt.getLongOpt()));
 
             logger.debug("Configured the coverage generator, running");
 

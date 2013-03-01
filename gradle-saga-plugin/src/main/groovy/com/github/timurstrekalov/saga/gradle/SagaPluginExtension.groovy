@@ -32,4 +32,8 @@ class SagaPluginExtension {
 
     String reportFormats
 
+    String sortBy
+
+    String order
+
 }

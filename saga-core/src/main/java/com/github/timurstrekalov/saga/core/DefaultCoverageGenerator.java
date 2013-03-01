@@ -90,6 +90,9 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
 
     private Set<ReportFormat> reportFormats = ImmutableSet.of(ReportFormat.HTML, ReportFormat.RAW);
 
+    private SortBy sortBy;
+    private Order order;
+
     DefaultCoverageGenerator(final File baseDir, final String includes, final String excludes, final File outputDir) {
         Preconditions.checkNotNull(baseDir, "baseDir cannot be null");
         Preconditions.checkNotNull(outputDir, "outputDir cannot be null");
@@ -139,6 +142,8 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
         final Collection<Pattern> ignorePatterns = createPatterns();
         final File instrumentedFileDirectory = new File(outputDir, INSTRUMENTED_FILE_DIRECTORY_NAME);
         final RunStats totalStats = new RunStats(new File(outputDir, TOTAL_REPORT_NAME), "Total coverage report");
+        totalStats.setSortBy(sortBy);
+        totalStats.setOrder(order);
 
         if (outputStrategy.contains(OutputStrategy.TOTAL) && sourcesToPreload != null) {
             logger.info("Using {} to preload sources", sourcesToPreloadEncoding);
@@ -311,6 +316,8 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
             final ScriptInstrumenter instrumenter,
             final NativeObject allCoverageData) throws IOException {
         final RunStats runStats = new RunStats(test);
+        runStats.setSortBy(sortBy);
+        runStats.setOrder(order);
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             @SuppressWarnings("rawtypes")
@@ -496,9 +503,27 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
         this.reportFormats = Sets.newHashSet(Iterables.transform(reportFormats, new Function<String, ReportFormat>() {
             @Override
             public ReportFormat apply(final String input) {
-                return ReportFormat.valueOf(input.trim().toUpperCase());
+                return ReportFormat.valueOf(input.toUpperCase());
             }
         }));
+    }
+
+    @Override
+    public void setSortBy(final String sortBy) {
+        if (sortBy == null) {
+            return;
+        }
+
+        this.sortBy = SortBy.valueOf(sortBy.trim().toUpperCase());
+    }
+
+    @Override
+    public void setOrder(final String order) {
+        if (order == null) {
+            return;
+        }
+
+        this.order = Order.fromString(order.trim());
     }
 
 }

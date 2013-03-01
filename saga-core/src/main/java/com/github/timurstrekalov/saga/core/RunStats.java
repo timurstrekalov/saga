@@ -21,6 +21,9 @@ public class RunStats implements Iterable<FileStats> {
     public final File test;
     public final String title;
 
+    private SortBy sortBy = SortBy.COVERAGE;
+    private Order order = Order.ASC;
+
     private final Map<String, FileStats> fileStatsMap = Maps.newTreeMap();
 
     RunStats(final File test) {
@@ -49,11 +52,11 @@ public class RunStats implements Iterable<FileStats> {
 
     public List<FileStats> getFileStats() {
         final List<FileStats> result = Lists.newLinkedList(fileStatsMap.values());
-        
+
         Collections.sort(result, new Comparator<FileStats>() {
             @Override
             public int compare(final FileStats s1, final FileStats s2) {
-                return Integer.valueOf(s1.getCoverage()).compareTo(s2.getCoverage());
+                return (getOrder() == Order.ASC ? 1 : -1) * getSortBy().compare(s1, s2);
             }
         });
 
@@ -81,6 +84,7 @@ public class RunStats implements Iterable<FileStats> {
 
     public int getTotalExecuted() {
         return Util.sum(fileStatsMap.values(), new Function<FileStats, Integer>() {
+
             @Override
             public Integer apply(final FileStats input) {
                 return input.getExecuted();
@@ -107,6 +111,30 @@ public class RunStats implements Iterable<FileStats> {
     @Override
     public Iterator<FileStats> iterator() {
         return getFileStats().iterator();
+    }
+
+    public void setSortBy(final SortBy sortBy) {
+        if (sortBy == null) {
+            return;
+        }
+
+        this.sortBy = sortBy;
+    }
+
+    public SortBy getSortBy() {
+        return sortBy;
+    }
+
+    public void setOrder(final Order order) {
+        if (order == null) {
+            return;
+        }
+
+        this.order = order;
+    }
+
+    public Order getOrder() {
+        return order;
     }
 
 }

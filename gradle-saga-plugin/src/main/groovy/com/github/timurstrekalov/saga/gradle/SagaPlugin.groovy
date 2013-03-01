@@ -15,6 +15,7 @@ class SagaPlugin implements Plugin<Project> {
 
             final def gen = CoverageGenerators.newInstance(cfg.baseDir, cfg.includes, cfg.excludes, cfg.outputDir)
 
+            // TODO pretty sure we can do this dynamically without having to list every property
             gen.outputInstrumentedFiles = cfg.outputInstrumentedFiles
             gen.cacheInstrumentedCode = cfg.cacheInstrumentedCode
             gen.noInstrumentPatterns = cfg.noInstrumentPatterns
@@ -26,6 +27,8 @@ class SagaPlugin implements Plugin<Project> {
             gen.sourcesToPreloadEncoding = cfg.sourcesToPreloadEncoding
             gen.browserVersion = cfg.browserVersion
             gen.reportFormats = cfg.reportFormats
+            gen.sortBy = cfg.sortBy
+            gen.order = cfg.order
 
             gen.run()
         }
