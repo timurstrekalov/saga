@@ -149,6 +149,9 @@
     <li>
         It has Maven, Gradle and CLI implementations to suit your needs
     </li>
+    <li>
+        Support for HTML, raw LCOV, CSV and PDF reports (more to come)
+    </li>
     <li>It just works. There's very little configuration, and I'd like to think that the defaults are sensible enough.
     </li>
     <li>It's being actively developed, it's open, it's completely free.</li>
@@ -295,6 +298,29 @@
         </td>
         <td>FIREFOX_3_6</td>
     </tr>
+    <tr>
+        <td>reportFormats</td>
+        <td>
+            A comma-separated list of formats of the reports to be generated. Valid values are:
+            <ul>
+                <li>HTML</li>
+                <li>RAW</li>
+                <li>CSV</li>
+                <li>PDF</li>
+            </ul>
+        </td>
+        <td>HTML, RAW</td>
+    </tr>
+    <tr>
+        <td>sortBy</td>
+        <td>The column to sort by, one of 'file', 'statements', 'executed' or 'coverage'.</td>
+        <td>coverage</td>
+    </tr>
+    <tr>
+        <td>orderBy</td>
+        <td>The order of sorting, one of 'asc' or 'ascending', 'desc' or 'descending'.</td>
+        <td>ascending</td>
+    </tr>
 </table>
 <p>Tested on Maven version 2.2.1 &amp; 3.x.x</p>
 
@@ -431,6 +457,22 @@ saga {
         <td>sourcesToPreloadEncoding</td>
         <td>java.lang.String</td>
     </tr>
+    <tr>
+        <td>browserVersion</td>
+        <td>java.lang.String</td>
+    </tr>
+    <tr>
+        <td>reportFormats</td>
+        <td>java.lang.String</td>
+    </tr>
+    <tr>
+        <td>sortBy</td>
+        <td>java.lang.String</td>
+    </tr>
+    <tr>
+        <td>order</td>
+        <td>java.lang.String</td>
+    </tr>
 </table>
 
 <p>
@@ -458,6 +500,10 @@ saga {
     [-t &lt;arg&gt;]
     [-j &lt;arg&gt;]
     [-p &lt;arg&gt;]
+    [--preload-sources-encoding &lt;arg&gt;]
+    [--report-formats &lt;arg&gt;]
+    [--sort-by &lt;arg&gt;]
+    [--order &lt;arg&gt;]
 
  -b,--base-dir &lt;arg&gt;                            Base directory for test search
 
@@ -494,6 +540,22 @@ saga {
 
  -p,--preload-sources &lt;arg&gt;                     Comma-separated list of Ant-style
                                                 paths to files to preload
+
+    --preload-sources-encoding &lt;arg&gt;            Encoding to use when preloading
+                                                sources
+
+    --report-formats &lt;arg&gt;                      A comma-separated list of formats of
+                                                the reports to be generated. Valid values
+                                                are: HTML, RAW, CSV, PDF
+
+    --sort-by &lt;arg&gt;                             The column to sort by, one of 'file',
+                                                'statements', 'executed' or 'coverage'
+                                                (default is 'coverage')
+
+    --order &lt;arg&gt;                               The order of sorting, one of 'asc'
+                                                or 'ascending', 'desc' or 'descending'
+                                                (default is 'ascending')
+
 </code></pre>
 
 <p>Download a <a href="http://saga-javascript-coverage.googlecode.com/files/saga-cli-1.3.3.zip">pre-built package</a> containing the latest executable jar with dependencies.</p>
