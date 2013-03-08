@@ -1,6 +1,6 @@
 package com.github.timurstrekalov.saga.core;
 
-import java.io.File;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -18,7 +19,7 @@ public class RunStats implements Iterable<FileStats> {
 
     public static final RunStats EMPTY = new RunStats(null, null);
 
-    public final File test;
+    public final URI test;
     public final String title;
 
     private SortBy sortBy = SortBy.COVERAGE;
@@ -26,17 +27,22 @@ public class RunStats implements Iterable<FileStats> {
 
     private final Map<String, FileStats> fileStatsMap = Maps.newTreeMap();
 
-    RunStats(final File test) {
-        this(test, String.format("Coverage report for \"%s\"", test.getAbsolutePath()));
+    public RunStats(final URI test) {
+        this(test, String.format("Coverage report for \"%s\"", test));
     }
 
-    RunStats(final File test, final String title) {
+    public RunStats(final URI test, final String title) {
         this.test = test;
         this.title = title;
     }
 
     public String getTestName() {
-        return test.getName();
+        final Optional<String> lastSegment = UriUtil.getLastSegment(test);
+        if (lastSegment.isPresent()) {
+            return lastSegment.get();
+        }
+
+        return test.getHost();
     }
 
     void add(final FileStats newStats) {
@@ -73,7 +79,7 @@ public class RunStats implements Iterable<FileStats> {
     }
 
     public int getTotalStatements() {
-        return Util.sum(fileStatsMap.values(), new Function<FileStats, Integer>() {
+        return MiscUtil.sum(fileStatsMap.values(), new Function<FileStats, Integer>() {
 
             @Override
             public Integer apply(final FileStats input) {
@@ -83,7 +89,7 @@ public class RunStats implements Iterable<FileStats> {
     }
 
     public int getTotalExecuted() {
-        return Util.sum(fileStatsMap.values(), new Function<FileStats, Integer>() {
+        return MiscUtil.sum(fileStatsMap.values(), new Function<FileStats, Integer>() {
 
             @Override
             public Integer apply(final FileStats input) {
@@ -93,7 +99,7 @@ public class RunStats implements Iterable<FileStats> {
     }
 
     public int getTotalCoverage() {
-        return Util.toCoverage(getTotalStatements(), getTotalExecuted());
+        return MiscUtil.toCoverage(getTotalStatements(), getTotalExecuted());
     }
 
     public boolean getHasStatements() {
@@ -101,11 +107,11 @@ public class RunStats implements Iterable<FileStats> {
     }
 
     public String getBarColor() {
-        return Util.getColor(getTotalCoverage());
+        return MiscUtil.getColor(getTotalCoverage());
     }
 
     public int getBarColorAsArgb() {
-        return Util.getColorAsArgb(getTotalCoverage());
+        return MiscUtil.getColorAsArgb(getTotalCoverage());
     }
 
     @Override

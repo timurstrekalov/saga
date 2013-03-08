@@ -1,19 +1,19 @@
 package com.github.timurstrekalov.saga.core.reporter;
 
-import com.github.timurstrekalov.saga.core.RunStats;
-
 import java.io.File;
 import java.net.URI;
+
+import com.github.timurstrekalov.saga.core.RunStats;
 
 final class ReporterUtil {
 
     private ReporterUtil() {
-        // utility class
+        throw new UnsupportedOperationException("Utility class");
     }
 
-    public static File getFileOutputDir(final File baseDir, final File outputDir, final RunStats runStats) {
-        final URI relativeTestUri = baseDir.toURI().relativize(runStats.test.toURI());
-        return new File(new File(outputDir.toURI().resolve(relativeTestUri)).getParent());
+    public static File getFileOutputDir(final URI baseUri, final File outputDir, final RunStats runStats) {
+        final URI relativeTestUri = baseUri.relativize(runStats.test);
+        return new File(outputDir, relativeTestUri.toString()).getParentFile().getAbsoluteFile();
     }
 
 }

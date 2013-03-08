@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UtilTest {
+public class MiscUtilTest {
 
     @Mock
     HtmlPage htmlPage;
@@ -25,7 +25,7 @@ public class UtilTest {
         when(htmlPage.getUrl()).thenReturn(mockUrl);
 
         final String sourceName = "file:/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js?_dc=1351820085178";
-        final String fullSourcePath = Util.getFullSourcePath(htmlPage, sourceName);
+        final String fullSourcePath = MiscUtil.getFullSourcePath(htmlPage, sourceName);
 
         assertThat(fullSourcePath, equalTo("/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js"));
     }
@@ -37,7 +37,7 @@ public class UtilTest {
         when(htmlPage.getUrl()).thenReturn(mockUrl);
 
         final String sourceName = "src/app/utils/FieldLayout.js?_dc=1351820085178";
-        final String fullSourcePath = Util.getFullSourcePath(htmlPage, sourceName);
+        final String fullSourcePath = MiscUtil.getFullSourcePath(htmlPage, sourceName);
 
         assertThat(fullSourcePath, equalTo("/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js"));
     }

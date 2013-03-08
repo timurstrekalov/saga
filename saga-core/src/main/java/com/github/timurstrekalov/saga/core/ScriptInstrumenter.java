@@ -1,5 +1,17 @@
 package com.github.timurstrekalov.saga.core;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -15,23 +27,43 @@ import com.google.common.io.Files;
 import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
-import net.sourceforge.htmlunit.corejs.javascript.ast.*;
+import net.sourceforge.htmlunit.corejs.javascript.ast.AstNode;
+import net.sourceforge.htmlunit.corejs.javascript.ast.AstRoot;
+import net.sourceforge.htmlunit.corejs.javascript.ast.Block;
+import net.sourceforge.htmlunit.corejs.javascript.ast.ElementGet;
+import net.sourceforge.htmlunit.corejs.javascript.ast.ExpressionStatement;
+import net.sourceforge.htmlunit.corejs.javascript.ast.IfStatement;
+import net.sourceforge.htmlunit.corejs.javascript.ast.LabeledStatement;
+import net.sourceforge.htmlunit.corejs.javascript.ast.Loop;
+import net.sourceforge.htmlunit.corejs.javascript.ast.Name;
+import net.sourceforge.htmlunit.corejs.javascript.ast.NodeVisitor;
+import net.sourceforge.htmlunit.corejs.javascript.ast.NumberLiteral;
+import net.sourceforge.htmlunit.corejs.javascript.ast.StringLiteral;
+import net.sourceforge.htmlunit.corejs.javascript.ast.SwitchCase;
+import net.sourceforge.htmlunit.corejs.javascript.ast.UnaryExpression;
+import net.sourceforge.htmlunit.corejs.javascript.ast.VariableDeclaration;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static net.sourceforge.htmlunit.corejs.javascript.Token.*;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.BLOCK;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.BREAK;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.CASE;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.CONTINUE;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.DO;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.EMPTY;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.EXPR_RESULT;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.EXPR_VOID;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.FOR;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.FUNCTION;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.IF;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.RETURN;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.SCRIPT;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.SWITCH;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.THROW;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.TRY;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.VAR;
+import static net.sourceforge.htmlunit.corejs.javascript.Token.WHILE;
 
 class ScriptInstrumenter implements ScriptPreProcessor {
 
@@ -58,7 +90,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private static final Pattern evalRe = Pattern.compile("(.+)#(\\d+\\(eval\\))");
     private static final Pattern nonFileRe = Pattern.compile("JavaScriptStringJob");
 
-    private static final ConcurrentMap<String, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
+    private static final ConcurrentMap<URI, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
     private static final ConcurrentHashMultiset<String> writtenToDisk = ConcurrentHashMultiset.create();
 
     private final HtmlUnitContextFactory contextFactory;
@@ -66,15 +98,13 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private final String initializingCode;
     private final String arrayInitializer;
 
+    private final Config config;
     private final List<ScriptData> scriptDataList = Lists.newLinkedList();
-
     private Collection<Pattern> ignorePatterns;
-    private File outputDir;
-    private boolean outputInstrumentedFiles;
+    private File instrumentedFileDirectory;
 
-    private boolean cacheInstrumentedCode;
-
-    public ScriptInstrumenter(final HtmlUnitContextFactory contextFactory, final String coverageVariableName) {
+    public ScriptInstrumenter(final Config config, final HtmlUnitContextFactory contextFactory, final String coverageVariableName) {
+        this.config = config;
         this.contextFactory = contextFactory;
         this.coverageVariableName = coverageVariableName;
 
@@ -97,25 +127,15 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             }
 
             final boolean separateFile = isSeparateFile(sourceName, normalizedSourceName);
-            final String fullSourcePath;
+            final URI sourceUri = URI.create(normalizedSourceName).normalize();
 
-            if (separateFile) {
-                if (htmlPage != null) {
-                    fullSourcePath = Util.getFullSourcePath(htmlPage, sourceName);
-                } else {
-                    fullSourcePath = new File(normalizedSourceName).getAbsolutePath();
-                }
-            } else {
-                fullSourcePath = normalizedSourceName;
-            }
-
-            if (cacheInstrumentedCode && instrumentedScriptCache.containsKey(fullSourcePath)) {
-                final ScriptData data = instrumentedScriptCache.get(fullSourcePath);
+            if (config.isCacheInstrumentedCode() && instrumentedScriptCache.containsKey(sourceUri)) {
+                final ScriptData data = instrumentedScriptCache.get(sourceUri);
                 scriptDataList.add(data);
                 return data.getInstrumentedSourceCode();
             }
 
-            final ScriptData data = new ScriptData(fullSourcePath, sourceCode, separateFile);
+            final ScriptData data = new ScriptData(sourceUri.toString(), sourceCode, separateFile);
             scriptDataList.add(data);
 
             final CompilerEnvirons environs = new CompilerEnvirons();
@@ -142,16 +162,16 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             final String instrumentedCode = buf.toString();
             data.setInstrumentedSourceCode(instrumentedCode);
 
-            if (cacheInstrumentedCode) {
-                instrumentedScriptCache.putIfAbsent(data.getSourceName(), data);
+            if (config.isCacheInstrumentedCode()) {
+                instrumentedScriptCache.putIfAbsent(URI.create(data.getSourceName()), data);
             }
 
-            if (outputInstrumentedFiles && separateFile) {
+            if (config.isOutputInstrumentedFiles() && separateFile) {
                 synchronized (writtenToDisk) {
                     try {
                         if (!writtenToDisk.contains(data.getSourceName())) {
                             final File file = new File(data.getSourceName());
-                            final File fileOutputDir = new File(outputDir, Hashing.md5().hashString(file.getParent()).toString());
+                            final File fileOutputDir = new File(instrumentedFileDirectory, Hashing.md5().hashString(file.getParent()).toString());
                             FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
                             final File outputFile = new File(fileOutputDir, file.getName());
@@ -214,16 +234,12 @@ class ScriptInstrumenter implements ScriptPreProcessor {
         this.ignorePatterns = ignorePatterns;
     }
 
-    public void setOutputInstrumentedFiles(final boolean outputInstrumentedFiles) {
-        this.outputInstrumentedFiles = outputInstrumentedFiles;
+    public void setInstrumentedFileDirectory(final File instrumentedFileDirectory) {
+        this.instrumentedFileDirectory = instrumentedFileDirectory;
     }
 
-    public void setOutputDir(File outputDir) {
-        this.outputDir = outputDir;
-    }
-
-    public void setCacheInstrumentedCode(final boolean cacheInstrumentedCode) {
-        this.cacheInstrumentedCode = cacheInstrumentedCode;
+    public File getInstrumentedFileDirectory() {
+        return instrumentedFileDirectory;
     }
 
     private class InstrumentingVisitor implements NodeVisitor {

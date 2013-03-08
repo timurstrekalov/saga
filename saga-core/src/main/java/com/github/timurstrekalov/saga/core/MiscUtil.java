@@ -7,11 +7,15 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 
-class Util {
+final class MiscUtil {
 
     private static final int[] red = {219, 75, 75};
     private static final int[] yellow = {219, 219, 75};
     private static final int[] green = {174, 219, 75};
+
+    private MiscUtil() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     static int toCoverage(final int totalStatements, final int totalExecuted) {
         return (int) ((double) totalExecuted / totalStatements * 100);

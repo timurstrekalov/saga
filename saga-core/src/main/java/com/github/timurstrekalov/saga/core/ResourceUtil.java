@@ -1,14 +1,14 @@
 package com.github.timurstrekalov.saga.core;
 
-import org.apache.commons.io.FilenameUtils;
-
 import java.io.File;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * Courtesy of <a href="http://stackoverflow.com/a/3054692/1326795">Don</a>
  */
-class ResourceUtils {
+final class ResourceUtil {
 
     /**
      * Get the relative path from one file to another, specifying the directory separator.

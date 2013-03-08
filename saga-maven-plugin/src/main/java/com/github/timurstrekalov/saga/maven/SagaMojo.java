@@ -1,10 +1,10 @@
 package com.github.timurstrekalov.saga.maven;
 
 import java.io.File;
-import java.io.IOException;
 
+import com.github.timurstrekalov.saga.core.Config;
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
-import com.github.timurstrekalov.saga.core.CoverageGenerators;
+import com.github.timurstrekalov.saga.core.CoverageGeneratorFactory;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -15,21 +15,25 @@ import org.apache.maven.plugins.annotations.Parameter;
 public class SagaMojo extends AbstractMojo {
 
     /**
-     * The base directory for the test search.
+     * The URL of the base directory for the test search OR the web page with the tests.
      */
     @Parameter(required = true)
-    private File baseDir;
+    private String baseDir;
 
     /**
      * A comma-separated list of <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a>
-     * to include in the search for test runners.
+     * to include in the search for test runners.<br/><br/>
+     *
+     * Note that this parameter only makes sense if {@link #baseDir} is a filesystem URL.
      */
-    @Parameter(required = true)
+    @Parameter
     private String includes;
 
     /**
      * A comma-separated list of <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a>
-     * to exclude from the search for test runners.
+     * to exclude from the search for test runners.<br/><br/>
+     *
+     * Note that this parameter only makes sense if {@link #baseDir} is a filesystem URL.
      */
     @Parameter
     private String excludes;
@@ -47,7 +51,7 @@ public class SagaMojo extends AbstractMojo {
     private Boolean outputInstrumentedFiles;
 
     /**
-     * A list of regular expressions to match source file paths to be excluded from instrumentation.
+     * A list of regular expressions to match source file URLs to be excluded from instrumentation.
      */
     @Parameter
     private String[] noInstrumentPatterns;
@@ -88,7 +92,9 @@ public class SagaMojo extends AbstractMojo {
      * A comma-separated list of <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a>
      * to exclude from the search for sources to preload (useful to generate total coverage even though your tests might
      * not reference certain files, especially when you simply don't have tests for classes but you DO want to see them).
-     * Paths are expected to be provided relative to the base directory.
+     * Paths are expected to be provided relative to the base directory.<br/><br/>
+     *
+     * Note that this parameter only makes sense if {@link #baseDir} is a filesystem URL.
      */
     @Parameter
     private String sourcesToPreload;
@@ -144,30 +150,30 @@ public class SagaMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException {
         try {
+            final CoverageGenerator gen = CoverageGeneratorFactory.newInstance(baseDir, outputDir);
+            final Config config = gen.getConfig();
 
-            final CoverageGenerator gen = CoverageGenerators.newInstance(baseDir, includes, excludes, outputDir);
+            config.setIncludes(includes);
+            config.setExcludes(excludes);
+            config.setOutputInstrumentedFiles(outputInstrumentedFiles);
+            config.setCacheInstrumentedCode(cacheInstrumentedCode);
+            config.setNoInstrumentPatterns(noInstrumentPatterns);
+            config.setOutputStrategy(outputStrategy);
+            config.setThreadCount(threadCount);
+            config.setIncludeInlineScripts(includeInlineScripts);
+            config.setBackgroundJavaScriptTimeout(backgroundJavaScriptTimeout);
+            config.setSourcesToPreload(sourcesToPreload);
+            config.setSourcesToPreloadEncoding(sourcesToPreloadEncoding);
+            config.setBrowserVersion(browserVersion);
+            config.setReportFormats(reportFormats);
+            config.setSortBy(sortBy);
+            config.setOrder(order);
 
-            gen.setOutputInstrumentedFiles(outputInstrumentedFiles);
-            gen.setCacheInstrumentedCode(cacheInstrumentedCode);
-            gen.setNoInstrumentPatterns(noInstrumentPatterns);
-            gen.setOutputStrategy(outputStrategy);
-            gen.setThreadCount(threadCount);
-            gen.setIncludeInlineScripts(includeInlineScripts);
-            gen.setBackgroundJavaScriptTimeout(backgroundJavaScriptTimeout);
-            gen.setSourcesToPreload(sourcesToPreload);
-            gen.setSourcesToPreloadEncoding(sourcesToPreloadEncoding);
-            gen.setBrowserVersion(browserVersion);
-            gen.setReportFormats(reportFormats);
-            gen.setSortBy(sortBy);
-            gen.setOrder(order);
-
-            try {
-                gen.run();
-            } catch (final IOException e) {
-                throw new MojoExecutionException("Error generating coverage", e);
-            }
+            gen.instrumentAndGenerateReports();
         } catch (final IllegalArgumentException e) {
-            throw new MojoExecutionException("Caught IllegalArgumentException: illegal POM parameters?", e);
+            throw new MojoExecutionException("Caught IllegalArgumentException: illegal parameters?", e);
+        } catch (final Exception e) {
+            throw new MojoExecutionException("Error generating coverage", e);
         }
     }
 

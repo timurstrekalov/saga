@@ -39,7 +39,7 @@ public class ScriptInstrumenterTest {
     public void preProcess() {
         final String sourceName = "script in Class.js from (6, 13) to (6, 28)";
 
-        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(factory, COVERAGE_VARIABLE_NAME);
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(new InstanceFieldPerPropertyConfig(), factory, COVERAGE_VARIABLE_NAME);
         instrumenter.preProcess(htmlPage, Data.getClassJsSourceCode(), sourceName, 1, htmlElement);
 
         assertEquals(1, instrumenter.getScriptDataList().size());

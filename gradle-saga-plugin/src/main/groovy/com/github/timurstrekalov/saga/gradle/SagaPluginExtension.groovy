@@ -2,7 +2,7 @@ package com.github.timurstrekalov.saga.gradle
 
 class SagaPluginExtension {
 
-    File baseDir
+    String baseDir
 
     String includes
 

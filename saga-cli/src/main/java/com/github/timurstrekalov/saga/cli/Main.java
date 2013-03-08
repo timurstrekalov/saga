@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.github.timurstrekalov.saga.core.Config;
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
-import com.github.timurstrekalov.saga.core.CoverageGenerators;
+import com.github.timurstrekalov.saga.core.CoverageGeneratorFactory;
 import com.github.timurstrekalov.saga.core.OutputStrategy;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -101,11 +102,9 @@ public class Main {
             logger.debug("Parsed the arguments, take 1");
 
             baseDirOpt.setRequired(true);
-            includeOpt.setRequired(true);
             outputDirOpt.setRequired(true);
 
             options.addOption(baseDirOpt);
-            options.addOption(includeOpt);
             options.addOption(outputDirOpt);
 
             if (line.hasOption(helpOpt.getLongOpt())) {
@@ -117,25 +116,28 @@ public class Main {
 
             logger.debug("Parsed the arguments, take 2");
 
-            final File baseDir = new File(line.getOptionValue(baseDirOpt.getLongOpt()));
+            final String baseDir = line.getOptionValue(baseDirOpt.getLongOpt());
             final String includes = line.getOptionValue(includeOpt.getLongOpt());
             final String excludes = line.getOptionValue(excludeOpt.getLongOpt());
             final File outputDir = new File(line.getOptionValue(outputDirOpt.getLongOpt()));
 
-            final CoverageGenerator gen = CoverageGenerators.newInstance(baseDir, includes, excludes, outputDir);
+            final CoverageGenerator gen = CoverageGeneratorFactory.newInstance(baseDir, outputDir);
+            final Config config = gen.getConfig();
+            config.setIncludes(includes);
+            config.setExcludes(excludes);
 
             if (line.hasOption(outputInstrumentedFilesOpt.getLongOpt())) {
-                gen.setOutputInstrumentedFiles(true);
+                config.setOutputInstrumentedFiles(true);
             }
 
-            gen.setNoInstrumentPatterns(line.getOptionValues(noInstrumentPatternOpt.getLongOpt()));
-            gen.setSourcesToPreload(line.getOptionValue(sourcesToPreloadOpt.getLongOpt()));
-            gen.setOutputStrategy(line.getOptionValue(outputStrategyOpt.getLongOpt()));
+            config.setNoInstrumentPatterns(line.getOptionValues(noInstrumentPatternOpt.getLongOpt()));
+            config.setSourcesToPreload(line.getOptionValue(sourcesToPreloadOpt.getLongOpt()));
+            config.setOutputStrategy(line.getOptionValue(outputStrategyOpt.getLongOpt()));
 
             final String threadCount = line.getOptionValue(threadCountOpt.getLongOpt());
             if (threadCount != null) {
                 try {
-                    gen.setThreadCount(Integer.parseInt(threadCount));
+                    config.setThreadCount(Integer.parseInt(threadCount));
                 } catch (final Exception e) {
                     System.err.println("Invalid thread count");
                     printHelpAndExit(options);
@@ -143,27 +145,27 @@ public class Main {
             }
 
             if (line.hasOption(includeInlineScriptsOpt.getLongOpt())) {
-                gen.setIncludeInlineScripts(true);
+                config.setIncludeInlineScripts(true);
             }
 
             final String backgroundJavaScriptTimeout = line.getOptionValue(backgroundJavaScriptTimeoutOpt.getLongOpt());
             if (backgroundJavaScriptTimeout != null) {
                 try {
-                    gen.setBackgroundJavaScriptTimeout(Long.valueOf(backgroundJavaScriptTimeout));
+                    config.setBackgroundJavaScriptTimeout(Long.valueOf(backgroundJavaScriptTimeout));
                 } catch (final Exception e) {
                     System.err.println("Invalid timeout");
                     printHelpAndExit(options);
                 }
             }
 
-            gen.setBrowserVersion(line.getOptionValue(browserVersionOpt.getLongOpt()));
-            gen.setReportFormats(line.getOptionValue(reportFormatsOpt.getLongOpt()));
-            gen.setSortBy(line.getOptionValue(sortByOpt.getLongOpt()));
-            gen.setOrder(line.getOptionValue(orderOpt.getLongOpt()));
+            config.setBrowserVersion(line.getOptionValue(browserVersionOpt.getLongOpt()));
+            config.setReportFormats(line.getOptionValue(reportFormatsOpt.getLongOpt()));
+            config.setSortBy(line.getOptionValue(sortByOpt.getLongOpt()));
+            config.setOrder(line.getOptionValue(orderOpt.getLongOpt()));
 
             logger.debug("Configured the coverage generator, running");
 
-            gen.run();
+            gen.instrumentAndGenerateReports();
         } catch (final MissingOptionException e) {
             System.err.println(e.getMessage());
             printHelpAndExit(options);

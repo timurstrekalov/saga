@@ -1,5 +1,6 @@
 package com.github.timurstrekalov.saga.gradle
-import com.github.timurstrekalov.saga.core.CoverageGenerators
+
+import com.github.timurstrekalov.saga.core.CoverageGeneratorFactory
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -13,24 +14,27 @@ class SagaPlugin implements Plugin<Project> {
         project.task('coverage') << {
             final SagaPluginExtension cfg = (SagaPluginExtension) project[PLUGIN_NAME]
 
-            final def gen = CoverageGenerators.newInstance(cfg.baseDir, cfg.includes, cfg.excludes, cfg.outputDir)
+            final def gen = CoverageGeneratorFactory.newInstance(cfg.baseDir, cfg.outputDir)
+            final def config = gen.config
 
             // TODO pretty sure we can do this dynamically without having to list every property
-            gen.outputInstrumentedFiles = cfg.outputInstrumentedFiles
-            gen.cacheInstrumentedCode = cfg.cacheInstrumentedCode
-            gen.noInstrumentPatterns = cfg.noInstrumentPatterns
-            gen.outputStrategy = cfg.outputStrategy
-            gen.threadCount = cfg.threadCount
-            gen.includeInlineScripts = cfg.includeInlineScripts
-            gen.backgroundJavaScriptTimeout = cfg.backgroundJavaScriptTimeout
-            gen.sourcesToPreload = cfg.sourcesToPreload
-            gen.sourcesToPreloadEncoding = cfg.sourcesToPreloadEncoding
-            gen.browserVersion = cfg.browserVersion
-            gen.reportFormats = cfg.reportFormats
-            gen.sortBy = cfg.sortBy
-            gen.order = cfg.order
+            config.includes = cfg.includes
+            config.excludes = cfg.excludes
+            config.outputInstrumentedFiles = cfg.outputInstrumentedFiles
+            config.cacheInstrumentedCode = cfg.cacheInstrumentedCode
+            config.noInstrumentPatterns = cfg.noInstrumentPatterns
+            config.outputStrategy = cfg.outputStrategy
+            config.threadCount = cfg.threadCount
+            config.includeInlineScripts = cfg.includeInlineScripts
+            config.backgroundJavaScriptTimeout = cfg.backgroundJavaScriptTimeout
+            config.sourcesToPreload = cfg.sourcesToPreload
+            config.sourcesToPreloadEncoding = cfg.sourcesToPreloadEncoding
+            config.browserVersion = cfg.browserVersion
+            config.reportFormats = cfg.reportFormats
+            config.sortBy = cfg.sortBy
+            config.order = cfg.order
 
-            gen.run()
+            gen.instrumentAndGenerateReports()
         }
     }
 

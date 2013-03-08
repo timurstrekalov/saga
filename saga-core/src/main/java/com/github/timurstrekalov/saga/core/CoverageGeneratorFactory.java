@@ -9,12 +9,14 @@ import com.google.common.reflect.Reflection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class CoverageGenerators {
+public final class CoverageGeneratorFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultCoverageGenerator.class);
 
-    public static CoverageGenerator newInstance(final File baseDir, final String includes, final String excludes, final File outputDir) {
-        final CoverageGenerator delegate = new DefaultCoverageGenerator(baseDir, includes, excludes, outputDir);
+    public static CoverageGenerator newInstance(final String baseDir, final File outputDir) {
+        final CoverageGenerator delegate = new DefaultCoverageGenerator();
+        delegate.getConfig().setBaseDir(baseDir);
+        delegate.getConfig().setOutputDir(outputDir);
 
         return Reflection.newProxy(CoverageGenerator.class, new InvocationHandler() {
             @Override

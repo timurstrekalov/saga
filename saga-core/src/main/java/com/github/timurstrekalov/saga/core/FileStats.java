@@ -1,6 +1,7 @@
 package com.github.timurstrekalov.saga.core;
 
 import java.io.File;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
@@ -13,8 +14,7 @@ import com.google.common.hash.Hashing;
 
 public class FileStats {
 
-    private static final String USER_DIR = new File(System.getProperty("user.dir")).getAbsolutePath();
-
+    private final URI baseUri;
     private final String fullName;
     private final List<LineCoverageRecord> lineCoverageRecords;
     private final boolean separateFile;
@@ -24,7 +24,8 @@ public class FileStats {
     private final String parentName;
     private final String id;
 
-    FileStats(final String fullName, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
+    FileStats(final URI baseUri, final String fullName, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
+        this.baseUri = baseUri;
         this.fullName = fullName;
         this.separateFile = separateFile;
         this.relativeName = getRelativeName(fullName);
@@ -38,7 +39,9 @@ public class FileStats {
     }
 
     private String getRelativeName(final String fullName) {
-        return isSeparateFile() ? ResourceUtils.getRelativePath(fullName, USER_DIR, File.separator) : fullName;
+        return isSeparateFile()
+                ? ResourceUtil.getRelativePath(fullName, UriUtil.isFileUri(baseUri) ? baseUri.getPath() : baseUri.toString(), File.separator)
+                : fullName;
     }
 
     private String generateId() {
@@ -68,7 +71,8 @@ public class FileStats {
     }
 
     public int getExecuted() {
-        return Util.sum(lineCoverageRecords, new Function<LineCoverageRecord, Integer>() {
+        return MiscUtil.sum(lineCoverageRecords, new Function<LineCoverageRecord, Integer>() {
+
             @Override
             public Integer apply(final LineCoverageRecord input) {
                 return input.getTimesExecuted() > 0 ? 1 : 0;
@@ -77,7 +81,7 @@ public class FileStats {
     }
 
     public int getCoverage() {
-        return Util.toCoverage(getStatements(), getExecuted());
+        return MiscUtil.toCoverage(getStatements(), getExecuted());
     }
 
     public boolean getHasStatements() {
@@ -85,11 +89,11 @@ public class FileStats {
     }
 
     public String getBarColor() {
-        return Util.getColor(getCoverage());
+        return MiscUtil.getColor(getCoverage());
     }
 
     public int getBarColorAsArgb() {
-        return Util.getColorAsArgb(getCoverage());
+        return MiscUtil.getColorAsArgb(getCoverage());
     }
 
     static FileStats merge(final FileStats s1, final FileStats s2) {
@@ -112,7 +116,7 @@ public class FileStats {
             }
         }
 
-        return new FileStats(s1.fullName, mergedRecords, s1.separateFile);
+        return new FileStats(s1.baseUri, s1.fullName, mergedRecords, s1.separateFile);
     }
 
     public String getFileName() {

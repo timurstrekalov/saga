@@ -1,12 +1,13 @@
 package com.github.timurstrekalov.saga.core.reporter;
 
-import com.github.timurstrekalov.saga.core.RunStats;
-
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+
+import com.github.timurstrekalov.saga.core.RunStats;
 
 public interface Reporter {
 
-    void writeReport(File baseDir, File outputDir, RunStats runStats) throws IOException;
+    void writeReport(URI baseUri, File outputDir, RunStats runStats) throws IOException;
 
 }

@@ -2,6 +2,7 @@ package com.github.timurstrekalov.saga.core.reporter;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Properties;
 
 import com.github.timurstrekalov.saga.core.ReportFormat;
@@ -32,8 +33,8 @@ abstract class AbstractReporter implements Reporter {
     }
 
     @Override
-    public final void writeReport(final File baseDir, final File outputDir, final RunStats runStats) throws IOException {
-        final File fileOutputDir = ReporterUtil.getFileOutputDir(baseDir, outputDir, runStats);
+    public final void writeReport(final URI baseUri, final File outputDir, final RunStats runStats) throws IOException {
+        final File fileOutputDir = ReporterUtil.getFileOutputDir(baseUri, outputDir, runStats);
 
         FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 

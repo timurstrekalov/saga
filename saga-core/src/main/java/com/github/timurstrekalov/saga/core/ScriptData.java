@@ -1,10 +1,14 @@
 package com.github.timurstrekalov.saga.core;
 
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-import java.util.Map;
-import java.util.Set;
 
 class ScriptData {
 
@@ -104,5 +108,50 @@ class ScriptData {
                 append("statementsWithLengths", statementsWithLengths).
                 append("instrumentedSourceCode", instrumentedSourceCode).
                 toString();
+    }
+
+    public FileStats generateFileStats(final URI baseUri, final Map<Integer, Double> coverageData) {
+        final Scanner in = new Scanner(getSourceCode());
+
+        final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
+
+        if (!getLineNumbersOfAllStatements().isEmpty()) {
+            // pad with extra line coverage records if first executable statement is not the first line (comments at the start of files)
+            for (int lineNr = 1; lineNr < getLineNumberOfFirstStatement() && in.hasNext(); lineNr++) {
+                lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
+            }
+
+            for (int lineNr = getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext(); lineNr++) {
+                final String line = in.nextLine();
+
+                final Double coverageEntry = coverageData.get(lineNr);
+                final int timesLineExecuted;
+
+                if (coverageEntry == null) {
+                    final int lineLength = line.trim().length();
+
+                    if (lengthCountdown > 0 && lineLength > 0) {
+                        lengthCountdown -= lineLength;
+                        timesLineExecuted = -1;
+                    } else {
+                        timesLineExecuted = hasStatement(lineNr) ? 0 : -1;
+                    }
+                } else {
+                    timesLineExecuted = coverageEntry.intValue();
+
+                    if (getStatementLength(lineNr) != null) {
+                        lengthCountdown = getStatementLength(lineNr);
+                    }
+                }
+
+                lineCoverageRecords.add(new LineCoverageRecord(lineNr, timesLineExecuted, line));
+            }
+        } else {
+            for (int lineNr = 1; in.hasNext(); lineNr++) {
+                lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
+            }
+        }
+
+        return new FileStats(baseUri, getSourceName(), lineCoverageRecords, isSeparateFile());
     }
 }
