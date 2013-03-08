@@ -8,11 +8,10 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 class ScriptData {
 
-    private final String sourceName;
+    private final URI sourceUri;
     private final String sourceCode;
     private final boolean separateFile;
 
@@ -20,8 +19,8 @@ class ScriptData {
 
     private String instrumentedSourceCode;
 
-    ScriptData(final String sourceName, final String sourceCode, final boolean separateFile) {
-        this.sourceName = sourceName;
+    ScriptData(final URI sourceUri, final String sourceCode, final boolean separateFile) {
+        this.sourceUri = sourceUri;
         this.sourceCode = sourceCode;
         this.separateFile = separateFile;
     }
@@ -30,8 +29,12 @@ class ScriptData {
         statementsWithLengths.put(lineNr, length);
     }
 
-    public String getSourceName() {
-        return sourceName;
+    public URI getSourceUri() {
+        return sourceUri;
+    }
+
+    public String getSourceUriAsString() {
+        return sourceUri.toString();
     }
 
     public String getSourceCode() {
@@ -70,44 +73,8 @@ class ScriptData {
         return instrumentedSourceCode;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ScriptData that = (ScriptData) o;
-
-        if (instrumentedSourceCode != null ? !instrumentedSourceCode.equals(that.instrumentedSourceCode) : that.instrumentedSourceCode != null)
-            return false;
-        if (sourceCode != null ? !sourceCode.equals(that.sourceCode) : that.sourceCode != null) return false;
-        if (sourceName != null ? !sourceName.equals(that.sourceName) : that.sourceName != null) return false;
-        if (statementsWithLengths != null ? !statementsWithLengths.equals(that.statementsWithLengths) : that.statementsWithLengths != null)
-            return false;
-
-        return true;
-    }
-
     public boolean isSeparateFile() {
         return separateFile;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = sourceName != null ? sourceName.hashCode() : 0;
-        result = 31 * result + (sourceCode != null ? sourceCode.hashCode() : 0);
-        result = 31 * result + (statementsWithLengths != null ? statementsWithLengths.hashCode() : 0);
-        result = 31 * result + (instrumentedSourceCode != null ? instrumentedSourceCode.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this).
-                append("sourceName", sourceName).
-                append("sourceCode", sourceCode).
-                append("statementsWithLengths", statementsWithLengths).
-                append("instrumentedSourceCode", instrumentedSourceCode).
-                toString();
     }
 
     public FileStats generateFileStats(final URI baseUri, final Map<Integer, Double> coverageData) {
@@ -152,6 +119,7 @@ class ScriptData {
             }
         }
 
-        return new FileStats(baseUri, getSourceName(), lineCoverageRecords, isSeparateFile());
+        return new FileStats(baseUri, getSourceUri(), lineCoverageRecords, isSeparateFile());
     }
+
 }

@@ -31,12 +31,20 @@ final class UriUtil {
         return new File(s).toURI().normalize();
     }
 
-    static boolean isFileUri(final URI baseDir) {
-        return "file".equals(baseDir.getScheme());
+    static boolean isFileUri(final URI uri) {
+        return "file".equals(uri.getScheme());
     }
 
-    static Optional<String> getLastSegment(final URI test) {
-        final String path = test.getPath();
+    static Optional<String> getLastSegment(final URI uri) {
+        return getSegment(uri, -1);
+    }
+
+    static Optional<String> getParentOfLastSegment(final URI uri) {
+        return getSegment(uri, -2);
+    }
+
+    private static Optional<String> getSegment(final URI uri, final int index) {
+        final String path = uri.getPath();
 
         if (StringUtils.isBlank(path)) {
             return Optional.absent();
@@ -46,14 +54,40 @@ final class UriUtil {
             return Optional.of(path);
         }
 
-        return Optional.of(
-                Iterables.getLast(
-                        Splitter.on('/').
-                                omitEmptyStrings().
-                                trimResults().
-                                split(path)
-                )
-        );
+        final Iterable<String> parts = Splitter.on('/').
+                omitEmptyStrings().
+                trimResults().
+                split(path);
+
+        final int size = Iterables.size(parts);
+        final int actualIndex = index < 0 ? size + index : index;
+        if (actualIndex < 0 || actualIndex > size - 1) {
+            return Optional.absent();
+        }
+
+        return Optional.of(Iterables.get(parts, actualIndex));
+    }
+
+    static String getLastSegmentOrHost(final URI uri) {
+        final Optional<String> segment = getLastSegment(uri);
+        if (segment.isPresent()) {
+            return segment.get();
+        }
+
+        return uri.getHost();
+    }
+
+    static String getParentOfLastSegmentOrHost(final URI uri) {
+        final Optional<String> segment = getParentOfLastSegment(uri);
+        if (segment.isPresent()) {
+            return segment.get();
+        }
+
+        return uri.getHost();
+    }
+
+    static String getPath(final URI uri) {
+        return isFileUri(uri) ? uri.getPath() : uri.toString();
     }
 
 }

@@ -39,7 +39,7 @@ public class FileSystemSourcePreloader implements SourcePreloader {
             logger.debug("Preloading {}", file);
 
             final String source = CharStreams.toString(Files.newReaderSupplier(file, Charset.forName(sourcesToPreloadEncoding)));
-            instrumenter.preProcess(null, source, file.getAbsolutePath(), 0, null);
+            instrumenter.preProcess(null, source, file.toURI().toString(), 0, null);
         }
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {

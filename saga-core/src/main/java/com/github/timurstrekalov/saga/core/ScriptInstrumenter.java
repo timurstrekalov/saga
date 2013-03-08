@@ -91,7 +91,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private static final Pattern nonFileRe = Pattern.compile("JavaScriptStringJob");
 
     private static final ConcurrentMap<URI, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
-    private static final ConcurrentHashMultiset<String> writtenToDisk = ConcurrentHashMultiset.create();
+    private static final ConcurrentHashMultiset<URI> writtenToDisk = ConcurrentHashMultiset.create();
 
     private final HtmlUnitContextFactory contextFactory;
     private final String coverageVariableName;
@@ -135,13 +135,13 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 return data.getInstrumentedSourceCode();
             }
 
-            final ScriptData data = new ScriptData(sourceUri.toString(), sourceCode, separateFile);
+            final ScriptData data = new ScriptData(sourceUri, sourceCode, separateFile);
             scriptDataList.add(data);
 
             final CompilerEnvirons environs = new CompilerEnvirons();
             environs.initFromContext(contextFactory.enterContext());
 
-            final AstRoot root = new Parser(environs).parse(data.getSourceCode(), data.getSourceName(), lineNumber);
+            final AstRoot root = new Parser(environs).parse(data.getSourceCode(), data.getSourceUriAsString(), lineNumber);
             root.visit(new InstrumentingVisitor(data, lineNumber - 1));
 
             final String treeSource = root.toSource();
@@ -151,10 +151,10 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                     treeSource.length());
 
             buf.append(initializingCode);
-            buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, escapePath(data.getSourceName())));
+            buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, escapePath(data.getSourceUriAsString())));
 
             for (final Integer i : data.getLineNumbersOfAllStatements()) {
-                buf.append(String.format(arrayInitializer, escapePath(data.getSourceName()), i));
+                buf.append(String.format(arrayInitializer, escapePath(data.getSourceUriAsString()), i));
             }
 
             buf.append(treeSource);
@@ -163,23 +163,25 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             data.setInstrumentedSourceCode(instrumentedCode);
 
             if (config.isCacheInstrumentedCode()) {
-                instrumentedScriptCache.putIfAbsent(URI.create(data.getSourceName()), data);
+                instrumentedScriptCache.putIfAbsent(sourceUri, data);
             }
 
             if (config.isOutputInstrumentedFiles() && separateFile) {
                 synchronized (writtenToDisk) {
                     try {
-                        if (!writtenToDisk.contains(data.getSourceName())) {
-                            final File file = new File(data.getSourceName());
-                            final File fileOutputDir = new File(instrumentedFileDirectory, Hashing.md5().hashString(file.getParent()).toString());
+                        if (!writtenToDisk.contains(sourceUri)) {
+                            final String parent = UriUtil.getParentOfLastSegmentOrHost(sourceUri);
+                            final String fileName = UriUtil.getLastSegmentOrHost(sourceUri);
+
+                            final File fileOutputDir = new File(instrumentedFileDirectory, Hashing.md5().hashString(parent).toString());
                             FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
-                            final File outputFile = new File(fileOutputDir, file.getName());
+                            final File outputFile = new File(fileOutputDir, fileName);
 
                             logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
                             ByteStreams.write(instrumentedCode.getBytes("UTF-8"), Files.newOutputStreamSupplier(outputFile));
 
-                            writtenToDisk.add(data.getSourceName());
+                            writtenToDisk.add(sourceUri);
                         }
                     } catch (final IOException e) {
                         throw new RuntimeException(e);
@@ -502,7 +504,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             inner.setTarget(covDataVar);
 
             final StringLiteral fileName = new StringLiteral();
-            fileName.setValue(data.getSourceName());
+            fileName.setValue(data.getSourceUriAsString());
             fileName.setQuoteCharacter('\'');
 
             inner.setElement(fileName);

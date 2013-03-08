@@ -13,13 +13,13 @@ public class FileStatsTest {
 
     @Test
     public void getParentName_file() {
-        assertEquals("test/path/bla", new FileStats(URI.create("file:" + USER_DIR), USER_DIR + "\\test\\path\\bla/file.js",
+        assertEquals("test/path/bla", new FileStats(URI.create("file:" + USER_DIR), URI.create("file:" + USER_DIR + "/test/path/bla/file.js"),
                 Lists.<LineCoverageRecord>newLinkedList(), true).getParentName());
     }
 
     @Test
     public void getParentName_http() {
-        assertEquals("test/path/bla", new FileStats(URI.create("http://localhost:8234"), "http://localhost:8234/test/path/bla/file.js",
+        assertEquals("test/path/bla", new FileStats(URI.create("http://localhost:8234"), URI.create("http://localhost:8234/test/path/bla/file.js"),
                 Lists.<LineCoverageRecord>newLinkedList(), true).getParentName());
     }
 

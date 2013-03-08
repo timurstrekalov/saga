@@ -15,37 +15,28 @@ import com.google.common.hash.Hashing;
 public class FileStats {
 
     private final URI baseUri;
-    private final String fullName;
+    private final URI fileUri;
     private final List<LineCoverageRecord> lineCoverageRecords;
     private final boolean separateFile;
 
-    private final String relativeName;
-    private final String fileName;
+    // for stringtemplate
     private final String parentName;
+
     private final String id;
 
-    FileStats(final URI baseUri, final String fullName, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
+    FileStats(final URI baseUri, final URI fileUri, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
         this.baseUri = baseUri;
-        this.fullName = fullName;
+        this.fileUri = fileUri;
         this.separateFile = separateFile;
-        this.relativeName = getRelativeName(fullName);
 
-        final File file = new File(relativeName);
-        fileName = file.getName();
-        parentName = file.getParent();
+        parentName = new File(getRelativeName()).getParent();
 
         this.id = generateId();
         this.lineCoverageRecords = lineCoverageRecords;
     }
 
-    private String getRelativeName(final String fullName) {
-        return isSeparateFile()
-                ? ResourceUtil.getRelativePath(fullName, UriUtil.isFileUri(baseUri) ? baseUri.getPath() : baseUri.toString(), File.separator)
-                : fullName;
-    }
-
     private String generateId() {
-        return Hashing.md5().hashString(fullName).toString();
+        return Hashing.md5().hashString(fileUri.toString()).toString();
     }
 
     public List<LineCoverageRecord> getLineCoverageRecords() {
@@ -100,7 +91,7 @@ public class FileStats {
         final List<LineCoverageRecord> r1 = s1.getLineCoverageRecords();
         final List<LineCoverageRecord> r2 = s2.getLineCoverageRecords();
 
-        Preconditions.checkArgument(s1.fullName.equals(s2.fullName), "Got different file names: %s and %s", s1, s2);
+        Preconditions.checkArgument(s1.fileUri.equals(s2.fileUri), "Got different file names: %s and %s", s1, s2);
         Preconditions.checkArgument(r1.size() == r2.size(), "Got different numbers of line coverage records: %s and %s", s1, s2);
 
         final List<LineCoverageRecord> mergedRecords = Lists.newLinkedList();
@@ -112,27 +103,33 @@ public class FileStats {
             try {
                 mergedRecords.add(LineCoverageRecord.merge(l1, l2));
             } catch (final Exception e) {
-                throw new RuntimeException("Error merging " + s1.fullName + " and " + s2.fullName, e);
+                throw new RuntimeException("Error merging " + s1.fileUri + " and " + s2.fileUri, e);
             }
         }
 
-        return new FileStats(s1.baseUri, s1.fullName, mergedRecords, s1.separateFile);
+        return new FileStats(s1.baseUri, s1.fileUri, mergedRecords, s1.separateFile);
+    }
+
+    public URI getFileUri() {
+        return fileUri;
     }
 
     public String getFileName() {
-        return normalizeFileSeparators(fileName);
+        return UriUtil.getLastSegmentOrHost(fileUri);
     }
 
     public String getFullName() {
-        return normalizeFileSeparators(fullName);
+        return UriUtil.getPath(fileUri);
     }
 
     public String getRelativeName() {
-        return normalizeFileSeparators(relativeName);
+        return isSeparateFile()
+                ? ResourceUtil.getRelativePath(fileUri.toString(), baseUri.toString(), "/")
+                : fileUri.toString();
     }
 
     public String getParentName() {
-        return normalizeFileSeparators(parentName);
+        return parentName;
     }
 
     public String getId() {
@@ -143,17 +140,9 @@ public class FileStats {
         return separateFile;
     }
 
-    private String normalizeFileSeparators(final String path) {
-        if (path == null) {
-            return null;
-        }
-
-        return path.replaceAll("\\\\", "/");
-    }
-
     @Override
     public String toString() {
-        return getFullName();
+        return fileUri.toString();
     }
 
 }

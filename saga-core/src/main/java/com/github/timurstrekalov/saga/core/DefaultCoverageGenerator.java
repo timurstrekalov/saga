@@ -108,7 +108,7 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
             completionService.submit(new Callable<RunStats>() {
                 @Override
                 public RunStats call() {
-                    logger.info("Running {}", test.toString());
+                    logger.info("Running test at {}", test.toString());
 
                     try {
                         final RunStats runStats = runTest(test, ignorePatterns, instrumentedFileDirectory);
@@ -256,7 +256,7 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
         runStats.setOrder(config.getOrder());
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
-            final Map<Integer, Double> coverageData = (Map<Integer, Double>) allCoverageData.get(data.getSourceName());
+            final Map<Integer, Double> coverageData = (Map<Integer, Double>) allCoverageData.get(data.getSourceUriAsString());
             final FileStats fileStats = data.generateFileStats(config.getBaseUri(), coverageData);
             runStats.add(fileStats);
         }

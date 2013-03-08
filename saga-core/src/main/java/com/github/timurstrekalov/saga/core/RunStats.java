@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -25,7 +24,7 @@ public class RunStats implements Iterable<FileStats> {
     private SortBy sortBy = SortBy.COVERAGE;
     private Order order = Order.ASC;
 
-    private final Map<String, FileStats> fileStatsMap = Maps.newTreeMap();
+    private final Map<URI, FileStats> fileStatsMap = Maps.newTreeMap();
 
     public RunStats(final URI test) {
         this(test, String.format("Coverage report for \"%s\"", test));
@@ -37,16 +36,11 @@ public class RunStats implements Iterable<FileStats> {
     }
 
     public String getTestName() {
-        final Optional<String> lastSegment = UriUtil.getLastSegment(test);
-        if (lastSegment.isPresent()) {
-            return lastSegment.get();
-        }
-
-        return test.getHost();
+        return UriUtil.getLastSegmentOrHost(test);
     }
 
     void add(final FileStats newStats) {
-        final String key = newStats.getFullName();
+        final URI key = newStats.getFileUri();
         final FileStats oldStats = fileStatsMap.get(key);
 
         if (oldStats != null) {
