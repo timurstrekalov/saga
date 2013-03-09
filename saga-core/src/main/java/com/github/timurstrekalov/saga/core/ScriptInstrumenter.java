@@ -170,7 +170,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                 synchronized (writtenToDisk) {
                     try {
                         if (!writtenToDisk.contains(sourceUri)) {
-                            final String parent = UriUtil.getParentOfLastSegmentOrHost(sourceUri);
+                            final String parent = UriUtil.getParent(sourceUri);
                             final String fileName = UriUtil.getLastSegmentOrHost(sourceUri);
 
                             final File fileOutputDir = new File(instrumentedFileDirectory, Hashing.md5().hashString(parent).toString());

@@ -39,10 +39,6 @@ final class UriUtil {
         return getSegment(uri, -1);
     }
 
-    static Optional<String> getParentOfLastSegment(final URI uri) {
-        return getSegment(uri, -2);
-    }
-
     private static Optional<String> getSegment(final URI uri, final int index) {
         final String path = uri.getPath();
 
@@ -77,13 +73,15 @@ final class UriUtil {
         return uri.getHost();
     }
 
-    static String getParentOfLastSegmentOrHost(final URI uri) {
-        final Optional<String> segment = getParentOfLastSegment(uri);
-        if (segment.isPresent()) {
-            return segment.get();
+    static String getParent(final URI uri) {
+        final String path = uri.getPath();
+
+        if (StringUtils.isBlank(path)) {
+            return "/";
         }
 
-        return uri.getHost();
+        final String parent = path.substring(0, path.lastIndexOf('/')).trim();
+        return StringUtils.isBlank(parent) ? "/" : parent;
     }
 
     static String getPath(final URI uri) {
