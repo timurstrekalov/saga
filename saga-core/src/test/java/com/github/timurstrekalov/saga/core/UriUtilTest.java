@@ -20,6 +20,7 @@ public class UriUtilTest {
 
     private static final String PWD = System.getProperty("user.dir");
     private static final String PWD_PARENT = new File(PWD).getParent();
+    private static final URI PWD_PARENT_URI = new File(PWD_PARENT).toURI();
 
     private static final String HTTP = "http://localhost:8234";
     private static final URI HTTP_URI = create(HTTP);
@@ -53,7 +54,7 @@ public class UriUtilTest {
 
     @Test
     public void test_toUri_file_relative() throws Exception {
-        assertThat(FILE_REL_URI, equalTo(create("file:" + PWD_PARENT + File.separatorChar + "qweasd")));
+        assertThat(FILE_REL_URI, equalTo(create(PWD_PARENT_URI.toString() + "qweasd")));
     }
 
     @Test(expected = IllegalArgumentException.class)

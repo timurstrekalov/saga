@@ -1,5 +1,6 @@
 package com.github.timurstrekalov.saga.core;
 
+import java.io.File;
 import java.net.URI;
 
 import com.google.common.collect.Lists;
@@ -13,7 +14,7 @@ public class FileStatsTest {
 
     @Test
     public void getParentName_file() {
-        assertEquals("test/path/bla", new FileStats(URI.create("file:" + USER_DIR), URI.create("file:" + USER_DIR + "/test/path/bla/file.js"),
+        assertEquals("test/path/bla", new FileStats(new File(USER_DIR).toURI(), new File(USER_DIR + "/test/path/bla/file.js").toURI(),
                 Lists.<LineCoverageRecord>newLinkedList(), true).getParentName());
     }
 
