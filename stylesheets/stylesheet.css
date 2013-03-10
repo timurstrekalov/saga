@@ -402,6 +402,15 @@ div.button {
     text-align: right;
 }
 
+div.button img {
+    border: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -o-box-shadow: none;
+    -ms-box-shadow: none;
+}
+
 /*******************************************************************************
 Small Device Styles
 *******************************************************************************/
