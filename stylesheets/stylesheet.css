@@ -409,6 +409,7 @@ div.button img {
     -moz-box-shadow: none;
     -o-box-shadow: none;
     -ms-box-shadow: none;
+    padding: 0;
 }
 
 /*******************************************************************************
