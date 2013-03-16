@@ -2,11 +2,9 @@ package com.github.timurstrekalov.saga.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -68,21 +66,6 @@ import static net.sourceforge.htmlunit.corejs.javascript.Token.WHILE;
 class ScriptInstrumenter implements ScriptPreProcessor {
 
     private static final AtomicInteger evalCounter = new AtomicInteger();
-
-    // hack, see http://sourceforge.net/tracker/?func=detail&atid=448266&aid=3106039&group_id=47038
-    // still no build with that fix
-    static {
-        try {
-            final Field field = AstNode.class.getDeclaredField("operatorNames");
-            field.setAccessible(true);
-
-            @SuppressWarnings("unchecked")
-            final Map<Integer, String> operatorNames = (Map<Integer, String>) field.get(AstNode.class);
-            operatorNames.put(Token.VOID, "void");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
@@ -256,7 +239,6 @@ class ScriptInstrumenter implements ScriptPreProcessor {
 
         @Override
         public boolean visit(final AstNode node) {
-            handleVoidBug(node);
             handleNumberLiteralBug(node);
 
             if (isExecutableBlock(node)) {
@@ -264,21 +246,6 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             }
 
             return true;
-        }
-
-        /**
-         * Even though we're hacking the AstNode class at the top, toSource() of 'void 0' nodes still returns
-         * "void0" instead of "void 0". This is yet another hack to fix it (and yes, it was submitted with the
-         * original patch to the issue above).
-         */
-        private void handleVoidBug(final AstNode node) {
-            if (node.getType() == Token.VOID) {
-                final AstNode operand = ((UnaryExpression) node).getOperand();
-                if (operand.getType() == Token.NUMBER) {
-                    final NumberLiteral numberLiteral = (NumberLiteral) operand;
-                    numberLiteral.setValue(" " + getValue(numberLiteral));
-                }
-            }
         }
 
         /**
@@ -290,8 +257,6 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             if (node.getType() == Token.NUMBER) {
                 final NumberLiteral numberLiteral = (NumberLiteral) node;
                 numberLiteral.setValue(getValue(numberLiteral));
-
-                handleVoidBug(node.getParent());
             }
         }
 
