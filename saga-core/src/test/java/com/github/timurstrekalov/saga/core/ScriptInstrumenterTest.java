@@ -16,8 +16,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ScriptInstrumenterTest {
 
-    private static final String COVERAGE_VARIABLE_NAME = "__coverage_data";
-
     @Mock
     private HtmlPage htmlPage;
 
@@ -39,7 +37,7 @@ public class ScriptInstrumenterTest {
     public void preProcess() {
         final String sourceName = "script in Class.js from (6, 13) to (6, 28)";
 
-        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(new InstanceFieldPerPropertyConfig(), factory, COVERAGE_VARIABLE_NAME);
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(new InstanceFieldPerPropertyConfig(), factory);
         instrumenter.preProcess(htmlPage, Data.getClassJsSourceCode(), sourceName, 1, htmlElement);
 
         assertEquals(1, instrumenter.getScriptDataList().size());

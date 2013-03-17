@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultCoverageGenerator implements CoverageGenerator {
 
-    private static final String COVERAGE_VARIABLE_NAME = "__coverage_data";
     private static final String TOTAL_REPORT_NAME = "total";
     private static final String INSTRUMENTED_FILE_DIRECTORY_NAME = "instrumented";
     private static final String INLINE_SCRIPT_RE = ".+__from_\\d+_\\d+_to_\\d+_\\d+$";
@@ -215,7 +214,7 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
             final File instrumentedFileDirectory,
             final HtmlUnitContextFactory contextFactory) {
 
-        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(config, contextFactory, COVERAGE_VARIABLE_NAME);
+        final ScriptInstrumenter instrumenter = new ScriptInstrumenter(config, contextFactory);
 
         instrumenter.setIgnorePatterns(ignorePatterns);
 
@@ -236,7 +235,7 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
         client.waitForBackgroundJavaScript(config.getBackgroundJavaScriptTimeout());
         client.setScriptPreProcessor(null);
 
-        final Object javaScriptResult = htmlPage.executeJavaScript("window." + COVERAGE_VARIABLE_NAME)
+        final Object javaScriptResult = htmlPage.executeJavaScript("window." + Config.COVERAGE_VARIABLE_NAME)
                 .getJavaScriptResult();
 
         if (!(javaScriptResult instanceof Undefined)) {

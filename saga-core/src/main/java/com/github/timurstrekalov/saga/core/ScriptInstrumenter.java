@@ -44,6 +44,7 @@ import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.github.timurstrekalov.saga.core.Config.COVERAGE_VARIABLE_NAME;
 import static net.sourceforge.htmlunit.corejs.javascript.Token.BLOCK;
 import static net.sourceforge.htmlunit.corejs.javascript.Token.BREAK;
 import static net.sourceforge.htmlunit.corejs.javascript.Token.CASE;
@@ -77,7 +78,6 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private static final ConcurrentHashMultiset<URI> writtenToDisk = ConcurrentHashMultiset.create();
 
     private final HtmlUnitContextFactory contextFactory;
-    private final String coverageVariableName;
     private final String initializingCode;
     private final String arrayInitializer;
 
@@ -86,13 +86,12 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private Collection<Pattern> ignorePatterns;
     private File instrumentedFileDirectory;
 
-    public ScriptInstrumenter(final Config config, final HtmlUnitContextFactory contextFactory, final String coverageVariableName) {
+    public ScriptInstrumenter(final Config config, final HtmlUnitContextFactory contextFactory) {
         this.config = config;
         this.contextFactory = contextFactory;
-        this.coverageVariableName = coverageVariableName;
 
-        initializingCode = String.format("%s = window.%s || {};%n", coverageVariableName, coverageVariableName);
-        arrayInitializer = String.format("%s['%%s'][%%d] = 0;%n", coverageVariableName);
+        initializingCode = String.format("%s = window.%s || {};%n", COVERAGE_VARIABLE_NAME, COVERAGE_VARIABLE_NAME);
+        arrayInitializer = String.format("%s['%%s'][%%d] = 0;%n", COVERAGE_VARIABLE_NAME);
     }
 
     @Override
@@ -134,7 +133,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
                     treeSource.length());
 
             buf.append(initializingCode);
-            buf.append(String.format("%s['%s'] = {};%n", coverageVariableName, escapePath(data.getSourceUriAsString())));
+            buf.append(String.format("%s['%s'] = {};%n", COVERAGE_VARIABLE_NAME, escapePath(data.getSourceUriAsString())));
 
             for (final Integer i : data.getLineNumbersOfAllStatements()) {
                 buf.append(String.format(arrayInitializer, escapePath(data.getSourceUriAsString()), i));
@@ -464,7 +463,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
             outer.setTarget(inner);
 
             final Name covDataVar = new Name();
-            covDataVar.setIdentifier(coverageVariableName);
+            covDataVar.setIdentifier(Config.COVERAGE_VARIABLE_NAME);
 
             inner.setTarget(covDataVar);
 

@@ -12,6 +12,8 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
  */
 public interface Config {
 
+    String COVERAGE_VARIABLE_NAME = "__coverage_data";
+
     // TODO stop this configuration setter madness
 
     void setBaseDir(String baseDir);
