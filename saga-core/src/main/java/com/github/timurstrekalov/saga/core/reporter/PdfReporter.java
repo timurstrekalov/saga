@@ -5,9 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import com.github.timurstrekalov.saga.core.model.FileStats;
+import com.github.timurstrekalov.saga.core.model.ScriptCoverageStatistics;
 import com.github.timurstrekalov.saga.core.ReportFormat;
-import com.github.timurstrekalov.saga.core.RunStats;
+import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import com.itextpdf.text.Anchor;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
@@ -61,7 +61,7 @@ public class PdfReporter extends AbstractReporter {
     }
 
     @Override
-    public void writeReportInternal(final File outputFile, final RunStats runStats) throws IOException {
+    public void writeReportInternal(final File outputFile, final TestRunCoverageStatistics runStats) throws IOException {
         try {
             document = new Document(PageSize.A4.rotate());
 
@@ -77,11 +77,11 @@ public class PdfReporter extends AbstractReporter {
         }
     }
 
-    private void addMetaData(final RunStats runStats) {
+    private void addMetaData(final TestRunCoverageStatistics runStats) {
         document.addTitle(runStats.title);
     }
 
-    private void addContent(final RunStats runStats) throws DocumentException {
+    private void addContent(final TestRunCoverageStatistics runStats) throws DocumentException {
         final Paragraph title = new Paragraph(runStats.title, FONT_H1);
         title.setIndentationLeft(PADDING_LEFT);
 
@@ -90,7 +90,7 @@ public class PdfReporter extends AbstractReporter {
         document.add(createFooter());
     }
 
-    private PdfPTable createTable(final RunStats runStats) throws DocumentException {
+    private PdfPTable createTable(final TestRunCoverageStatistics runStats) throws DocumentException {
         final PdfPTable table = new PdfPTable(4);
 
         table.setSpacingBefore(10);
@@ -128,26 +128,26 @@ public class PdfReporter extends AbstractReporter {
         return footer;
     }
 
-    private void addTotalRow(final RunStats runStats, final PdfPTable table) {
+    private void addTotalRow(final TestRunCoverageStatistics runStats, final PdfPTable table) {
         table.addCell(createCell("Total", FONT_TOTAL, 0));
         table.addCell(createCell(String.valueOf(runStats.getTotalStatements()), FONT_TOTAL, 1));
         table.addCell(createCell(String.valueOf(runStats.getTotalExecuted()), FONT_TOTAL, 2));
         table.addCell(createCell(runStats.getTotalCoverage() + "%", FONT_TOTAL, 3));
     }
 
-    private void addFileStatsRows(final RunStats runStats, final PdfPTable table) {
-        final List<FileStats> allFileStats = runStats.getFileStats();
+    private void addFileStatsRows(final TestRunCoverageStatistics runStats, final PdfPTable table) {
+        final List<ScriptCoverageStatistics> allFileStats = runStats.getFileStats();
         for (int i = 0; i < allFileStats.size(); i++) {
-            final FileStats fileStats = allFileStats.get(i);
-            final boolean hasStatements = fileStats.getHasStatements();
+            final ScriptCoverageStatistics scriptCoverageStatistics = allFileStats.get(i);
+            final boolean hasStatements = scriptCoverageStatistics.getHasStatements();
 
             final Phrase fileName = new Phrase();
 
-            if (fileStats.getParentName() != null) {
-                fileName.add(new Chunk(fileStats.getParentName() + "/", hasStatements ? FONT_TD : FONT_TD_EMPTY_FILE));
-                fileName.add(new Chunk(fileStats.getFileName(), hasStatements ? FONT_TD_BOLD : FONT_TD_BOLD_EMPTY_FILE));
+            if (scriptCoverageStatistics.getParentName() != null) {
+                fileName.add(new Chunk(scriptCoverageStatistics.getParentName() + "/", hasStatements ? FONT_TD : FONT_TD_EMPTY_FILE));
+                fileName.add(new Chunk(scriptCoverageStatistics.getFileName(), hasStatements ? FONT_TD_BOLD : FONT_TD_BOLD_EMPTY_FILE));
             } else {
-                fileName.add(new Chunk(fileStats.getFileName(), hasStatements ? FONT_TD : FONT_TD_EMPTY_FILE));
+                fileName.add(new Chunk(scriptCoverageStatistics.getFileName(), hasStatements ? FONT_TD : FONT_TD_EMPTY_FILE));
             }
 
             final BaseColor bgColor = (i % 2 == 1) ? COLOR_ROW_ODD : COLOR_ROW_EVEN;
@@ -155,9 +155,9 @@ public class PdfReporter extends AbstractReporter {
             final Font font = FONT_TD;
 
             table.addCell(createCell(fileName, 0, bgColor));
-            table.addCell(createCell(String.valueOf(fileStats.getStatements()), font, 1, bgColor));
-            table.addCell(createCell(String.valueOf(fileStats.getExecuted()), font, 2, bgColor));
-            table.addCell(createCell(fileStats.getCoverage() + "%", FONT_TD, 3, bgColor));
+            table.addCell(createCell(String.valueOf(scriptCoverageStatistics.getStatements()), font, 1, bgColor));
+            table.addCell(createCell(String.valueOf(scriptCoverageStatistics.getExecuted()), font, 2, bgColor));
+            table.addCell(createCell(scriptCoverageStatistics.getCoverage() + "%", FONT_TD, 3, bgColor));
         }
     }
 

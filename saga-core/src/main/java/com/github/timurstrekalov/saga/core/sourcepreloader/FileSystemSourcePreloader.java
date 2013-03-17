@@ -9,7 +9,7 @@ import java.util.Map;
 
 import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.OutputStrategy;
-import com.github.timurstrekalov.saga.core.RunStats;
+import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import com.github.timurstrekalov.saga.core.instrumentation.ScriptInstrumenter;
 import com.github.timurstrekalov.saga.core.model.ScriptData;
 import com.github.timurstrekalov.saga.core.util.UriUtil;
@@ -25,7 +25,7 @@ public class FileSystemSourcePreloader implements SourcePreloader {
     private static final Logger logger = LoggerFactory.getLogger(FileSystemSourcePreloader.class);
 
     @Override
-    public void preloadSources(final Config config, final ScriptInstrumenter instrumenter, final RunStats totalStats)
+    public void preloadSources(final Config config, final ScriptInstrumenter instrumenter, final TestRunCoverageStatistics totalStats)
             throws IOException {
         final String sourcesToPreload = config.getSourcesToPreload();
         final URI baseUri = config.getBaseUri();

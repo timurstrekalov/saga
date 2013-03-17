@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
-import com.github.timurstrekalov.saga.core.model.FileStats;
-import com.github.timurstrekalov.saga.core.model.LineCoverageRecord;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -79,7 +77,8 @@ public final class ScriptData {
         return separateFile;
     }
 
-    public FileStats generateFileStats(final URI baseUri, final Map<Integer, Double> coverageData) {
+    // TODO clean up and test this mess
+    public ScriptCoverageStatistics generateFileStats(final URI baseUri, final Map<Integer, Double> coverageData) {
         final Scanner in = new Scanner(getSourceCode());
 
         final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
@@ -121,7 +120,7 @@ public final class ScriptData {
             }
         }
 
-        return new FileStats(baseUri, getSourceUri(), lineCoverageRecords, isSeparateFile());
+        return new ScriptCoverageStatistics(baseUri, getSourceUri(), lineCoverageRecords, isSeparateFile());
     }
 
 }

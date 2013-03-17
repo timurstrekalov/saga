@@ -15,7 +15,10 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 
-public class FileStats {
+/**
+ * Contains coverage statistics of a particular script.
+ */
+public final class ScriptCoverageStatistics {
 
     private final URI baseUri;
     private final URI fileUri;
@@ -27,7 +30,7 @@ public class FileStats {
 
     private final String id;
 
-    public FileStats(final URI baseUri, final URI fileUri, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
+    public ScriptCoverageStatistics(final URI baseUri, final URI fileUri, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
         this.baseUri = baseUri;
         this.fileUri = fileUri;
         this.separateFile = separateFile;
@@ -90,7 +93,7 @@ public class FileStats {
         return MiscUtil.getColorAsArgb(getCoverage());
     }
 
-    public static FileStats merge(final FileStats s1, final FileStats s2) {
+    public static ScriptCoverageStatistics merge(final ScriptCoverageStatistics s1, final ScriptCoverageStatistics s2) {
         final List<LineCoverageRecord> r1 = s1.getLineCoverageRecords();
         final List<LineCoverageRecord> r2 = s2.getLineCoverageRecords();
 
@@ -110,7 +113,7 @@ public class FileStats {
             }
         }
 
-        return new FileStats(s1.baseUri, s1.fileUri, mergedRecords, s1.separateFile);
+        return new ScriptCoverageStatistics(s1.baseUri, s1.fileUri, mergedRecords, s1.separateFile);
     }
 
     public URI getFileUri() {

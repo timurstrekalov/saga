@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.github.timurstrekalov.saga.core.ReportFormat;
-import com.github.timurstrekalov.saga.core.RunStats;
+import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.STErrorListener;
@@ -24,13 +24,13 @@ abstract class AbstractStringTemplateBasedReporter extends AbstractReporter {
     }
 
     @Override
-    protected final void writeReportInternal(final File outputFile, final RunStats runStats) throws IOException {
+    protected final void writeReportInternal(final File outputFile, final TestRunCoverageStatistics runStats) throws IOException {
         synchronized (lock) {
             writeReportThreadSafe(outputFile, runStats);
         }
     }
 
-    protected abstract void writeReportThreadSafe(File outputFile, RunStats runStats) throws IOException;
+    protected abstract void writeReportThreadSafe(File outputFile, TestRunCoverageStatistics runStats) throws IOException;
 
     private static final class LoggingStringTemplateErrorListener implements STErrorListener {
 

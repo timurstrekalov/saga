@@ -4,7 +4,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.List;
 
-import com.github.timurstrekalov.saga.core.RunStats;
+import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class ReporterUtilTest {
     @Test
     public void test_getFileOutputDir() throws Exception {
         final URI test = URI.create(FILE_PREFIX + Joiner.on(File.separatorChar).join(PARENT_DIR_PATH, "src", "main", "javascript", "MyTest.html"));
-        final RunStats stats = new RunStats(test);
+        final TestRunCoverageStatistics stats = new TestRunCoverageStatistics(test);
 
         final File actual = getFileOutputDir(BASE_URI, OUTPUT_DIR, stats);
         final File expected = new File(PARENT_DIR_PATH, Joiner.on(File.separatorChar).join("target", "main", "javascript"));

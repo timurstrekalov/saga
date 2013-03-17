@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-import com.github.timurstrekalov.saga.core.RunStats;
+import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 
 public interface Reporter {
 
-    void writeReport(URI baseUri, File outputDir, RunStats runStats) throws IOException;
+    void writeReport(URI baseUri, File outputDir, TestRunCoverageStatistics runStats) throws IOException;
 
 }

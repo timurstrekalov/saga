@@ -24,7 +24,8 @@ import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.cfg.InstanceFieldPerPropertyConfig;
 import com.github.timurstrekalov.saga.core.htmlunit.WebClientFactory;
 import com.github.timurstrekalov.saga.core.instrumentation.ScriptInstrumenter;
-import com.github.timurstrekalov.saga.core.model.FileStats;
+import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
+import com.github.timurstrekalov.saga.core.model.ScriptCoverageStatistics;
 import com.github.timurstrekalov.saga.core.model.ScriptData;
 import com.github.timurstrekalov.saga.core.reporter.CsvReporter;
 import com.github.timurstrekalov.saga.core.reporter.HtmlReporter;
@@ -113,25 +114,25 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
         final Collection<Pattern> ignorePatterns = createPatterns();
         final File instrumentedFileDirectory = new File(outputDir, INSTRUMENTED_FILE_DIRECTORY_NAME);
-        final RunStats totalStats = new RunStats(baseUri.relativize(URI.create(TOTAL_REPORT_NAME)), "Total coverage report");
+        final TestRunCoverageStatistics totalStats = new TestRunCoverageStatistics(baseUri.relativize(URI.create(TOTAL_REPORT_NAME)), "Total coverage report");
         totalStats.setSortBy(config.getSortBy());
         totalStats.setOrder(config.getOrder());
 
         maybePreloadSources(ignorePatterns, instrumentedFileDirectory, totalStats);
 
         final ExecutorService executorService = Executors.newFixedThreadPool(actualThreadCount);
-        final CompletionService<RunStats> completionService = new ExecutorCompletionService<RunStats>(executorService);
+        final CompletionService<TestRunCoverageStatistics> completionService = new ExecutorCompletionService<TestRunCoverageStatistics>(executorService);
 
         for (final URI test : tests) {
-            completionService.submit(new Callable<RunStats>() {
+            completionService.submit(new Callable<TestRunCoverageStatistics>() {
                 @Override
-                public RunStats call() {
+                public TestRunCoverageStatistics call() {
                     logger.info("Running test at {}", test.toString());
 
                     try {
-                        final RunStats runStats = runTest(test, ignorePatterns, instrumentedFileDirectory);
+                        final TestRunCoverageStatistics runStats = runTest(test, ignorePatterns, instrumentedFileDirectory);
 
-                        if (runStats == RunStats.EMPTY) {
+                        if (runStats == TestRunCoverageStatistics.EMPTY) {
                             logger.warn("No actual test run for file: {}", test);
                         } else if (outputStrategy.contains(OutputStrategy.PER_TEST)) {
                             if (UriUtil.isFileUri(test)) {
@@ -143,19 +144,19 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
                         return runStats;
                     } catch (final IOException e) {
-                        return RunStats.EMPTY;
+                        return TestRunCoverageStatistics.EMPTY;
                     }
                 }
             });
         }
 
-        final List<RunStats> allRunStats = Lists.newLinkedList();
+        final List<TestRunCoverageStatistics> allRunStats = Lists.newLinkedList();
 
         try {
             for (final URI test : tests) {
                 try {
-                    final Future<RunStats> future = completionService.take();
-                    final RunStats runStats = future.get();
+                    final Future<TestRunCoverageStatistics> future = completionService.take();
+                    final TestRunCoverageStatistics runStats = future.get();
 
                     allRunStats.add(runStats);
                 } catch (final Exception e) {
@@ -170,10 +171,10 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         logger.info("Test run finished");
 
         if (outputStrategy.contains(OutputStrategy.TOTAL)) {
-            for (final RunStats runStats : allRunStats) {
-                if (runStats != RunStats.EMPTY) {
-                    for (final FileStats fileStats : runStats) {
-                        totalStats.add(fileStats);
+            for (final TestRunCoverageStatistics runStats : allRunStats) {
+                if (runStats != TestRunCoverageStatistics.EMPTY) {
+                    for (final ScriptCoverageStatistics scriptCoverageStatistics : runStats) {
+                        totalStats.add(scriptCoverageStatistics);
                     }
                 }
             }
@@ -185,7 +186,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
     private void maybePreloadSources(
             final Collection<Pattern> ignorePatterns,
             final File instrumentedFileDirectory,
-            final RunStats totalStats) throws IOException {
+            final TestRunCoverageStatistics totalStats) throws IOException {
         final ScriptInstrumenter instrumenter = newInstrumenter(ignorePatterns, instrumentedFileDirectory,
                 getThreadLocalWebClient().getJavaScriptEngine().getContextFactory());
 
@@ -194,6 +195,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
     private Collection<Pattern> createPatterns() {
         return Collections2.transform(config.getNoInstrumentPatterns(), new Function<String, Pattern>() {
+
             @Override
             public Pattern apply(final String input) {
                 return Pattern.compile(input);
@@ -201,7 +203,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         });
     }
 
-    private RunStats runTest(final URI test, final Collection<Pattern> ignorePatterns, final File instrumentedFileDirectory)
+    private TestRunCoverageStatistics runTest(final URI test, final Collection<Pattern> ignorePatterns, final File instrumentedFileDirectory)
             throws IOException {
         final WebClient client = getThreadLocalWebClient();
         final ScriptInstrumenter instrumenter = newInstrumenter(ignorePatterns, instrumentedFileDirectory,
@@ -245,7 +247,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         return instrumenter;
     }
 
-    private RunStats collectAndRunStats(
+    private TestRunCoverageStatistics collectAndRunStats(
             final WebClient client,
             final HtmlPage htmlPage,
             final URI test,
@@ -261,28 +263,28 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
             return collectAndWriteRunStats(test, instrumenter, (NativeObject) javaScriptResult);
         }
 
-        return RunStats.EMPTY;
+        return TestRunCoverageStatistics.EMPTY;
     }
 
     @SuppressWarnings("unchecked")
-    private RunStats collectAndWriteRunStats(
+    private TestRunCoverageStatistics collectAndWriteRunStats(
             final URI test,
             final ScriptInstrumenter instrumenter,
             final NativeObject allCoverageData) throws IOException {
-        final RunStats runStats = new RunStats(test);
+        final TestRunCoverageStatistics runStats = new TestRunCoverageStatistics(test);
         runStats.setSortBy(config.getSortBy());
         runStats.setOrder(config.getOrder());
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             final Map<Integer, Double> coverageData = (Map<Integer, Double>) allCoverageData.get(data.getSourceUriAsString());
-            final FileStats fileStats = data.generateFileStats(config.getBaseUri(), coverageData);
-            runStats.add(fileStats);
+            final ScriptCoverageStatistics scriptCoverageStatistics = data.generateFileStats(config.getBaseUri(), coverageData);
+            runStats.add(scriptCoverageStatistics);
         }
 
         return runStats;
     }
 
-    private void writeRunStats(final RunStats stats) throws IOException {
+    private void writeRunStats(final TestRunCoverageStatistics stats) throws IOException {
         for (final ReportFormat reportFormat : config.getReportFormats()) {
             reporterFor(reportFormat).writeReport(config.getBaseUri(), config.getOutputDir(), stats);
         }

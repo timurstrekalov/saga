@@ -6,7 +6,7 @@ import java.net.URI;
 import java.util.Properties;
 
 import com.github.timurstrekalov.saga.core.ReportFormat;
-import com.github.timurstrekalov.saga.core.RunStats;
+import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ abstract class AbstractReporter implements Reporter {
     }
 
     @Override
-    public final void writeReport(final URI baseUri, final File outputDir, final RunStats runStats) throws IOException {
+    public final void writeReport(final URI baseUri, final File outputDir, final TestRunCoverageStatistics runStats) throws IOException {
         final File fileOutputDir = ReporterUtil.getFileOutputDir(baseUri, outputDir, runStats);
 
         FileUtils.mkdir(fileOutputDir.getAbsolutePath());
@@ -45,9 +45,9 @@ abstract class AbstractReporter implements Reporter {
         writeReportInternal(outputFile, runStats);
     }
 
-    protected abstract void writeReportInternal(File outputFile, RunStats runStats) throws IOException;
+    protected abstract void writeReportInternal(File outputFile, TestRunCoverageStatistics runStats) throws IOException;
 
-    private String getReportName(final RunStats runStats) {
+    private String getReportName(final TestRunCoverageStatistics runStats) {
         return String.format("%s-%s.%s", runStats.getTestName(), format.getSuffix(), format.getExtension());
     }
 
