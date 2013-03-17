@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -15,10 +16,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
@@ -75,7 +76,7 @@ class ScriptInstrumenter implements ScriptPreProcessor {
     private static final Pattern nonFileRe = Pattern.compile("JavaScriptStringJob");
 
     private static final ConcurrentMap<URI, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
-    private static final ConcurrentHashMultiset<URI> writtenToDisk = ConcurrentHashMultiset.create();
+    private static final Set<URI> writtenToDisk = Sets.newHashSet();
 
     private final HtmlUnitContextFactory contextFactory;
     private final String initializingCode;
