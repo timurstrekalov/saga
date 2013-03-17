@@ -9,7 +9,7 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-class ScriptData {
+public final class ScriptData {
 
     private final URI sourceUri;
     private final String sourceCode;
@@ -19,13 +19,13 @@ class ScriptData {
 
     private String instrumentedSourceCode;
 
-    ScriptData(final URI sourceUri, final String sourceCode, final boolean separateFile) {
+    public ScriptData(final URI sourceUri, final String sourceCode, final boolean separateFile) {
         this.sourceUri = sourceUri;
         this.sourceCode = sourceCode;
         this.separateFile = separateFile;
     }
 
-    void addExecutableLine(final Integer lineNr, final Integer length) {
+    public void addExecutableLine(final Integer lineNr, final Integer length) {
         statementsWithLengths.put(lineNr, length);
     }
 

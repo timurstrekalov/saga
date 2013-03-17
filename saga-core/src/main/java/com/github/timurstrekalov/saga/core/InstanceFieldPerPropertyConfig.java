@@ -17,7 +17,7 @@ import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class InstanceFieldPerPropertyConfig implements Config {
+public final class InstanceFieldPerPropertyConfig implements Config {
 
     private static final Logger logger = LoggerFactory.getLogger(InstanceFieldPerPropertyConfig.class);
 

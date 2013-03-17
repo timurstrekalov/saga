@@ -20,6 +20,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.github.timurstrekalov.saga.core.instrumentation.ScriptInstrumenter;
 import com.github.timurstrekalov.saga.core.reporter.CsvReporter;
 import com.github.timurstrekalov.saga.core.reporter.HtmlReporter;
 import com.github.timurstrekalov.saga.core.reporter.PdfReporter;

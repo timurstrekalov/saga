@@ -1,8 +1,11 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.instrumentation;
 
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.github.timurstrekalov.saga.core.Data;
+import com.github.timurstrekalov.saga.core.InstanceFieldPerPropertyConfig;
+import com.github.timurstrekalov.saga.core.ScriptData;
 import net.sourceforge.htmlunit.corejs.javascript.Context;
 import org.junit.Before;
 import org.junit.Test;

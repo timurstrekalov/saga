@@ -11,7 +11,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 
-final class UriUtil {
+public final class UriUtil {
 
     private static final Pattern supportedUriSchemeRe = Pattern.compile("(https?|file)");
 
@@ -19,7 +19,7 @@ final class UriUtil {
         throw new UnsupportedOperationException("Utility class");
     }
 
-    static URI toUri(final String s) {
+    public static URI toUri(final String s) {
         final URI uri = URI.create(s);
 
         if (uri.getScheme() != null) {
@@ -31,11 +31,11 @@ final class UriUtil {
         return new File(s).toURI().normalize();
     }
 
-    static boolean isFileUri(final URI uri) {
+    public static boolean isFileUri(final URI uri) {
         return "file".equals(uri.getScheme());
     }
 
-    static Optional<String> getLastSegment(final URI uri) {
+    public static Optional<String> getLastSegment(final URI uri) {
         return getSegment(uri, -1);
     }
 
@@ -64,7 +64,7 @@ final class UriUtil {
         return Optional.of(Iterables.get(parts, actualIndex));
     }
 
-    static String getLastSegmentOrHost(final URI uri) {
+    public static String getLastSegmentOrHost(final URI uri) {
         final Optional<String> segment = getLastSegment(uri);
         if (segment.isPresent()) {
             return segment.get();
@@ -73,7 +73,7 @@ final class UriUtil {
         return uri.getHost();
     }
 
-    static String getParent(final URI uri) {
+    public static String getParent(final URI uri) {
         final String path = uri.getPath();
 
         if (StringUtils.isBlank(path)) {
@@ -84,7 +84,7 @@ final class UriUtil {
         return StringUtils.isBlank(parent) ? "/" : parent;
     }
 
-    static String getPath(final URI uri) {
+    public static String getPath(final URI uri) {
         return isFileUri(uri) ? uri.getPath() : uri.toString();
     }
 

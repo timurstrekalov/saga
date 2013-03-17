@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
+import com.github.timurstrekalov.saga.core.instrumentation.ScriptInstrumenter;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
