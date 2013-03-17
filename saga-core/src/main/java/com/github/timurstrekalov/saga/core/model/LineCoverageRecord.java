@@ -1,17 +1,17 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.model;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-class LineCoverageRecord {
+public final class LineCoverageRecord {
 
     private int lineNr;
     private int timesExecuted;
     private String line;
 
-    LineCoverageRecord(final int lineNr, final int timesExecuted, final String line) {
+    public LineCoverageRecord(final int lineNr, final int timesExecuted, final String line) {
         this.lineNr = lineNr;
         this.timesExecuted = timesExecuted;
         this.line = line;

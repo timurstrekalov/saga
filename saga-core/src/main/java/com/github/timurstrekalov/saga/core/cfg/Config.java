@@ -1,4 +1,4 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.cfg;
 
 import java.io.File;
 import java.net.URI;
@@ -6,6 +6,10 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.github.timurstrekalov.saga.core.Order;
+import com.github.timurstrekalov.saga.core.OutputStrategy;
+import com.github.timurstrekalov.saga.core.ReportFormat;
+import com.github.timurstrekalov.saga.core.SortBy;
 
 /**
  * A midway attempt at externalizing configuration

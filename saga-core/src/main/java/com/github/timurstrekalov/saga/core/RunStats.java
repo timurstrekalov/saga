@@ -8,13 +8,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.github.timurstrekalov.saga.core.model.FileStats;
+import com.github.timurstrekalov.saga.core.util.MiscUtil;
+import com.github.timurstrekalov.saga.core.util.UriUtil;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class RunStats implements Iterable<FileStats> {
+public final class RunStats implements Iterable<FileStats> {
 
     public static final RunStats EMPTY = new RunStats(null, null);
 
@@ -39,7 +42,7 @@ public class RunStats implements Iterable<FileStats> {
         return UriUtil.getLastSegmentOrHost(test);
     }
 
-    void add(final FileStats newStats) {
+    public void add(final FileStats newStats) {
         final URI key = newStats.getFileUri();
         final FileStats oldStats = fileStatsMap.get(key);
 

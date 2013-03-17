@@ -1,4 +1,4 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.htmlunit;
 
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;

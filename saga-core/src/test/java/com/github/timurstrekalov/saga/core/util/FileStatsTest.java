@@ -1,8 +1,10 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.util;
 
 import java.io.File;
 import java.net.URI;
 
+import com.github.timurstrekalov.saga.core.model.FileStats;
+import com.github.timurstrekalov.saga.core.model.LineCoverageRecord;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 

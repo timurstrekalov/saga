@@ -1,4 +1,4 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.testfetcher;
 
 import java.net.URI;
 import java.util.List;

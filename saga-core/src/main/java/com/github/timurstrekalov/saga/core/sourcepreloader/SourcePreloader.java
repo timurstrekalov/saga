@@ -1,7 +1,9 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.sourcepreloader;
 
 import java.io.IOException;
 
+import com.github.timurstrekalov.saga.core.cfg.Config;
+import com.github.timurstrekalov.saga.core.RunStats;
 import com.github.timurstrekalov.saga.core.instrumentation.ScriptInstrumenter;
 
 interface SourcePreloader {

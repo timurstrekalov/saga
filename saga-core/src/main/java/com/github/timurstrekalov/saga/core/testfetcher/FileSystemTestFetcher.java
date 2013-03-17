@@ -1,4 +1,4 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.testfetcher;
 
 import java.io.File;
 import java.io.IOException;

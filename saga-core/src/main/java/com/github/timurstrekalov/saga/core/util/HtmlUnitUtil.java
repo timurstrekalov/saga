@@ -1,10 +1,10 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.util;
 
 import java.util.logging.Level;
 
 import org.apache.commons.logging.LogFactory;
 
-final class HtmlUnitUtil {
+public final class HtmlUnitUtil {
 
     private HtmlUnitUtil() {
         throw new UnsupportedOperationException("Utility class");
@@ -13,7 +13,7 @@ final class HtmlUnitUtil {
     /**
      * Make HtmlUnit's logger shut up for good.
      */
-    static void silenceHtmlUnitLogging() {
+    public static void silenceHtmlUnitLogging() {
         LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 
         java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);

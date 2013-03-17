@@ -1,4 +1,4 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.model;
 
 import java.net.URI;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import com.github.timurstrekalov.saga.core.model.FileStats;
+import com.github.timurstrekalov.saga.core.model.LineCoverageRecord;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 

@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import com.github.timurstrekalov.saga.core.Config;
+import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
 import com.github.timurstrekalov.saga.core.CoverageGeneratorFactory;
 import com.github.timurstrekalov.saga.core.OutputStrategy;

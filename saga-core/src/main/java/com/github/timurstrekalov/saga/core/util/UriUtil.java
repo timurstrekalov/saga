@@ -1,4 +1,4 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.util;
 
 import java.io.File;
 import java.net.URI;

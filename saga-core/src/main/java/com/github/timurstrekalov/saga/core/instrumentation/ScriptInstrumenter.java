@@ -15,9 +15,9 @@ import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.github.timurstrekalov.saga.core.Config;
-import com.github.timurstrekalov.saga.core.ScriptData;
-import com.github.timurstrekalov.saga.core.UriUtil;
+import com.github.timurstrekalov.saga.core.cfg.Config;
+import com.github.timurstrekalov.saga.core.model.ScriptData;
+import com.github.timurstrekalov.saga.core.util.UriUtil;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -33,7 +33,7 @@ import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.github.timurstrekalov.saga.core.Config.COVERAGE_VARIABLE_NAME;
+import static com.github.timurstrekalov.saga.core.cfg.Config.COVERAGE_VARIABLE_NAME;
 
 public final class ScriptInstrumenter implements ScriptPreProcessor {
 

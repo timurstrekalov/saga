@@ -1,4 +1,4 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.htmlunit;
 
 import java.io.IOException;
 
@@ -12,8 +12,9 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.WebResponseData;
 import com.gargoylesoftware.htmlunit.html.HTMLParserListener;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
+import com.github.timurstrekalov.saga.core.cfg.Config;
 
-class WebClientFactory {
+public final class WebClientFactory {
 
     private static final IncorrectnessListener quietIncorrectnessListener = new QuietIncorrectnessListener();
     private static final JavaScriptErrorListener loggingJsErrorListener = new QuietJavaScriptErrorListener();
@@ -21,7 +22,7 @@ class WebClientFactory {
     private static final SilentCssErrorHandler quietCssErrorHandler = new SilentCssErrorHandler();
 
     private WebClientFactory() {
-        throw new UnsupportedOperationException("Utility class");
+        throw new UnsupportedOperationException("Factory class");
     }
 
     public static WebClient newInstance(final Config config) {

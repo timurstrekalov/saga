@@ -2,7 +2,7 @@ package com.github.timurstrekalov.saga.maven;
 
 import java.io.File;
 
-import com.github.timurstrekalov.saga.core.Config;
+import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
 import com.github.timurstrekalov.saga.core.CoverageGeneratorFactory;
 import org.apache.maven.plugin.AbstractMojo;

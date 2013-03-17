@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import com.github.timurstrekalov.saga.core.FileStats;
+import com.github.timurstrekalov.saga.core.model.FileStats;
 import com.github.timurstrekalov.saga.core.ReportFormat;
 import com.github.timurstrekalov.saga.core.RunStats;
 import com.itextpdf.text.Anchor;

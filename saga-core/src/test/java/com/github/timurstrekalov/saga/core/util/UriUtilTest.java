@@ -1,4 +1,4 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.util;
 
 import java.io.File;
 import java.net.URI;
@@ -7,10 +7,10 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import org.junit.Test;
 
-import static com.github.timurstrekalov.saga.core.UriUtil.getLastSegment;
-import static com.github.timurstrekalov.saga.core.UriUtil.getParent;
-import static com.github.timurstrekalov.saga.core.UriUtil.isFileUri;
-import static com.github.timurstrekalov.saga.core.UriUtil.toUri;
+import static com.github.timurstrekalov.saga.core.util.UriUtil.getLastSegment;
+import static com.github.timurstrekalov.saga.core.util.UriUtil.getParent;
+import static com.github.timurstrekalov.saga.core.util.UriUtil.isFileUri;
+import static com.github.timurstrekalov.saga.core.util.UriUtil.toUri;
 import static java.net.URI.create;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

@@ -1,6 +1,7 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.util;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.github.timurstrekalov.saga.core.util.MiscUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

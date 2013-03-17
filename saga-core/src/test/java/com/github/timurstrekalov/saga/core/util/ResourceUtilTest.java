@@ -1,5 +1,6 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.util;
 
+import com.github.timurstrekalov.saga.core.util.ResourceUtil;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;

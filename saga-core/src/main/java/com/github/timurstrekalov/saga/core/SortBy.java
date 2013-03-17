@@ -2,6 +2,8 @@ package com.github.timurstrekalov.saga.core;
 
 import java.util.Comparator;
 
+import com.github.timurstrekalov.saga.core.model.FileStats;
+
 public enum SortBy implements Comparator<FileStats> {
     FILE {
         @Override

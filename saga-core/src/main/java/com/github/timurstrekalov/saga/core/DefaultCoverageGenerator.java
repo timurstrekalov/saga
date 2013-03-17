@@ -20,12 +20,22 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
+import com.github.timurstrekalov.saga.core.cfg.Config;
+import com.github.timurstrekalov.saga.core.cfg.InstanceFieldPerPropertyConfig;
+import com.github.timurstrekalov.saga.core.htmlunit.WebClientFactory;
 import com.github.timurstrekalov.saga.core.instrumentation.ScriptInstrumenter;
+import com.github.timurstrekalov.saga.core.model.FileStats;
+import com.github.timurstrekalov.saga.core.model.ScriptData;
 import com.github.timurstrekalov.saga.core.reporter.CsvReporter;
 import com.github.timurstrekalov.saga.core.reporter.HtmlReporter;
 import com.github.timurstrekalov.saga.core.reporter.PdfReporter;
 import com.github.timurstrekalov.saga.core.reporter.RawReporter;
 import com.github.timurstrekalov.saga.core.reporter.Reporter;
+import com.github.timurstrekalov.saga.core.sourcepreloader.FileSystemSourcePreloader;
+import com.github.timurstrekalov.saga.core.testfetcher.TestFetcher;
+import com.github.timurstrekalov.saga.core.testfetcher.TestFetcherFactory;
+import com.github.timurstrekalov.saga.core.util.HtmlUnitUtil;
+import com.github.timurstrekalov.saga.core.util.UriUtil;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
@@ -38,7 +48,7 @@ import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultCoverageGenerator implements CoverageGenerator {
+final class DefaultCoverageGenerator implements CoverageGenerator {
 
     private static final String TOTAL_REPORT_NAME = "total";
     private static final String INSTRUMENTED_FILE_DIRECTORY_NAME = "instrumented";
@@ -59,7 +69,15 @@ public class DefaultCoverageGenerator implements CoverageGenerator {
         HtmlUnitUtil.silenceHtmlUnitLogging();
     }
 
-    private final Config config = new InstanceFieldPerPropertyConfig();
+    private final Config config;
+
+    DefaultCoverageGenerator() {
+        this(new InstanceFieldPerPropertyConfig());
+    }
+
+    DefaultCoverageGenerator(final Config config) {
+        this.config = config;
+    }
 
     @Override
     public void instrumentAndGenerateReports() throws IOException {

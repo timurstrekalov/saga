@@ -1,10 +1,13 @@
-package com.github.timurstrekalov.saga.core;
+package com.github.timurstrekalov.saga.core.model;
 
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
+import com.github.timurstrekalov.saga.core.util.MiscUtil;
+import com.github.timurstrekalov.saga.core.util.ResourceUtil;
+import com.github.timurstrekalov.saga.core.util.UriUtil;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -24,7 +27,7 @@ public class FileStats {
 
     private final String id;
 
-    FileStats(final URI baseUri, final URI fileUri, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
+    public FileStats(final URI baseUri, final URI fileUri, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
         this.baseUri = baseUri;
         this.fileUri = fileUri;
         this.separateFile = separateFile;
@@ -87,7 +90,7 @@ public class FileStats {
         return MiscUtil.getColorAsArgb(getCoverage());
     }
 
-    static FileStats merge(final FileStats s1, final FileStats s2) {
+    public static FileStats merge(final FileStats s1, final FileStats s2) {
         final List<LineCoverageRecord> r1 = s1.getLineCoverageRecords();
         final List<LineCoverageRecord> r2 = s2.getLineCoverageRecords();
 

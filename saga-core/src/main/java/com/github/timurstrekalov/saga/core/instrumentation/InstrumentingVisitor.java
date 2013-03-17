@@ -2,8 +2,8 @@ package com.github.timurstrekalov.saga.core.instrumentation;
 
 import java.util.List;
 
-import com.github.timurstrekalov.saga.core.Config;
-import com.github.timurstrekalov.saga.core.ScriptData;
+import com.github.timurstrekalov.saga.core.cfg.Config;
+import com.github.timurstrekalov.saga.core.model.ScriptData;
 import com.google.common.collect.Lists;
 import net.sourceforge.htmlunit.corejs.javascript.Token;
 import net.sourceforge.htmlunit.corejs.javascript.ast.AstNode;
