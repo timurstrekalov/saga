@@ -112,15 +112,14 @@ public class SagaMojo extends AbstractMojo {
      *
      * Some valid examples:
      * <ul>
-     *     <li>FIREFOX_3_6</li>
-     *     <li>FIREFOX_10</li>
-     *     <li>INTERNET_EXPLORER_6</li>
+     *     <li>FIREFOX_17</li>
+     *     <li>CHROME</li>
      *     <li>INTERNET_EXPLORER_7</li>
      *     <li>INTERNET_EXPLORER_8</li>
-     *     <li>CHROME_16</li>
+     *     <li>INTERNET_EXPLORER_9</li>
      * </ul>
      */
-    @Parameter(defaultValue = "FIREFOX_3_6")
+    @Parameter(defaultValue = "FIREFOX_17")
     private String browserVersion;
 
     /**
