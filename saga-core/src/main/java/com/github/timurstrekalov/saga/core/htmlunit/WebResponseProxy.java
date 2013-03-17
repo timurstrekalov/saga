@@ -1,16 +1,15 @@
 package com.github.timurstrekalov.saga.core.htmlunit;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import org.apache.http.HttpStatus;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-// TODO fix HtmlUnit's HtmlPage.getContentAsStream() to throw IOException rather than catch it and throw RuntimeExceptions when it's not necessary
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import org.apache.http.HttpStatus;
+
 class WebResponseProxy extends WebResponse {
 
     private final WebResponse delegate;
@@ -34,12 +33,6 @@ class WebResponseProxy extends WebResponse {
             }
         }
     }
-
-//    @Deprecated
-//    public WebRequest getRequestSettings() {
-//        //return delegate.getRequestSettings();
-//        return delegate.getWebRequest();
-//    }
 
     @Override
     public WebRequest getWebRequest() {
@@ -100,12 +93,6 @@ class WebResponseProxy extends WebResponse {
         return delegate.getContentAsStream();
     }
 
-
-//    @Deprecated
-//    public byte[] getContentAsBytes() throws UnsupportedEncodingException {
-//        //return delegate.getContentAsBytes();
-//        return this.getContentAsString().getBytes();
-//    }
 
     @Override
     public long getLoadTime() {
