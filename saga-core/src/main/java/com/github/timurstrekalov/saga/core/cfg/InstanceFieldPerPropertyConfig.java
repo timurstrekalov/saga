@@ -16,7 +16,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
@@ -34,27 +33,24 @@ public final class InstanceFieldPerPropertyConfig implements Config {
     private String excludes;
 
     private Set<String> noInstrumentPatterns = Sets.newHashSet();
+    private Set<ReportFormat> reportFormats = Config.DEFAULT_REPORT_FORMATS;
+
     private boolean outputInstrumentedFiles;
 
-    private boolean cacheInstrumentedCode = true;
+    private boolean cacheInstrumentedCode = Config.DEFAULT_CACHE_INSTRUMENTED_CODE;
+    private boolean includeInlineScripts = Config.DEFAULT_INCLUDE_INLINE_SCRIPTS;
 
-    private OutputStrategy outputStrategy = OutputStrategy.TOTAL;
+    private OutputStrategy outputStrategy = Config.DEFAULT_OUTPUT_STRATEGY;
+    private BrowserVersion browserVersion = Config.DEFAULT_BROWSER_VERSION;
 
-    private int threadCount = Runtime.getRuntime().availableProcessors();
-
-    private boolean includeInlineScripts = false;
-
-    private long backgroundJavaScriptTimeout = 5 * 60 * 1000;
+    private int threadCount = Config.DEFAULT_THREAD_COUNT;
+    private long backgroundJavaScriptTimeout = Config.DEFAULT_BACKGROUND_JAVASCRIPT_TIMEOUT;
 
     private String sourcesToPreload;
-    private String sourcesToPreloadEncoding = "UTF-8";
+    private String sourcesToPreloadEncoding = Config.DEFAULT_SOURCES_TO_PRELOAD_ENCODING;
 
-    private BrowserVersion browserVersion = BrowserVersion.FIREFOX_3_6;
-
-    private Set<ReportFormat> reportFormats = ImmutableSet.of(ReportFormat.HTML, ReportFormat.RAW);
-
-    private SortBy sortBy;
-    private Order order;
+    private SortBy sortBy = Config.DEFAULT_SORT_BY;
+    private Order order = Config.DEFAULT_ORDER;
 
     @Override
     public void setBaseDir(final String baseDir) {

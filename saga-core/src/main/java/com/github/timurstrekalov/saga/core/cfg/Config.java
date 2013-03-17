@@ -10,6 +10,7 @@ import com.github.timurstrekalov.saga.core.Order;
 import com.github.timurstrekalov.saga.core.OutputStrategy;
 import com.github.timurstrekalov.saga.core.ReportFormat;
 import com.github.timurstrekalov.saga.core.SortBy;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A midway attempt at externalizing configuration
@@ -17,6 +18,21 @@ import com.github.timurstrekalov.saga.core.SortBy;
 public interface Config {
 
     String COVERAGE_VARIABLE_NAME = "__coverage_data";
+
+    BrowserVersion DEFAULT_BROWSER_VERSION = BrowserVersion.FIREFOX_3_6;
+    OutputStrategy DEFAULT_OUTPUT_STRATEGY = OutputStrategy.TOTAL;
+    SortBy DEFAULT_SORT_BY = SortBy.COVERAGE;
+    Order DEFAULT_ORDER = Order.DESC;
+
+    Set<ReportFormat> DEFAULT_REPORT_FORMATS = ImmutableSet.of(ReportFormat.HTML, ReportFormat.RAW);
+
+    String DEFAULT_SOURCES_TO_PRELOAD_ENCODING = "UTF-8";
+
+    int DEFAULT_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
+    long DEFAULT_BACKGROUND_JAVASCRIPT_TIMEOUT = 5 * 60 * 1000;
+
+    boolean DEFAULT_CACHE_INSTRUMENTED_CODE = true;
+    boolean DEFAULT_INCLUDE_INLINE_SCRIPTS = false;
 
     // TODO stop this configuration setter madness
 
