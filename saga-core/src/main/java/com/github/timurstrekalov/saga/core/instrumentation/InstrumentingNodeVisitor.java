@@ -42,14 +42,14 @@ import static net.sourceforge.htmlunit.corejs.javascript.Token.TRY;
 import static net.sourceforge.htmlunit.corejs.javascript.Token.VAR;
 import static net.sourceforge.htmlunit.corejs.javascript.Token.WHILE;
 
-class InstrumentingVisitor implements NodeVisitor {
+class InstrumentingNodeVisitor implements NodeVisitor {
 
-    private static final Logger logger = LoggerFactory.getLogger(InstrumentingVisitor.class);
+    private static final Logger logger = LoggerFactory.getLogger(InstrumentingNodeVisitor.class);
 
     private final ScriptData data;
     private final int lineNumberOffset;
 
-    public InstrumentingVisitor(final ScriptData data, final int lineNumberOffset) {
+    public InstrumentingNodeVisitor(final ScriptData data, final int lineNumberOffset) {
         this.data = data;
         this.lineNumberOffset = lineNumberOffset;
     }

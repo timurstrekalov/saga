@@ -88,59 +88,13 @@ public final class ScriptInstrumenter implements ScriptPreProcessor {
                 return data.getInstrumentedSourceCode();
             }
 
-            final ScriptData data = new ScriptData(sourceUri, sourceCode, separateFile);
-            scriptDataList.add(data);
+            final ScriptData data = addNewScriptData(sourceCode, separateFile, sourceUri);
 
-            final CompilerEnvirons environs = new CompilerEnvirons();
-            environs.initFromContext(contextFactory.enterContext());
-
-            final AstRoot root = new Parser(environs).parse(data.getSourceCode(), data.getSourceUriAsString(), lineNumber);
-            root.visit(new InstrumentingVisitor(data, lineNumber - 1));
-
-            final String treeSource = root.toSource();
-            final StringBuilder buf = new StringBuilder(
-                    initializingCode.length() +
-                    data.getNumberOfStatements() * arrayInitializer.length() +
-                    treeSource.length());
-
-            buf.append(initializingCode);
-            buf.append(String.format("%s['%s'] = {};%n", COVERAGE_VARIABLE_NAME, escapePath(data.getSourceUriAsString())));
-
-            for (final Integer i : data.getLineNumbersOfAllStatements()) {
-                buf.append(String.format(arrayInitializer, escapePath(data.getSourceUriAsString()), i));
-            }
-
-            buf.append(treeSource);
-
-            final String instrumentedCode = buf.toString();
+            final String instrumentedCode = instrument(lineNumber, data);
             data.setInstrumentedSourceCode(instrumentedCode);
 
-            if (config.isCacheInstrumentedCode()) {
-                instrumentedScriptCache.putIfAbsent(sourceUri, data);
-            }
-
-            if (config.isOutputInstrumentedFiles() && separateFile) {
-                synchronized (writtenToDisk) {
-                    try {
-                        if (!writtenToDisk.contains(sourceUri)) {
-                            final String parent = UriUtil.getParent(sourceUri);
-                            final String fileName = UriUtil.getLastSegmentOrHost(sourceUri);
-
-                            final File fileOutputDir = new File(instrumentedFileDirectory, Hashing.md5().hashString(parent).toString());
-                            FileUtils.mkdir(fileOutputDir.getAbsolutePath());
-
-                            final File outputFile = new File(fileOutputDir, fileName);
-
-                            logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
-                            ByteStreams.write(instrumentedCode.getBytes("UTF-8"), Files.newOutputStreamSupplier(outputFile));
-
-                            writtenToDisk.add(sourceUri);
-                        }
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+            maybeCache(sourceUri, data);
+            maybeWriteInstrumentedCodeToDisk(separateFile, sourceUri, instrumentedCode);
 
             return instrumentedCode;
         } catch (final RuntimeException e) {
@@ -149,8 +103,41 @@ public final class ScriptInstrumenter implements ScriptPreProcessor {
         }
     }
 
-    private String escapePath(final String path) {
-        return path.replaceAll("\\\\", "\\\\\\\\");
+    private String instrument(final int lineNumber, final ScriptData data) {
+        final Parser parser = newParser();
+
+        final String sourceUriAsString = data.getSourceUriAsString();
+        final AstRoot root = parser.parse(data.getSourceCode(), sourceUriAsString, lineNumber);
+        root.visit(new InstrumentingNodeVisitor(data, lineNumber - 1));
+
+        final String treeSource = root.toSource();
+        final StringBuilder buf = new StringBuilder(
+                initializingCode.length() +
+                data.getNumberOfStatements() * arrayInitializer.length() +
+                treeSource.length());
+
+        buf.append(initializingCode);
+        buf.append(String.format("%s['%s'] = {};%n", COVERAGE_VARIABLE_NAME, sourceUriAsString));
+
+        for (final Integer i : data.getLineNumbersOfAllStatements()) {
+            buf.append(String.format(arrayInitializer, sourceUriAsString, i));
+        }
+
+        buf.append(treeSource);
+
+        return buf.toString();
+    }
+
+    private ScriptData addNewScriptData(final String sourceCode, final boolean separateFile, final URI sourceUri) {
+        final ScriptData data = new ScriptData(sourceUri, sourceCode, separateFile);
+        scriptDataList.add(data);
+        return data;
+    }
+
+    private Parser newParser() {
+        final CompilerEnvirons environs = new CompilerEnvirons();
+        environs.initFromContext(contextFactory.enterContext());
+        return new Parser(environs);
     }
 
     private boolean isSeparateFile(final String sourceName, final String normalizedSourceName) {
@@ -172,6 +159,37 @@ public final class ScriptInstrumenter implements ScriptPreProcessor {
         return sourceName;
     }
 
+    private void maybeCache(final URI sourceUri, final ScriptData data) {
+        if (config.isCacheInstrumentedCode()) {
+            instrumentedScriptCache.putIfAbsent(sourceUri, data);
+        }
+    }
+
+    private void maybeWriteInstrumentedCodeToDisk(final boolean separateFile, final URI sourceUri, final String instrumentedCode) {
+        if (config.isOutputInstrumentedFiles() && separateFile) {
+            synchronized (writtenToDisk) {
+                try {
+                    if (!writtenToDisk.contains(sourceUri)) {
+                        final String parent = UriUtil.getParent(sourceUri);
+                        final String fileName = UriUtil.getLastSegmentOrHost(sourceUri);
+
+                        final File fileOutputDir = new File(instrumentedFileDirectory, Hashing.md5().hashString(parent).toString());
+                        FileUtils.mkdir(fileOutputDir.getAbsolutePath());
+
+                        final File outputFile = new File(fileOutputDir, fileName);
+
+                        logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
+                        ByteStreams.write(instrumentedCode.getBytes("UTF-8"), Files.newOutputStreamSupplier(outputFile));
+
+                        writtenToDisk.add(sourceUri);
+                    }
+                } catch (final IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
     private boolean shouldIgnore(final String sourceName) {
         return ignorePatterns != null && Iterables.any(ignorePatterns, new Predicate<Pattern>() {
             @Override
@@ -191,10 +209,6 @@ public final class ScriptInstrumenter implements ScriptPreProcessor {
 
     public void setInstrumentedFileDirectory(final File instrumentedFileDirectory) {
         this.instrumentedFileDirectory = instrumentedFileDirectory;
-    }
-
-    public File getInstrumentedFileDirectory() {
-        return instrumentedFileDirectory;
     }
 
 }
