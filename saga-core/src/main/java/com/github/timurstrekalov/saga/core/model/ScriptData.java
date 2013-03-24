@@ -4,10 +4,13 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
+import java.util.SortedSet;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
+import static com.github.timurstrekalov.saga.core.model.LineCoverageRecord.LINE_MISSED;
+import static com.github.timurstrekalov.saga.core.model.LineCoverageRecord.LINE_NO_STATEMENT;
 
 public final class ScriptData {
 
@@ -15,7 +18,7 @@ public final class ScriptData {
     private final String sourceCode;
     private final boolean separateFile;
 
-    private final Map<Integer, Integer> statementsWithLengths = Maps.newTreeMap();
+    private final SortedSet<Integer> linesWithStatements = Sets.newTreeSet();
 
     private String instrumentedSourceCode;
 
@@ -25,8 +28,8 @@ public final class ScriptData {
         this.separateFile = separateFile;
     }
 
-    public void addExecutableLine(final Integer lineNr, final Integer length) {
-        statementsWithLengths.put(lineNr, length);
+    public void addExecutableLine(final Integer lineNr) {
+        linesWithStatements.add(lineNr);
     }
 
     public URI getSourceUri() {
@@ -41,20 +44,16 @@ public final class ScriptData {
         return sourceCode;
     }
 
-    public Set<Integer> getLineNumbersOfAllStatements() {
-        return statementsWithLengths.keySet();
+    public SortedSet<Integer> getLineNumbersOfAllStatements() {
+        return Sets.newTreeSet(linesWithStatements);
     }
 
     public int getNumberOfStatements() {
-        return statementsWithLengths.size();
+        return linesWithStatements.size();
     }
 
-    public boolean hasStatement(final int lineNr) {
-        return statementsWithLengths.containsKey(lineNr);
-    }
-
-    public Integer getStatementLength(final int lineNr) {
-        return statementsWithLengths.get(lineNr);
+    private boolean hasStatement(final int lineNr) {
+        return linesWithStatements.contains(lineNr);
     }
 
     /**
@@ -62,7 +61,7 @@ public final class ScriptData {
      * HTML)
      */
     public int getLineNumberOfFirstStatement() {
-        return getLineNumbersOfAllStatements().iterator().next();
+        return linesWithStatements.first();
     }
 
     public void setInstrumentedSourceCode(final String instrumentedSourceCode) {
@@ -78,45 +77,34 @@ public final class ScriptData {
     }
 
     // TODO clean up and test this mess
-    public ScriptCoverageStatistics generateFileStats(final URI baseUri, final Map<Integer, Double> coverageData) {
+    public ScriptCoverageStatistics generateScriptCoverageStatistics(final URI baseUri, final Map<Integer, Double> coverageData) {
         final Scanner in = new Scanner(getSourceCode());
 
         final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
 
-        if (!getLineNumbersOfAllStatements().isEmpty()) {
+        if (!linesWithStatements.isEmpty()) {
             // pad with extra line coverage records if first executable statement is not the first line (comments at the start of files)
             for (int lineNr = 1; lineNr < getLineNumberOfFirstStatement() && in.hasNext(); lineNr++) {
-                lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
+                lineCoverageRecords.add(new LineCoverageRecord(lineNr, LINE_NO_STATEMENT, in.nextLine()));
             }
 
-            for (int lineNr = getLineNumberOfFirstStatement(), lengthCountdown = 0; in.hasNext(); lineNr++) {
+            for (int lineNr = getLineNumberOfFirstStatement(); in.hasNext(); lineNr++) {
                 final String line = in.nextLine();
 
                 final Double coverageEntry = coverageData.get(lineNr);
                 final int timesLineExecuted;
 
                 if (coverageEntry == null) {
-                    final int lineLength = line.trim().length();
-
-                    if (lengthCountdown > 0 && lineLength > 0) {
-                        lengthCountdown -= lineLength;
-                        timesLineExecuted = -1;
-                    } else {
-                        timesLineExecuted = hasStatement(lineNr) ? 0 : -1;
-                    }
+                    timesLineExecuted = hasStatement(lineNr) ? LINE_MISSED : LINE_NO_STATEMENT;
                 } else {
                     timesLineExecuted = coverageEntry.intValue();
-
-                    if (getStatementLength(lineNr) != null) {
-                        lengthCountdown = getStatementLength(lineNr);
-                    }
                 }
 
                 lineCoverageRecords.add(new LineCoverageRecord(lineNr, timesLineExecuted, line));
             }
         } else {
             for (int lineNr = 1; in.hasNext(); lineNr++) {
-                lineCoverageRecords.add(new LineCoverageRecord(lineNr, -1, in.nextLine()));
+                lineCoverageRecords.add(new LineCoverageRecord(lineNr, LINE_NO_STATEMENT, in.nextLine()));
             }
         }
 

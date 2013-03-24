@@ -7,6 +7,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 public final class LineCoverageRecord {
 
+    public static final int LINE_MISSED = 0;
+    public static final int LINE_NO_STATEMENT = -1;
+
     private int lineNr;
     private int timesExecuted;
     private String line;
@@ -23,7 +26,7 @@ public final class LineCoverageRecord {
 
         return new LineCoverageRecord(
                 l1.lineNr,
-                l1.timesExecuted == -1 ? -1 : l1.timesExecuted + l2.timesExecuted,
+                l1.timesExecuted == LINE_NO_STATEMENT ? LINE_NO_STATEMENT : l1.timesExecuted + l2.timesExecuted,
                 l1.line
         );
     }
@@ -41,7 +44,7 @@ public final class LineCoverageRecord {
     }
 
     public boolean isExecutable() {
-        return timesExecuted > -1;
+        return timesExecuted > LINE_NO_STATEMENT;
     }
 
     @Override

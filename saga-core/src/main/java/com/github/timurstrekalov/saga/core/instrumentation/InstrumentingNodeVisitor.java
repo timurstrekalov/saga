@@ -133,7 +133,7 @@ class InstrumentingNodeVisitor implements NodeVisitor {
 
             if (ifStatement.getElsePart() == elseIfStatement) {
                 flattenElseIf(elseIfStatement, ifStatement);
-                data.addExecutableLine(getActualLineNumber(node), node.getLength());
+                data.addExecutableLine(getActualLineNumber(node));
             }
         } else if (parentType != CASE) {
             // issue #54
@@ -164,7 +164,7 @@ class InstrumentingNodeVisitor implements NodeVisitor {
                 }
             }
 
-            data.addExecutableLine(getActualLineNumber(node), node.getLength());
+            data.addExecutableLine(getActualLineNumber(node));
         }
     }
 
@@ -216,7 +216,7 @@ class InstrumentingNodeVisitor implements NodeVisitor {
 
         for (final AstNode statement : switchCase.getStatements()) {
             final int lineNr = getActualLineNumber(statement);
-            data.addExecutableLine(lineNr, switchCase.getLength());
+            data.addExecutableLine(lineNr);
 
             newStatements.add(newInstrumentationNode(lineNr));
             newStatements.add(statement);
@@ -264,7 +264,7 @@ class InstrumentingNodeVisitor implements NodeVisitor {
 
         final int lineNr = getActualLineNumber(elseIfStatement);
 
-        data.addExecutableLine(lineNr, elseIfStatement.getLength());
+        data.addExecutableLine(lineNr);
         block.addChildBefore(newInstrumentationNode(lineNr), elseIfStatement);
     }
 

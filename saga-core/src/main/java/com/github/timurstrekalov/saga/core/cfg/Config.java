@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public interface Config {
 
-    String COVERAGE_VARIABLE_NAME = "__coverage_data";
+    String COVERAGE_VARIABLE_NAME = "__saga_coverage_data";
 
     BrowserVersion DEFAULT_BROWSER_VERSION = BrowserVersion.FIREFOX_17;
     OutputStrategy DEFAULT_OUTPUT_STRATEGY = OutputStrategy.TOTAL;

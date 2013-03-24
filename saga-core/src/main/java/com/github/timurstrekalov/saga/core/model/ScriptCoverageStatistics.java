@@ -15,6 +15,8 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 
+import static com.github.timurstrekalov.saga.core.model.LineCoverageRecord.LINE_MISSED;
+
 /**
  * Contains coverage statistics of a particular script.
  */
@@ -69,10 +71,9 @@ public final class ScriptCoverageStatistics {
 
     public int getExecuted() {
         return MiscUtil.sum(lineCoverageRecords, new Function<LineCoverageRecord, Integer>() {
-
             @Override
             public Integer apply(final LineCoverageRecord input) {
-                return input.getTimesExecuted() > 0 ? 1 : 0;
+                return input.getTimesExecuted() > LINE_MISSED ? 1 : LINE_MISSED;
             }
         });
     }

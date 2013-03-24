@@ -24,9 +24,9 @@ import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.cfg.InstanceFieldPerPropertyConfig;
 import com.github.timurstrekalov.saga.core.htmlunit.WebClientFactory;
 import com.github.timurstrekalov.saga.core.instrumentation.ScriptInstrumenter;
-import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import com.github.timurstrekalov.saga.core.model.ScriptCoverageStatistics;
 import com.github.timurstrekalov.saga.core.model.ScriptData;
+import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import com.github.timurstrekalov.saga.core.reporter.CsvReporter;
 import com.github.timurstrekalov.saga.core.reporter.HtmlReporter;
 import com.github.timurstrekalov.saga.core.reporter.PdfReporter;
@@ -256,28 +256,32 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         client.waitForBackgroundJavaScript(config.getBackgroundJavaScriptTimeout());
         client.setScriptPreProcessor(null);
 
-        final Object javaScriptResult = htmlPage.executeJavaScript("window." + Config.COVERAGE_VARIABLE_NAME)
-                .getJavaScriptResult();
+        final Object javaScriptResult = htmlPage.executeJavaScript("window." + Config.COVERAGE_VARIABLE_NAME).getJavaScriptResult();
 
-        if (!(javaScriptResult instanceof Undefined)) {
-            return collectAndWriteRunStats(test, instrumenter, (NativeObject) javaScriptResult);
+        if (javaScriptResult instanceof Undefined) {
+            return TestRunCoverageStatistics.EMPTY;
         }
 
-        return TestRunCoverageStatistics.EMPTY;
+        return collectAndWriteRunStats(test, instrumenter, (NativeObject) javaScriptResult);
     }
 
-    @SuppressWarnings("unchecked")
     private TestRunCoverageStatistics collectAndWriteRunStats(
             final URI test,
             final ScriptInstrumenter instrumenter,
-            final NativeObject allCoverageData) throws IOException {
+            final NativeObject coverageDataForAllScripts) throws IOException {
         final TestRunCoverageStatistics runStats = new TestRunCoverageStatistics(test);
         runStats.setSortBy(config.getSortBy());
         runStats.setOrder(config.getOrder());
 
+        final URI baseUri = config.getBaseUri();
+
         for (final ScriptData data : instrumenter.getScriptDataList()) {
-            final Map<Integer, Double> coverageData = (Map<Integer, Double>) allCoverageData.get(data.getSourceUriAsString());
-            final ScriptCoverageStatistics scriptCoverageStatistics = data.generateFileStats(config.getBaseUri(), coverageData);
+            final String sourceUri = data.getSourceUriAsString();
+
+            @SuppressWarnings("unchecked")
+            final Map<Integer, Double> coverageDataForScript = (Map<Integer, Double>) coverageDataForAllScripts.get(sourceUri);
+            final ScriptCoverageStatistics scriptCoverageStatistics = data.generateScriptCoverageStatistics(baseUri, coverageDataForScript);
+
             runStats.add(scriptCoverageStatistics);
         }
 
