@@ -5,7 +5,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'idea'
 
-def projectVersion = '1.4.1-SNAPSHOT'
+def projectVersion = '1.4.1'
 
 group = 'com.github.timurstrekalov'
 version = projectVersion
