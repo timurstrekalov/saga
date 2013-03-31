@@ -145,9 +145,20 @@ public class SagaMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "ascending")
     private String order;
-    
+
+    /**
+     * Enables skipping the coverage reporting.
+     */
+    @Parameter(property = "skipTests", defaultValue = "false")
+    private boolean skipTests;
+
     @Override
     public void execute() throws MojoExecutionException {
+        if (skipTests) {
+            getLog().info("Coverage reporting is skipped.");
+            return;
+        }
+
         try {
             final CoverageGenerator gen = CoverageGeneratorFactory.newInstance(baseDir, outputDir);
             final Config config = gen.getConfig();
