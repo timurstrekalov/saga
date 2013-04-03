@@ -51,6 +51,7 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     private SortBy sortBy = Config.DEFAULT_SORT_BY;
     private Order order = Config.DEFAULT_ORDER;
+    private String rawName = Config.DEFAULT_RAW;
 
     @Override
     public void setBaseDir(final String baseDir) {
@@ -293,6 +294,15 @@ public class InstanceFieldPerPropertyConfig implements Config {
     @Override
     public Order getOrder() {
         return order;
+    }
+
+    public String getRawName() {
+        return rawName;
+    }
+
+    @Override
+    public void setRawName(String rawName) {
+        this.rawName = rawName;
     }
 
 }

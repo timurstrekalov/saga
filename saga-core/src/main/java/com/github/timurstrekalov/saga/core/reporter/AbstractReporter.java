@@ -6,6 +6,7 @@ import java.net.URI;
 import java.util.Properties;
 
 import com.github.timurstrekalov.saga.core.ReportFormat;
+import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
@@ -33,12 +34,12 @@ abstract class AbstractReporter implements Reporter {
     }
 
     @Override
-    public final void writeReport(final URI baseUri, final File outputDir, final TestRunCoverageStatistics runStats) throws IOException {
-        final File fileOutputDir = ReporterUtil.getFileOutputDir(baseUri, outputDir, runStats);
+    public final void writeReport(final Config mojoConfig, final TestRunCoverageStatistics runStats) throws IOException {
+        final File fileOutputDir = ReporterUtil.getFileOutputDir(mojoConfig.getBaseUri(), mojoConfig.getOutputDir(), runStats);
 
         FileUtils.mkdir(fileOutputDir.getAbsolutePath());
 
-        final File outputFile = new File(fileOutputDir, getReportName(runStats));
+        final File outputFile = new File(fileOutputDir, getReportName(mojoConfig));
 
         logger.info("Writing {} coverage report: {}", format.name(), outputFile.getAbsoluteFile());
 
@@ -47,8 +48,8 @@ abstract class AbstractReporter implements Reporter {
 
     protected abstract void writeReportInternal(File outputFile, TestRunCoverageStatistics runStats) throws IOException;
 
-    private String getReportName(final TestRunCoverageStatistics runStats) {
-        return String.format("%s-%s.%s", runStats.getTestName(), format.getSuffix(), format.getExtension());
+    private String getReportName(final Config runStats) {
+        return String.format("%s-%s.%s", runStats.getRawName(), format.getSuffix(), format.getExtension());
     }
 
 }

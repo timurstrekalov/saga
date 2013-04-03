@@ -290,7 +290,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
     private void writeRunStats(final TestRunCoverageStatistics stats) throws IOException {
         for (final ReportFormat reportFormat : config.getReportFormats()) {
-            reporterFor(reportFormat).writeReport(config.getBaseUri(), config.getOutputDir(), stats);
+            reporterFor(reportFormat).writeReport(config, stats);
         }
     }
 

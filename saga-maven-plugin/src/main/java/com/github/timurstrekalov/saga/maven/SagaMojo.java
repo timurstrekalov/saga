@@ -70,6 +70,9 @@ public class SagaMojo extends AbstractMojo {
     @Parameter(defaultValue = "TOTAL")
     private String outputStrategy;
 
+    @Parameter
+    private String rawName;
+
     /**
      * The maximum number of threads to use.
      */
@@ -152,6 +155,8 @@ public class SagaMojo extends AbstractMojo {
     @Parameter(property = "skipTests", defaultValue = "false")
     private boolean skipTests;
 
+
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skipTests) {
@@ -163,6 +168,8 @@ public class SagaMojo extends AbstractMojo {
             final CoverageGenerator gen = CoverageGeneratorFactory.newInstance(baseDir, outputDir);
             final Config config = gen.getConfig();
 
+
+            config.setRawName(rawName);
             config.setIncludes(includes);
             config.setExcludes(excludes);
             config.setOutputInstrumentedFiles(outputInstrumentedFiles);

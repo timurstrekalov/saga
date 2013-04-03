@@ -33,6 +33,7 @@ public interface Config {
 
     boolean DEFAULT_CACHE_INSTRUMENTED_CODE = true;
     boolean DEFAULT_INCLUDE_INLINE_SCRIPTS = false;
+    String DEFAULT_RAW = "total";
 
     // TODO stop this configuration setter madness
 
@@ -110,4 +111,7 @@ public interface Config {
 
     Order getOrder();
 
+    void setRawName(String rawName);
+
+    String getRawName();
 }
