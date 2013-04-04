@@ -51,7 +51,9 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     private SortBy sortBy = Config.DEFAULT_SORT_BY;
     private Order order = Config.DEFAULT_ORDER;
-    private String rawName = Config.DEFAULT_RAW;
+    private String rawName = Config.DEFAULT_RAW_NAME;
+    private String relativePathBase;
+
 
     @Override
     public void setBaseDir(final String baseDir) {
@@ -298,6 +300,19 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     public String getRawName() {
         return rawName;
+    }
+
+    @Override
+    public String getRelativePathBase() {
+        String result = this.relativePathBase;
+        if (result == null) {
+            result = this.getBaseDir();
+        }
+        return result;
+    }
+
+    public void setRelativePathBase(String relativePath) {
+        this.relativePathBase = relativePath;
     }
 
     @Override

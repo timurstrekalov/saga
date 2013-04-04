@@ -274,13 +274,14 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         runStats.setOrder(config.getOrder());
 
         final URI baseUri = config.getBaseUri();
+        final String relativePathBase = config.getRelativePathBase();
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             final String sourceUri = data.getSourceUriAsString();
 
             @SuppressWarnings("unchecked")
             final Map<Integer, Double> coverageDataForScript = (Map<Integer, Double>) coverageDataForAllScripts.get(sourceUri);
-            final ScriptCoverageStatistics scriptCoverageStatistics = data.generateScriptCoverageStatistics(baseUri, coverageDataForScript);
+            final ScriptCoverageStatistics scriptCoverageStatistics = data.generateScriptCoverageStatistics(relativePathBase,baseUri, coverageDataForScript);
 
             runStats.add(scriptCoverageStatistics);
         }

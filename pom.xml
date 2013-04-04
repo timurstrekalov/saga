@@ -5,14 +5,10 @@
     <artifactId>saga-root</artifactId>
     <packaging>pom</packaging>
 
-    <version>1.4.2-SNAPSHOT</version>
+    <version>1.4.2-DERVISH-SNAPSHOT</version>
     <description>Better JavaScript code coverage tool</description>
 
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-    </parent>
+
 
     <licenses>
         <license>
@@ -100,5 +96,18 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>yandex_qa_releases</id>
+            <name>Releases</name>
+            <url>${releases-repo}</url>
+        </repository>
+        <snapshotRepository>
+            <id>yandex_qa_snapshots</id>
+            <name>Snapshots</name>
+            <url>${snapshots-repo}</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>

@@ -70,6 +70,9 @@ public class SagaMojo extends AbstractMojo {
     @Parameter(defaultValue = "TOTAL")
     private String outputStrategy;
 
+    /**
+     * Name of raw LCOV report file with .dat extension.
+     */
     @Parameter
     private String rawName;
 
@@ -78,6 +81,14 @@ public class SagaMojo extends AbstractMojo {
      */
     @Parameter
     private Integer threadCount;
+
+    /**
+     * Parameter used to override base path of statistics files in reports.
+     * Each source file in report will be prefixed with this base path. It might be usefull
+     * for thirdpaty software integration
+     */
+    @Parameter
+    private String relativePathBase;
 
     /**
      * Whether to include inline scripts into instrumentation.
@@ -185,6 +196,7 @@ public class SagaMojo extends AbstractMojo {
             config.setReportFormats(reportFormats);
             config.setSortBy(sortBy);
             config.setOrder(order);
+            config.setRelativePathBase(relativePathBase);
 
             gen.instrumentAndGenerateReports();
         } catch (final IllegalArgumentException e) {

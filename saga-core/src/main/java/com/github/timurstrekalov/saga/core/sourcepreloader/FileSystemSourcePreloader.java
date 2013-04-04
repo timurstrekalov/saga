@@ -55,7 +55,7 @@ public class FileSystemSourcePreloader implements SourcePreloader {
                 coverageData.put(lineNumber, 0.0);
             }
 
-            totalStats.add(data.generateScriptCoverageStatistics(baseUri, coverageData));
+            totalStats.add(data.generateScriptCoverageStatistics(config.getRelativePathBase(),baseUri, coverageData));
         }
     }
 

@@ -33,7 +33,7 @@ public interface Config {
 
     boolean DEFAULT_CACHE_INSTRUMENTED_CODE = true;
     boolean DEFAULT_INCLUDE_INLINE_SCRIPTS = false;
-    String DEFAULT_RAW = "total";
+    String DEFAULT_RAW_NAME = "total";
 
     // TODO stop this configuration setter madness
 
@@ -114,4 +114,8 @@ public interface Config {
     void setRawName(String rawName);
 
     String getRawName();
+
+    String getRelativePathBase();
+
+    public void setRelativePathBase(String path);
 }

@@ -31,10 +31,12 @@ public final class ScriptCoverageStatistics {
     private final String parentName;
 
     private final String id;
+    private final String relativePath;
 
-    public ScriptCoverageStatistics(final URI baseUri, final URI fileUri, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
+    public ScriptCoverageStatistics(final String relativePath ,final URI baseUri, final URI fileUri, final List<LineCoverageRecord> lineCoverageRecords, final boolean separateFile) {
         this.baseUri = baseUri;
         this.fileUri = fileUri;
+        this.relativePath = relativePath;
         this.separateFile = separateFile;
 
         parentName = new File(getRelativeName()).getParent();
@@ -113,8 +115,11 @@ public final class ScriptCoverageStatistics {
                 throw new RuntimeException("Error merging " + s1.fileUri + " and " + s2.fileUri, e);
             }
         }
-
-        return new ScriptCoverageStatistics(s1.baseUri, s1.fileUri, mergedRecords, s1.separateFile);
+        String relativePath = s1.fileUri.toString();
+        if  ( s1.fileUri.toString().lastIndexOf(s1.relativePath) >=0) {
+             relativePath = s1.fileUri.toString().substring(s1.fileUri.toString().lastIndexOf(s1.relativePath));
+        }
+        return new ScriptCoverageStatistics(relativePath,s1.baseUri, s1.fileUri, mergedRecords, s1.separateFile);
     }
 
     public URI getFileUri() {
@@ -152,4 +157,7 @@ public final class ScriptCoverageStatistics {
         return fileUri.toString();
     }
 
+    public String getRelativePath() {
+        return relativePath;
+    }
 }

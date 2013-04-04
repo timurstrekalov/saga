@@ -1,6 +1,9 @@
 package com.github.timurstrekalov.saga.core.reporter;
 
 import com.github.timurstrekalov.saga.core.ReportFormat;
+import com.github.timurstrekalov.saga.core.cfg.Config;
+import com.github.timurstrekalov.saga.core.model.LineCoverageRecord;
+import com.github.timurstrekalov.saga.core.model.ScriptCoverageStatistics;
 import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 
 import java.io.File;
