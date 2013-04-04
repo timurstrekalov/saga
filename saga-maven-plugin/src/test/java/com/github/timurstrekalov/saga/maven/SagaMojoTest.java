@@ -3,6 +3,7 @@ package com.github.timurstrekalov.saga.maven;
 import com.github.timurstrekalov.saga.core.cfg.ReporterConfig;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.hamcrest.Description;
+import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
@@ -50,6 +51,7 @@ public class SagaMojoTest extends AbstractMojoTestCase {
         assertThat(mojo.getReporterConfig(), matches(expectedReporterConfig));
     }
 
+    @Factory
     private Matcher<? super ReporterConfig> matches(final ReporterConfig expectedReporterConfig) {
         return new TypeSafeMatcher<ReporterConfig>() {
             @Override
