@@ -109,6 +109,7 @@ public final class ScriptData {
             }
         }
 
+//      default to full file URI
         String relativePath = getSourceUri().toString();
         if (getSourceUri().toString().lastIndexOf(relativePathBase) >=0) {
             relativePath = getSourceUri().toString().substring(getSourceUri().toString().lastIndexOf(relativePathBase) + relativePathBase.length());
