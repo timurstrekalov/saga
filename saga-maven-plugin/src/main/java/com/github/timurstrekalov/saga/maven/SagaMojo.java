@@ -5,6 +5,7 @@ import java.io.File;
 import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
 import com.github.timurstrekalov.saga.core.CoverageGeneratorFactory;
+import com.github.timurstrekalov.saga.core.cfg.ReporterConfig;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -15,16 +16,17 @@ import org.apache.maven.plugins.annotations.Parameter;
 public class SagaMojo extends AbstractMojo {
 
     /**
-     * The URL of the base directory for the test search OR the web page with the tests.
+     * Basic parameters to customize reporting features of plugin.
+     * encapsulates baseUri, outputDir, rawName, relativePathBase
      */
-    @Parameter(required = true)
-    private String baseDir;
+    @Parameter
+    private ReporterConfig reporterConfig;
 
     /**
      * A comma-separated list of <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a>
      * to include in the search for test runners.<br/><br/>
      *
-     * Note that this parameter only makes sense if {@link #baseDir} is a filesystem URL.
+     * Note that this parameter only makes sense if {@link #reporterConfig.baseUri} is a filesystem URL.
      */
     @Parameter
     private String includes;
@@ -33,16 +35,10 @@ public class SagaMojo extends AbstractMojo {
      * A comma-separated list of <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Ant-style patterns</a>
      * to exclude from the search for test runners.<br/><br/>
      *
-     * Note that this parameter only makes sense if {@link #baseDir} is a filesystem URL.
+     * Note that this parameter only makes sense if {@link #reporterConfig.baseUri} is a filesystem URL.
      */
     @Parameter
     private String excludes;
-
-    /**
-     * The output directory for coverage reports.
-     */
-    @Parameter(required = true)
-    private File outputDir;
 
     /**
      * Whether to output instrumented files. Will be written to ${outputDir}/instrumented.
@@ -71,24 +67,10 @@ public class SagaMojo extends AbstractMojo {
     private String outputStrategy;
 
     /**
-     * Name of raw LCOV report file with .dat extension.
-     */
-    @Parameter
-    private String rawName;
-
-    /**
      * The maximum number of threads to use.
      */
     @Parameter
     private Integer threadCount;
-
-    /**
-     * Parameter used to override base path of statistics files in reports.
-     * Each source file in report will be prefixed with this base path. It might be usefull
-     * for thirdpaty software integration
-     */
-    @Parameter
-    private String relativePathBase;
 
     /**
      * Whether to include inline scripts into instrumentation.
@@ -108,7 +90,7 @@ public class SagaMojo extends AbstractMojo {
      * not reference certain files, especially when you simply don't have tests for classes but you DO want to see them).
      * Paths are expected to be provided relative to the base directory.<br/><br/>
      *
-     * Note that this parameter only makes sense if {@link #baseDir} is a filesystem URL.
+     * Note that this parameter only makes sense if {@link #reporterConfig.baseUri} is a filesystem URL.
      */
     @Parameter
     private String sourcesToPreload;
@@ -176,11 +158,8 @@ public class SagaMojo extends AbstractMojo {
         }
 
         try {
-            final CoverageGenerator gen = CoverageGeneratorFactory.newInstance(baseDir, outputDir);
+            final CoverageGenerator gen = CoverageGeneratorFactory.newInstance(reporterConfig.getBaseUri().toString(), reporterConfig.getOutputDir());
             final Config config = gen.getConfig();
-
-
-            config.setRawName(rawName);
             config.setIncludes(includes);
             config.setExcludes(excludes);
             config.setOutputInstrumentedFiles(outputInstrumentedFiles);
@@ -196,7 +175,7 @@ public class SagaMojo extends AbstractMojo {
             config.setReportFormats(reportFormats);
             config.setSortBy(sortBy);
             config.setOrder(order);
-            config.setRelativePathBase(relativePathBase);
+            config.setReporterConfig(reporterConfig);
 
             gen.instrumentAndGenerateReports();
         } catch (final IllegalArgumentException e) {
@@ -204,6 +183,11 @@ public class SagaMojo extends AbstractMojo {
         } catch (final Exception e) {
             throw new MojoExecutionException("Error generating coverage", e);
         }
+    }
+
+
+    public ReporterConfig getReporterConfig() {
+        return this.reporterConfig;
     }
 
 }

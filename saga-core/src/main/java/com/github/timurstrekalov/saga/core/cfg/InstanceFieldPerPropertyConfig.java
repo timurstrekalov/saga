@@ -25,10 +25,6 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     private static final Logger logger = LoggerFactory.getLogger(InstanceFieldPerPropertyConfig.class);
 
-    private URI baseUri;
-    private String baseDir;
-    private File outputDir;
-
     private String includes;
     private String excludes;
 
@@ -51,20 +47,8 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     private SortBy sortBy = Config.DEFAULT_SORT_BY;
     private Order order = Config.DEFAULT_ORDER;
-    private String rawName = Config.DEFAULT_RAW_NAME;
-    private String relativePathBase;
+    private ReporterConfig reporterConfig = new ReporterConfig();
 
-
-    @Override
-    public void setBaseDir(final String baseDir) {
-        this.baseDir = baseDir;
-        baseUri = UriUtil.toUri(baseDir);
-    }
-
-    @Override
-    public void setOutputDir(final File outputDir) {
-        this.outputDir = outputDir;
-    }
 
     @Override
     public void setExcludes(final String excludes) {
@@ -209,21 +193,6 @@ public class InstanceFieldPerPropertyConfig implements Config {
     }
 
     @Override
-    public URI getBaseUri() {
-        return baseUri;
-    }
-
-    @Override
-    public String getBaseDir() {
-        return baseDir;
-    }
-
-    @Override
-    public File getOutputDir() {
-        return outputDir;
-    }
-
-    @Override
     public String getIncludes() {
         return includes;
     }
@@ -298,26 +267,13 @@ public class InstanceFieldPerPropertyConfig implements Config {
         return order;
     }
 
-    public String getRawName() {
-        return rawName;
+    @Override
+    public ReporterConfig getReporterConfig() {
+        return reporterConfig;
     }
 
     @Override
-    public String getRelativePathBase() {
-        String result = this.relativePathBase;
-        if (result == null) {
-            result = this.getBaseDir();
-        }
-        return result;
+    public void setReporterConfig(ReporterConfig reporterConfig) {
+        this.reporterConfig = reporterConfig;
     }
-
-    public void setRelativePathBase(String relativePath) {
-        this.relativePathBase = relativePath;
-    }
-
-    @Override
-    public void setRawName(String rawName) {
-        this.rawName = rawName;
-    }
-
 }

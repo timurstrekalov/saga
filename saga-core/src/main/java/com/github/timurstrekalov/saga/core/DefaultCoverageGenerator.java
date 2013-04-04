@@ -82,10 +82,10 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
     @Override
     public void instrumentAndGenerateReports() throws IOException {
-        Preconditions.checkNotNull(config.getBaseDir(), "baseDir cannot be null");
-        Preconditions.checkNotNull(config.getOutputDir(), "outputDir cannot be null");
+        Preconditions.checkNotNull(config.getReporterConfig().getBaseUri(), "baseDir cannot be null");
+        Preconditions.checkNotNull(config.getReporterConfig().getOutputDir(), "outputDir cannot be null");
 
-        final URI baseUri = config.getBaseUri();
+        final URI baseUri = config.getReporterConfig().getBaseUri();
         final List<URI> tests = fetchTests(baseUri);
 
         if (tests.isEmpty()) {
@@ -109,7 +109,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
             logger.info("Using the following no-instrument patterns:\n\t{}", StringUtils.join(config.getNoInstrumentPatterns(), "\n\t"));
         }
 
-        final File outputDir = config.getOutputDir();
+        final File outputDir = config.getReporterConfig().getOutputDir();
         FileUtils.mkdir(outputDir.getAbsolutePath());
 
         final Collection<Pattern> ignorePatterns = createPatterns();
@@ -273,8 +273,8 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         runStats.setSortBy(config.getSortBy());
         runStats.setOrder(config.getOrder());
 
-        final URI baseUri = config.getBaseUri();
-        final String relativePathBase = config.getRelativePathBase();
+        final URI baseUri = config.getReporterConfig().getBaseUri();
+        final String relativePathBase = config.getReporterConfig().getRelativePathBase();
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             final String sourceUri = data.getSourceUriAsString();
@@ -291,7 +291,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
     private void writeRunStats(final TestRunCoverageStatistics stats) throws IOException {
         for (final ReportFormat reportFormat : config.getReportFormats()) {
-            reporterFor(reportFormat).writeReport(config, stats);
+            reporterFor(reportFormat).writeReport(config.getReporterConfig(), stats);
         }
     }
 

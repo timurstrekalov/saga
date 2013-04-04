@@ -37,10 +37,6 @@ public interface Config {
 
     // TODO stop this configuration setter madness
 
-    void setBaseDir(String baseDir);
-
-    void setOutputDir(File outputDir);
-
     void setExcludes(String excludes);
 
     void setIncludes(String includes);
@@ -75,12 +71,6 @@ public interface Config {
 
     void setOrder(String order);
 
-    URI getBaseUri();
-
-    String getBaseDir();
-
-    File getOutputDir();
-
     String getIncludes();
 
     String getExcludes();
@@ -111,11 +101,7 @@ public interface Config {
 
     Order getOrder();
 
-    void setRawName(String rawName);
+    public ReporterConfig getReporterConfig();
+    public void setReporterConfig(ReporterConfig reporterConfig);
 
-    String getRawName();
-
-    String getRelativePathBase();
-
-    public void setRelativePathBase(String path);
 }

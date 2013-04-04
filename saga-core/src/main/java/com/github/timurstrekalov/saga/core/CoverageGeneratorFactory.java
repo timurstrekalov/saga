@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import com.github.timurstrekalov.saga.core.cfg.Config;
+import com.github.timurstrekalov.saga.core.util.UriUtil;
 import com.google.common.reflect.Reflection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +21,8 @@ public final class CoverageGeneratorFactory {
 
     public static CoverageGenerator newInstance(final String baseDir, final File outputDir) {
         final CoverageGenerator delegate = new DefaultCoverageGenerator();
-        delegate.getConfig().setBaseDir(baseDir);
-        delegate.getConfig().setOutputDir(outputDir);
+        delegate.getConfig().getReporterConfig().setBaseUri(UriUtil.toUri(baseDir));
+        delegate.getConfig().getReporterConfig().setOutputDir(outputDir);
 
         return Reflection.newProxy(CoverageGenerator.class, new InvocationHandler() {
             @Override

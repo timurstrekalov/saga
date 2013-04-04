@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.timurstrekalov</groupId>
+    <artifactId>saga-maven-plugin-test</artifactId>
+    <packaging>jar</packaging>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.timurstrekalov</groupId>
+                <artifactId>saga-maven-plugin</artifactId>
+                <version>1.4.2-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>coverage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputStrategy>TOTAL</outputStrategy>
+                    <reporterConfig>
+                        <baseUri>test</baseUri>
+                        <outputDir>test</outputDir>
+                        <rawName>testRaw</rawName>
+                        <relativePathBase>testRelative</relativePathBase>
+                    </reporterConfig>
+                    <noInstrumentPatterns>
+                        <pattern>.*/stories/.*</pattern>
+                        <!-- Don't instrument specs -->
+                        <pattern>.*/data/.*</pattern>
+                        <!-- Don't instrument data -->
+                        <pattern>.*/libs/.*</pattern>
+                        <!-- Don't instrument libs -->
+                    </noInstrumentPatterns>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
