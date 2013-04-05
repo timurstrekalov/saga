@@ -19,8 +19,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <outputStrategy>TOTAL</outputStrategy>
                     <reporterConfig>
+                        <outputStrategy>TOTAL</outputStrategy>
                         <baseUri>test</baseUri>
                         <outputDir>test</outputDir>
                         <rawName>testRaw</rawName>

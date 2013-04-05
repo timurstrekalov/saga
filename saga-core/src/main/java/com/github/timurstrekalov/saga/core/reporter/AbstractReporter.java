@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 
+import com.github.timurstrekalov.saga.core.OutputStrategy;
 import com.github.timurstrekalov.saga.core.ReportFormat;
 import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.cfg.ReporterConfig;
@@ -61,7 +62,11 @@ abstract class AbstractReporter implements Reporter {
      */
     private String getReportName(final ReporterConfig reporterConfig, final TestRunCoverageStatistics runStats) {
         String result = String.format("%s-%s.%s", runStats.getTestName(), format.getSuffix(), format.getExtension());
-        if (this instanceof RawReporter && reporterConfig.getRawName() != null) {
+
+        boolean totalReport = runStats.getTestName().equals("total");
+        boolean rawReport = this instanceof RawReporter;
+        boolean totalStrategy = reporterConfig.getOutputStrategy().equals(OutputStrategy.TOTAL);
+        if (rawReport && (totalStrategy || totalReport)) {
             result = String.format("%s-%s.%s", reporterConfig.getRawName(), format.getSuffix(), format.getExtension());
         }
         return result;

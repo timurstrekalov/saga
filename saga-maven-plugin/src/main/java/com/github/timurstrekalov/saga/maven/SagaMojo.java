@@ -61,12 +61,6 @@ public class SagaMojo extends AbstractMojo {
     private Boolean cacheInstrumentedCode;
 
     /**
-     * One of TOTAL, PER_TEST or BOTH. Pretty self-explanatory.
-     */
-    @Parameter(defaultValue = "TOTAL")
-    private String outputStrategy;
-
-    /**
      * The maximum number of threads to use.
      */
     @Parameter
@@ -165,7 +159,6 @@ public class SagaMojo extends AbstractMojo {
             config.setOutputInstrumentedFiles(outputInstrumentedFiles);
             config.setCacheInstrumentedCode(cacheInstrumentedCode);
             config.setNoInstrumentPatterns(noInstrumentPatterns);
-            config.setOutputStrategy(outputStrategy);
             config.setThreadCount(threadCount);
             config.setIncludeInlineScripts(includeInlineScripts);
             config.setBackgroundJavaScriptTimeout(backgroundJavaScriptTimeout);

@@ -132,7 +132,7 @@ public class Main {
 
             config.setNoInstrumentPatterns(line.getOptionValues(noInstrumentPatternOpt.getLongOpt()));
             config.setSourcesToPreload(line.getOptionValue(sourcesToPreloadOpt.getLongOpt()));
-            config.setOutputStrategy(line.getOptionValue(outputStrategyOpt.getLongOpt()));
+            config.getReporterConfig().setOutputStrategy(line.getOptionValue(outputStrategyOpt.getLongOpt()));
 
             final String threadCount = line.getOptionValue(threadCountOpt.getLongOpt());
             if (threadCount != null) {

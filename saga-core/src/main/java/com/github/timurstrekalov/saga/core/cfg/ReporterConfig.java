@@ -1,5 +1,7 @@
 package com.github.timurstrekalov.saga.core.cfg;
 
+import com.github.timurstrekalov.saga.core.OutputStrategy;
+
 import java.io.File;
 import java.net.URI;
 
@@ -13,6 +15,10 @@ import java.net.URI;
  *
  */
 public class ReporterConfig {
+    /**
+     * One of TOTAL, PER_TEST or BOTH. Pretty self-explanatory.
+     */
+    private OutputStrategy outputStrategy;
     /**
      * The URL of the base directory for the test search OR the web page with the tests.
      */
@@ -66,5 +72,21 @@ public class ReporterConfig {
 
     public String getRawName() {
         return rawName;
+    }
+
+    public OutputStrategy getOutputStrategy() {
+        return outputStrategy;
+    }
+
+    public void setOutputStrategy(final String outputStrategy) {
+        if (outputStrategy != null) {
+            setOutputStrategy(OutputStrategy.valueOf(outputStrategy.toUpperCase()));
+        }
+    }
+
+    public void setOutputStrategy(final OutputStrategy outputStrategy) {
+        if (outputStrategy != null) {
+            this.outputStrategy = outputStrategy;
+        }
     }
 }

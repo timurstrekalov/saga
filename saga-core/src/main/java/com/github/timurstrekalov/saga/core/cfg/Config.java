@@ -49,10 +49,6 @@ public interface Config {
 
     void setCacheInstrumentedCode(Boolean cacheInstrumentedCode);
 
-    void setOutputStrategy(String outputStrategy);
-
-    void setOutputStrategy(OutputStrategy outputStrategy);
-
     void setThreadCount(Integer threadCount);
 
     void setIncludeInlineScripts(Boolean includeInlineScripts);
@@ -80,8 +76,6 @@ public interface Config {
     boolean isOutputInstrumentedFiles();
 
     boolean isCacheInstrumentedCode();
-
-    OutputStrategy getOutputStrategy();
 
     int getThreadCount();
 

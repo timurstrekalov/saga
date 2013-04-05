@@ -30,7 +30,7 @@ public class FileSystemSourcePreloader implements SourcePreloader {
         final String sourcesToPreload = config.getSourcesToPreload();
         final URI baseUri = config.getReporterConfig().getBaseUri();
 
-        if (sourcesToPreload == null || !config.getOutputStrategy().contains(OutputStrategy.TOTAL) || !UriUtil.isFileUri(baseUri)) {
+        if (sourcesToPreload == null || !config.getReporterConfig().getOutputStrategy().contains(OutputStrategy.TOTAL) || !UriUtil.isFileUri(baseUri)) {
             return;
         }
 

@@ -96,7 +96,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         final int actualThreadCount = Math.min(config.getThreadCount(), tests.size());
         logger.info("Using up to {} threads", actualThreadCount);
 
-        final OutputStrategy outputStrategy = config.getOutputStrategy();
+        final OutputStrategy outputStrategy = config.getReporterConfig().getOutputStrategy();
         logger.info("Output strategy set to {}", outputStrategy);
 
         if (!config.isIncludeInlineScripts()) {

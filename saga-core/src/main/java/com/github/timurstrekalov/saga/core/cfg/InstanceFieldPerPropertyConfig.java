@@ -89,20 +89,6 @@ public class InstanceFieldPerPropertyConfig implements Config {
     }
 
     @Override
-    public void setOutputStrategy(final String outputStrategy) {
-        if (outputStrategy != null) {
-            setOutputStrategy(OutputStrategy.valueOf(outputStrategy.toUpperCase()));
-        }
-    }
-
-    @Override
-    public void setOutputStrategy(final OutputStrategy outputStrategy) {
-        if (outputStrategy != null) {
-            this.outputStrategy = outputStrategy;
-        }
-    }
-
-    @Override
     public void setThreadCount(final Integer threadCount) {
         if (threadCount != null) {
             Preconditions.checkArgument(threadCount > 0, "Thread count must be greater than zero");
@@ -215,11 +201,6 @@ public class InstanceFieldPerPropertyConfig implements Config {
     @Override
     public boolean isCacheInstrumentedCode() {
         return cacheInstrumentedCode;
-    }
-
-    @Override
-    public OutputStrategy getOutputStrategy() {
-        return outputStrategy;
     }
 
     @Override
