@@ -42,7 +42,7 @@ public final class ScriptInstrumenter implements ScriptPreProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
 
     private static final Pattern inlineScriptRe = Pattern.compile("script in (.+) from \\((\\d+), (\\d+)\\) to \\((\\d+), (\\d+)\\)");
-    private static final Pattern evalRe = Pattern.compile("(.+)#(\\d+\\(eval\\))");
+    private static final Pattern evalRe = Pattern.compile("(.+)(#|%23)(\\d+\\(eval\\))");
     private static final Pattern nonFileRe = Pattern.compile("JavaScriptStringJob");
 
     private static final ConcurrentMap<URI, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
@@ -73,7 +73,7 @@ public final class ScriptInstrumenter implements ScriptPreProcessor {
             final int lineNumber,
             final HtmlElement htmlElement) {
         try {
-            final String normalizedSourceName = handleEvals(handleInlineScripts(sourceName));
+            final String normalizedSourceName = handleEvals(handleInvalidUriChars(handleInlineScripts(sourceName)));
 
             if (shouldIgnore(normalizedSourceName)) {
                 return sourceCode;
@@ -140,15 +140,15 @@ public final class ScriptInstrumenter implements ScriptPreProcessor {
         return new Parser(environs);
     }
 
-    private boolean isSeparateFile(final String sourceName, final String normalizedSourceName) {
+    private static boolean isSeparateFile(final String sourceName, final String normalizedSourceName) {
         return normalizedSourceName.equals(sourceName) && !nonFileRe.matcher(normalizedSourceName).matches();
     }
 
-    private String handleInlineScripts(final String sourceName) {
+    private static String handleInlineScripts(final String sourceName) {
         return inlineScriptRe.matcher(sourceName).replaceAll("$1__from_$2_$3_to_$4_$5");
     }
 
-    private String handleEvals(final String sourceName) {
+    private static String handleEvals(final String sourceName) {
         final Matcher matcher = evalRe.matcher(sourceName);
 
         if (matcher.find()) {
@@ -157,6 +157,39 @@ public final class ScriptInstrumenter implements ScriptPreProcessor {
         }
 
         return sourceName;
+    }
+
+    /**
+     * Doesn't handle a lot of cases right now. So far, handles only invalid '?' and '#' in query string and fragment parts of the URIs.
+     */
+    private static String handleInvalidUriChars(final String sourceName) {
+        final StringBuilder buf = new StringBuilder();
+
+        final int indexOfQueryDelimiter = sourceName.indexOf('?');
+        final int indexOfFragmentDelimiter = sourceName.indexOf('#');
+
+        if (indexOfQueryDelimiter != -1) {
+            buf.append(sourceName.substring(0, indexOfQueryDelimiter)).append('?');
+        } else if (indexOfFragmentDelimiter != -1) {
+            buf.append(sourceName.substring(0, indexOfFragmentDelimiter)).append('#');
+        } else {
+            buf.append(sourceName);
+        }
+
+        if (indexOfQueryDelimiter != -1) {
+            final int lastIndex = indexOfFragmentDelimiter == -1 ? sourceName.length() : indexOfFragmentDelimiter;
+            final String queryString = sourceName.substring(sourceName.indexOf(indexOfQueryDelimiter) + 1, lastIndex);
+
+            buf.append(queryString.replaceAll("\\?", "%3F"));
+        }
+
+        if (indexOfFragmentDelimiter != -1) {
+            final String fragment = sourceName.substring(indexOfFragmentDelimiter + 1);
+
+            buf.append(fragment.replaceAll("#", "%23"));
+        }
+
+        return buf.toString();
     }
 
     private void maybeCache(final URI sourceUri, final ScriptData data) {

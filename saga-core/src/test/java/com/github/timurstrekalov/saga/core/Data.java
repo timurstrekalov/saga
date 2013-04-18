@@ -1,10 +1,10 @@
 package com.github.timurstrekalov.saga.core;
 
-import com.google.common.collect.Maps;
-import com.google.common.io.ByteStreams;
-
 import java.io.IOException;
 import java.util.Map;
+
+import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
 
 public class Data {
 
@@ -14,8 +14,8 @@ public class Data {
         return lazyLoad("/tests/Class.js");
     }
 
-    public static String getClassJsInstrumented() {
-        return lazyLoad("/pregen/Class.instrumented.js");
+    public static String getClassJsInstrumented(final String sourceName) {
+        return lazyLoad("/pregen/Class.instrumented.js").replaceAll("<SOURCE_PLACEHOLDER>", sourceName);
     }
 
     private static String lazyLoad(final String name) {

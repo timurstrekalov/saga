@@ -82,6 +82,13 @@ public class UriUtilTest {
     }
 
     @Test
+    public void test_getLastSegment_uri_with_eval() throws Exception {
+        final URI uri = URI.create("http://localhost:61240/spec/resources/dojo-release-1.8.3/dojo/dojo.js#222(Function)%231(eval)(7)");
+
+        assertThat(getLastSegment(uri), equalTo(Optional.of("dojo.js#222(Function)%231(eval)(7)")));
+    }
+
+    @Test
     public void test_getParent() throws Exception {
         assertThat(getParent(HTTP_URI), equalTo("/"));
         assertThat(getParent(create("http://localhost:8080/")), equalTo("/"));

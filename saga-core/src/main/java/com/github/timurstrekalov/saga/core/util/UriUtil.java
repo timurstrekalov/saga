@@ -46,10 +46,6 @@ public final class UriUtil {
             return Optional.absent();
         }
 
-        if (!path.contains("/")) {
-            return Optional.of(path);
-        }
-
         final Iterable<String> parts = Splitter.on('/').
                 omitEmptyStrings().
                 trimResults().
@@ -61,7 +57,7 @@ public final class UriUtil {
             return Optional.absent();
         }
 
-        return Optional.of(Iterables.get(parts, actualIndex));
+        return Optional.of(Iterables.get(parts, actualIndex) + (uri.getFragment() == null ? "" : "#" + uri.getRawFragment()));
     }
 
     public static String getLastSegmentOrHost(final URI uri) {
