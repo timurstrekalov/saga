@@ -53,7 +53,7 @@ public class ScriptInstrumenterTest {
         final ScriptData classJsData = instrumenter.getScriptDataList().get(0);
         assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
         assertEquals(5, classJsData.getLineNumberOfFirstStatement());
-        assertEquals(113, classJsData.getNumberOfStatements());
+        assertEquals(114, classJsData.getNumberOfStatements());
         assertEquals(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
     }
 
@@ -70,7 +70,7 @@ public class ScriptInstrumenterTest {
         final ScriptData classJsData = instrumenter.getScriptDataList().get(0);
         assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
         assertEquals(5, classJsData.getLineNumberOfFirstStatement());
-        assertEquals(113, classJsData.getNumberOfStatements());
+        assertEquals(114, classJsData.getNumberOfStatements());
         assertEquals(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
     }
 
@@ -88,7 +88,7 @@ public class ScriptInstrumenterTest {
         final ScriptData classJsData = instrumenter.getScriptDataList().get(0);
         assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
         assertEquals(5, classJsData.getLineNumberOfFirstStatement());
-        assertEquals(113, classJsData.getNumberOfStatements());
+        assertEquals(114, classJsData.getNumberOfStatements());
         assertEquals(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
     }
 

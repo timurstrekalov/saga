@@ -113,6 +113,7 @@ __saga_coverage_data['<SOURCE_PLACEHOLDER>'][224] = 0;
 __saga_coverage_data['<SOURCE_PLACEHOLDER>'][225] = 0;
 __saga_coverage_data['<SOURCE_PLACEHOLDER>'][226] = 0;
 __saga_coverage_data['<SOURCE_PLACEHOLDER>'][228] = 0;
+__saga_coverage_data['<SOURCE_PLACEHOLDER>'][231] = 0;
 __saga_coverage_data['<SOURCE_PLACEHOLDER>'][5]++;
 (function() {
   __saga_coverage_data['<SOURCE_PLACEHOLDER>'][7]++;
@@ -437,3 +438,5 @@ Class.prototype.test = function test() {
   __saga_coverage_data['<SOURCE_PLACEHOLDER>'][228]++;
   this.qqq = 'bbb';
 };
+__saga_coverage_data['<SOURCE_PLACEHOLDER>'][231]++;
+new Function("eval('var wtfisthis = 2');").call(this);

@@ -227,3 +227,5 @@ Class.prototype.test = function test() {
 
     this.qqq = 'bbb';
 }
+
+new Function("eval('var wtfisthis = 2');").call(this);
