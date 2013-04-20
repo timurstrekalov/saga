@@ -36,6 +36,13 @@
         </developer>
     </developers>
 
+    <contributors>
+        <contributor>
+            <name>Mark Prins</name>
+            <url>https://github.com/mprins</url>
+        </contributor>
+    </contributors>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
