@@ -42,7 +42,7 @@ sed -Ei -e "s/(def projectVersion = )('$REL_VERSION')/\1'$DEV_VERSION'/" build.g
 rm build.gradle-e
 
 git add build.gradle
-git commit -m "preparing for next development iterationn ($DEV_VERSION)"
+git commit -m "preparing for next development iteration ($DEV_VERSION)"
 git push
 
 cd -
