@@ -33,12 +33,9 @@ public interface Config {
 
     boolean DEFAULT_CACHE_INSTRUMENTED_CODE = true;
     boolean DEFAULT_INCLUDE_INLINE_SCRIPTS = false;
+    String DEFAULT_RAW_NAME = "total";
 
     // TODO stop this configuration setter madness
-
-    void setBaseDir(String baseDir);
-
-    void setOutputDir(File outputDir);
 
     void setExcludes(String excludes);
 
@@ -51,10 +48,6 @@ public interface Config {
     void setOutputInstrumentedFiles(Boolean outputInstrumentedFiles);
 
     void setCacheInstrumentedCode(Boolean cacheInstrumentedCode);
-
-    void setOutputStrategy(String outputStrategy);
-
-    void setOutputStrategy(OutputStrategy outputStrategy);
 
     void setThreadCount(Integer threadCount);
 
@@ -74,12 +67,6 @@ public interface Config {
 
     void setOrder(String order);
 
-    URI getBaseUri();
-
-    String getBaseDir();
-
-    File getOutputDir();
-
     String getIncludes();
 
     String getExcludes();
@@ -89,8 +76,6 @@ public interface Config {
     boolean isOutputInstrumentedFiles();
 
     boolean isCacheInstrumentedCode();
-
-    OutputStrategy getOutputStrategy();
 
     int getThreadCount();
 
@@ -109,5 +94,8 @@ public interface Config {
     SortBy getSortBy();
 
     Order getOrder();
+
+    public ReporterConfig getReporterConfig();
+    public void setReporterConfig(ReporterConfig reporterConfig);
 
 }

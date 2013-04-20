@@ -28,9 +28,9 @@ public class FileSystemSourcePreloader implements SourcePreloader {
     public void preloadSources(final Config config, final ScriptInstrumenter instrumenter, final TestRunCoverageStatistics totalStats)
             throws IOException {
         final String sourcesToPreload = config.getSourcesToPreload();
-        final URI baseUri = config.getBaseUri();
+        final URI baseUri = config.getReporterConfig().getBaseUri();
 
-        if (sourcesToPreload == null || !config.getOutputStrategy().contains(OutputStrategy.TOTAL) || !UriUtil.isFileUri(baseUri)) {
+        if (sourcesToPreload == null || !config.getReporterConfig().getOutputStrategy().contains(OutputStrategy.TOTAL) || !UriUtil.isFileUri(baseUri)) {
             return;
         }
 
@@ -55,7 +55,7 @@ public class FileSystemSourcePreloader implements SourcePreloader {
                 coverageData.put(lineNumber, 0.0);
             }
 
-            totalStats.add(data.generateScriptCoverageStatistics(baseUri, coverageData));
+            totalStats.add(data.generateScriptCoverageStatistics(config.getReporterConfig().getRelativePathBase(),baseUri, coverageData));
         }
     }
 

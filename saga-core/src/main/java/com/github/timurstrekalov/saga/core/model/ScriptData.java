@@ -1,5 +1,6 @@
 package com.github.timurstrekalov.saga.core.model;
 
+import java.io.File;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +78,7 @@ public final class ScriptData {
     }
 
     // TODO clean up and test this mess
-    public ScriptCoverageStatistics generateScriptCoverageStatistics(final URI baseUri, final Map<Integer, Double> coverageData) {
+    public ScriptCoverageStatistics generateScriptCoverageStatistics(final String relativePathBase,final URI baseUri, final Map<Integer, Double> coverageData) {
         final Scanner in = new Scanner(getSourceCode());
 
         final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
@@ -108,7 +109,13 @@ public final class ScriptData {
             }
         }
 
-        return new ScriptCoverageStatistics(baseUri, getSourceUri(), lineCoverageRecords, isSeparateFile());
+//      default to full file URI
+        String relativePath = getSourceUri().toString();
+        if (getSourceUri().toString().lastIndexOf(relativePathBase) >=0) {
+            relativePath = getSourceUri().toString().substring(getSourceUri().toString().lastIndexOf(relativePathBase) + relativePathBase.length());
+        }
+
+        return new ScriptCoverageStatistics(relativePath,baseUri, getSourceUri(), lineCoverageRecords, isSeparateFile());
     }
 
 }

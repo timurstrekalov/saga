@@ -82,10 +82,10 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
     @Override
     public void instrumentAndGenerateReports() throws IOException {
-        Preconditions.checkNotNull(config.getBaseDir(), "baseDir cannot be null");
-        Preconditions.checkNotNull(config.getOutputDir(), "outputDir cannot be null");
+        Preconditions.checkNotNull(config.getReporterConfig().getBaseUri(), "baseDir cannot be null");
+        Preconditions.checkNotNull(config.getReporterConfig().getOutputDir(), "outputDir cannot be null");
 
-        final URI baseUri = config.getBaseUri();
+        final URI baseUri = config.getReporterConfig().getBaseUri();
         final List<URI> tests = fetchTests(baseUri);
 
         if (tests.isEmpty()) {
@@ -96,7 +96,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         final int actualThreadCount = Math.min(config.getThreadCount(), tests.size());
         logger.info("Using up to {} threads", actualThreadCount);
 
-        final OutputStrategy outputStrategy = config.getOutputStrategy();
+        final OutputStrategy outputStrategy = config.getReporterConfig().getOutputStrategy();
         logger.info("Output strategy set to {}", outputStrategy);
 
         if (!config.isIncludeInlineScripts()) {
@@ -109,7 +109,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
             logger.info("Using the following no-instrument patterns:\n\t{}", StringUtils.join(config.getNoInstrumentPatterns(), "\n\t"));
         }
 
-        final File outputDir = config.getOutputDir();
+        final File outputDir = config.getReporterConfig().getOutputDir();
         FileUtils.mkdir(outputDir.getAbsolutePath());
 
         final Collection<Pattern> ignorePatterns = createPatterns();
@@ -273,14 +273,15 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         runStats.setSortBy(config.getSortBy());
         runStats.setOrder(config.getOrder());
 
-        final URI baseUri = config.getBaseUri();
+        final URI baseUri = config.getReporterConfig().getBaseUri();
+        final String relativePathBase = config.getReporterConfig().getRelativePathBase();
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
             final String sourceUri = data.getSourceUriAsString();
 
             @SuppressWarnings("unchecked")
             final Map<Integer, Double> coverageDataForScript = (Map<Integer, Double>) coverageDataForAllScripts.get(sourceUri);
-            final ScriptCoverageStatistics scriptCoverageStatistics = data.generateScriptCoverageStatistics(baseUri, coverageDataForScript);
+            final ScriptCoverageStatistics scriptCoverageStatistics = data.generateScriptCoverageStatistics(relativePathBase,baseUri, coverageDataForScript);
 
             runStats.add(scriptCoverageStatistics);
         }
@@ -290,7 +291,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
     private void writeRunStats(final TestRunCoverageStatistics stats) throws IOException {
         for (final ReportFormat reportFormat : config.getReportFormats()) {
-            reporterFor(reportFormat).writeReport(config.getBaseUri(), config.getOutputDir(), stats);
+            reporterFor(reportFormat).writeReport(config.getReporterConfig(), stats);
         }
     }
 

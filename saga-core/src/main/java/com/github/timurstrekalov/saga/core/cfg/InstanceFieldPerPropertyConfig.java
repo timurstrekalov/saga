@@ -25,10 +25,6 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     private static final Logger logger = LoggerFactory.getLogger(InstanceFieldPerPropertyConfig.class);
 
-    private URI baseUri;
-    private String baseDir;
-    private File outputDir;
-
     private String includes;
     private String excludes;
 
@@ -51,17 +47,8 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     private SortBy sortBy = Config.DEFAULT_SORT_BY;
     private Order order = Config.DEFAULT_ORDER;
+    private ReporterConfig reporterConfig = new ReporterConfig();
 
-    @Override
-    public void setBaseDir(final String baseDir) {
-        this.baseDir = baseDir;
-        baseUri = UriUtil.toUri(baseDir);
-    }
-
-    @Override
-    public void setOutputDir(final File outputDir) {
-        this.outputDir = outputDir;
-    }
 
     @Override
     public void setExcludes(final String excludes) {
@@ -98,20 +85,6 @@ public class InstanceFieldPerPropertyConfig implements Config {
     public void setCacheInstrumentedCode(final Boolean cacheInstrumentedCode) {
         if (cacheInstrumentedCode != null) {
             this.cacheInstrumentedCode = cacheInstrumentedCode;
-        }
-    }
-
-    @Override
-    public void setOutputStrategy(final String outputStrategy) {
-        if (outputStrategy != null) {
-            setOutputStrategy(OutputStrategy.valueOf(outputStrategy.toUpperCase()));
-        }
-    }
-
-    @Override
-    public void setOutputStrategy(final OutputStrategy outputStrategy) {
-        if (outputStrategy != null) {
-            this.outputStrategy = outputStrategy;
         }
     }
 
@@ -206,21 +179,6 @@ public class InstanceFieldPerPropertyConfig implements Config {
     }
 
     @Override
-    public URI getBaseUri() {
-        return baseUri;
-    }
-
-    @Override
-    public String getBaseDir() {
-        return baseDir;
-    }
-
-    @Override
-    public File getOutputDir() {
-        return outputDir;
-    }
-
-    @Override
     public String getIncludes() {
         return includes;
     }
@@ -243,11 +201,6 @@ public class InstanceFieldPerPropertyConfig implements Config {
     @Override
     public boolean isCacheInstrumentedCode() {
         return cacheInstrumentedCode;
-    }
-
-    @Override
-    public OutputStrategy getOutputStrategy() {
-        return outputStrategy;
     }
 
     @Override
@@ -295,4 +248,13 @@ public class InstanceFieldPerPropertyConfig implements Config {
         return order;
     }
 
+    @Override
+    public ReporterConfig getReporterConfig() {
+        return reporterConfig;
+    }
+
+    @Override
+    public void setReporterConfig(ReporterConfig reporterConfig) {
+        this.reporterConfig = reporterConfig;
+    }
 }
