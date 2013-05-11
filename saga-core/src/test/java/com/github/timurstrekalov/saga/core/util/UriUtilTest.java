@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import static com.github.timurstrekalov.saga.core.util.UriUtil.getLastSegment;
 import static com.github.timurstrekalov.saga.core.util.UriUtil.getParent;
+import static com.github.timurstrekalov.saga.core.util.UriUtil.getPath;
 import static com.github.timurstrekalov.saga.core.util.UriUtil.isFileUri;
 import static com.github.timurstrekalov.saga.core.util.UriUtil.toUri;
 import static java.net.URI.create;
@@ -96,6 +97,17 @@ public class UriUtilTest {
         assertThat(getParent(HTTP_WITH_PATH_URI), equalTo("/some/file"));
         assertThat(getParent(FILE_ABS_URI), equalTo("/home/user"));
         assertThat(getParent(FILE_REL_URI), equalTo(PWD_PARENT));
+    }
+
+    @Test
+    public void test_getPath_file_uri_with_query() throws Exception {
+        assertThat(getPath(URI.create("file:/Users/timur/workspace/saga/saga-core/target/test-classes/tests/Class.js?123")),
+                equalTo("/Users/timur/workspace/saga/saga-core/target/test-classes/tests/Class.js"));
+    }
+
+    @Test
+    public void test_getPath_http_uri_with_query() throws Exception {
+        assertThat(getPath(URI.create("http://localhost/Class.js?123")), equalTo("http://localhost/Class.js?123"));
     }
 
 }

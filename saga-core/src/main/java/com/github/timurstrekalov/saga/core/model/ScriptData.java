@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.SortedSet;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -77,7 +78,7 @@ public final class ScriptData {
     }
 
     // TODO clean up and test this mess
-    public ScriptCoverageStatistics generateScriptCoverageStatistics(final URI baseUri, final Map<Integer, Double> coverageData) {
+    public ScriptCoverageStatistics generateScriptCoverageStatistics(final URI baseUri, final Map<String, Long> coverageData) {
         final Scanner in = new Scanner(getSourceCode());
 
         final List<LineCoverageRecord> lineCoverageRecords = Lists.newArrayList();
@@ -91,7 +92,7 @@ public final class ScriptData {
             for (int lineNr = getLineNumberOfFirstStatement(); in.hasNext(); lineNr++) {
                 final String line = in.nextLine();
 
-                final Double coverageEntry = coverageData.get(lineNr);
+                final Long coverageEntry = coverageData.get(String.valueOf(lineNr));
                 final int timesLineExecuted;
 
                 if (coverageEntry == null) {
@@ -109,6 +110,14 @@ public final class ScriptData {
         }
 
         return new ScriptCoverageStatistics(baseUri, getSourceUri(), lineCoverageRecords, isSeparateFile());
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("sourceUri", sourceUri)
+                .add("separateFile", separateFile)
+                .toString();
     }
 
 }

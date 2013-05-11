@@ -13,8 +13,13 @@ import com.gargoylesoftware.htmlunit.WebResponseData;
 import com.gargoylesoftware.htmlunit.html.HTMLParserListener;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
 import com.github.timurstrekalov.saga.core.cfg.Config;
+import com.github.timurstrekalov.saga.core.util.HtmlUnitUtil;
 
 public final class WebClientFactory {
+
+    static {
+        HtmlUnitUtil.silenceHtmlUnitLogging();
+    }
 
     private static final IncorrectnessListener quietIncorrectnessListener = new QuietIncorrectnessListener();
     private static final JavaScriptErrorListener loggingJsErrorListener = new QuietJavaScriptErrorListener();

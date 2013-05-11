@@ -1,1 +1,3 @@
-new Class(true);
+setTimeout(function () {
+    new Class(true);
+}, 500);

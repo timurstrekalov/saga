@@ -1,247 +1,36 @@
 package com.github.timurstrekalov.saga.core.instrumentation;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.gargoylesoftware.htmlunit.ScriptPreProcessor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.model.ScriptData;
-import com.github.timurstrekalov.saga.core.util.UriUtil;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.hash.Hashing;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
-import net.sourceforge.htmlunit.corejs.javascript.CompilerEnvirons;
-import net.sourceforge.htmlunit.corejs.javascript.Parser;
-import net.sourceforge.htmlunit.corejs.javascript.ast.AstRoot;
-import org.codehaus.plexus.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static com.github.timurstrekalov.saga.core.cfg.Config.COVERAGE_VARIABLE_NAME;
+/**
+ * Represents an entity capable of instrumenting JavaScript sources, creating a window-scoped JavaScript variable with name defined by
+ * {@link #COVERAGE_VARIABLE_NAME}.
+ */
+public interface ScriptInstrumenter {
 
-public final class ScriptInstrumenter implements ScriptPreProcessor {
-
-    private static final AtomicInteger evalCounter = new AtomicInteger();
-
-    private static final Logger logger = LoggerFactory.getLogger(ScriptInstrumenter.class);
-
-    private static final Pattern inlineScriptRe = Pattern.compile("script in (.+) from \\((\\d+), (\\d+)\\) to \\((\\d+), (\\d+)\\)");
-    private static final Pattern evalRe = Pattern.compile("(.+)(#|%23)(\\d+\\(eval\\))");
-    private static final Pattern nonFileRe = Pattern.compile("JavaScriptStringJob");
-
-    private static final ConcurrentMap<URI, ScriptData> instrumentedScriptCache = Maps.newConcurrentMap();
-    private static final Set<URI> writtenToDisk = Sets.newHashSet();
-
-    private final HtmlUnitContextFactory contextFactory;
-    private final String initializingCode;
-    private final String arrayInitializer;
-
-    private final Config config;
-    private final List<ScriptData> scriptDataList = Lists.newLinkedList();
-    private Collection<Pattern> ignorePatterns;
-    private File instrumentedFileDirectory;
-
-    public ScriptInstrumenter(final Config config, final HtmlUnitContextFactory contextFactory) {
-        this.config = config;
-        this.contextFactory = contextFactory;
-
-        initializingCode = String.format("%s = window.%s || {};%n", COVERAGE_VARIABLE_NAME, COVERAGE_VARIABLE_NAME);
-        arrayInitializer = String.format("%s['%%s'][%%d] = 0;%n", COVERAGE_VARIABLE_NAME);
-    }
-
-    @Override
-    public String preProcess(
-            final HtmlPage htmlPage,
-            final String sourceCode,
-            final String sourceName,
-            final int lineNumber,
-            final HtmlElement htmlElement) {
-        try {
-            final String normalizedSourceName = handleEvals(handleInvalidUriChars(handleInlineScripts(sourceName)));
-
-            if (shouldIgnore(normalizedSourceName)) {
-                return sourceCode;
-            }
-
-            final boolean separateFile = isSeparateFile(sourceName, normalizedSourceName);
-            final URI sourceUri = URI.create(normalizedSourceName).normalize();
-
-            if (config.isCacheInstrumentedCode() && instrumentedScriptCache.containsKey(sourceUri)) {
-                final ScriptData data = instrumentedScriptCache.get(sourceUri);
-                scriptDataList.add(data);
-                return data.getInstrumentedSourceCode();
-            }
-
-            final ScriptData data = addNewScriptData(sourceCode, separateFile, sourceUri);
-
-            final String instrumentedCode = instrument(lineNumber, data);
-            data.setInstrumentedSourceCode(instrumentedCode);
-
-            maybeCache(sourceUri, data);
-            maybeWriteInstrumentedCodeToDisk(separateFile, sourceUri, instrumentedCode);
-
-            return instrumentedCode;
-        } catch (final RuntimeException e) {
-            logger.error("Exception caught while instrumenting code", e);
-            return sourceCode;
-        }
-    }
-
-    private String instrument(final int lineNumber, final ScriptData data) {
-        final Parser parser = newParser();
-
-        final String sourceUriAsString = data.getSourceUriAsString();
-        final AstRoot root = parser.parse(data.getSourceCode(), sourceUriAsString, lineNumber);
-        root.visit(new InstrumentingNodeVisitor(data, lineNumber - 1));
-
-        final String treeSource = root.toSource();
-        final StringBuilder buf = new StringBuilder(
-                initializingCode.length() +
-                data.getNumberOfStatements() * arrayInitializer.length() +
-                treeSource.length());
-
-        buf.append(initializingCode);
-        buf.append(String.format("%s['%s'] = {};%n", COVERAGE_VARIABLE_NAME, sourceUriAsString));
-
-        for (final Integer i : data.getLineNumbersOfAllStatements()) {
-            buf.append(String.format(arrayInitializer, sourceUriAsString, i));
-        }
-
-        buf.append(treeSource);
-
-        return buf.toString();
-    }
-
-    private ScriptData addNewScriptData(final String sourceCode, final boolean separateFile, final URI sourceUri) {
-        final ScriptData data = new ScriptData(sourceUri, sourceCode, separateFile);
-        scriptDataList.add(data);
-        return data;
-    }
-
-    private Parser newParser() {
-        final CompilerEnvirons environs = new CompilerEnvirons();
-        environs.initFromContext(contextFactory.enterContext());
-        return new Parser(environs);
-    }
-
-    private static boolean isSeparateFile(final String sourceName, final String normalizedSourceName) {
-        return normalizedSourceName.equals(sourceName) && !nonFileRe.matcher(normalizedSourceName).matches();
-    }
-
-    private static String handleInlineScripts(final String sourceName) {
-        return inlineScriptRe.matcher(sourceName).replaceAll("$1__from_$2_$3_to_$4_$5");
-    }
-
-    private static String handleEvals(final String sourceName) {
-        final Matcher matcher = evalRe.matcher(sourceName);
-
-        if (matcher.find()) {
-            // assign a unique count to an eval statement because they might have the same name, which is bad for us
-            return sourceName + "(" + evalCounter.getAndIncrement() + ")";
-        }
-
-        return sourceName;
-    }
+    String COVERAGE_VARIABLE_NAME = "__saga_coverage_data";
+    String TIMEOUTS_VARIABLE_NAME = "__saga_timeouts";
 
     /**
-     * Doesn't handle a lot of cases right now. So far, handles only invalid '?' and '#' in query string and fragment parts of the URIs.
+     * Instruments the given source code.
+     * @param sourceCode the JavaScript source code to instrument
+     * @param sourceName the "name" of the source - will be used in uniquely identifying this script among the others instrumented by this
+     *                   {@link ScriptInstrumenter}
+     * @param lineNumber the actual number of the first line of this source code in the underlying file (usually 1, different for inline
+     *                   scripts)
+     * @return the instrumented source code
      */
-    private static String handleInvalidUriChars(final String sourceName) {
-        final StringBuilder buf = new StringBuilder();
+    String instrument(String sourceCode, String sourceName, int lineNumber);
 
-        final int indexOfQueryDelimiter = sourceName.indexOf('?');
-        final int indexOfFragmentDelimiter = sourceName.indexOf('#');
+    void setIgnorePatterns(Collection<Pattern> ignorePatterns);
 
-        if (indexOfQueryDelimiter != -1) {
-            buf.append(sourceName.substring(0, indexOfQueryDelimiter)).append('?');
-        } else if (indexOfFragmentDelimiter != -1) {
-            buf.append(sourceName.substring(0, indexOfFragmentDelimiter)).append('#');
-        } else {
-            buf.append(sourceName);
-        }
+    void setInstrumentedFileDirectory(File instrumentedFileDirectory);
 
-        if (indexOfQueryDelimiter != -1) {
-            final int lastIndex = indexOfFragmentDelimiter == -1 ? sourceName.length() : indexOfFragmentDelimiter;
-            final String queryString = sourceName.substring(sourceName.indexOf(indexOfQueryDelimiter) + 1, lastIndex);
-
-            buf.append(queryString.replaceAll("\\?", "%3F"));
-        }
-
-        if (indexOfFragmentDelimiter != -1) {
-            final String fragment = sourceName.substring(indexOfFragmentDelimiter + 1);
-
-            buf.append(fragment.replaceAll("#", "%23"));
-        }
-
-        return buf.toString();
-    }
-
-    private void maybeCache(final URI sourceUri, final ScriptData data) {
-        if (config.isCacheInstrumentedCode()) {
-            instrumentedScriptCache.putIfAbsent(sourceUri, data);
-        }
-    }
-
-    private void maybeWriteInstrumentedCodeToDisk(final boolean separateFile, final URI sourceUri, final String instrumentedCode) {
-        if (config.isOutputInstrumentedFiles() && separateFile) {
-            synchronized (writtenToDisk) {
-                try {
-                    if (!writtenToDisk.contains(sourceUri)) {
-                        final String parent = UriUtil.getParent(sourceUri);
-                        final String fileName = UriUtil.getLastSegmentOrHost(sourceUri);
-
-                        final File fileOutputDir = new File(instrumentedFileDirectory, Hashing.md5().hashString(parent).toString());
-                        FileUtils.mkdir(fileOutputDir.getAbsolutePath());
-
-                        final File outputFile = new File(fileOutputDir, fileName);
-
-                        logger.info("Writing instrumented file: {}", outputFile.getAbsolutePath());
-                        ByteStreams.write(instrumentedCode.getBytes("UTF-8"), Files.newOutputStreamSupplier(outputFile));
-
-                        writtenToDisk.add(sourceUri);
-                    }
-                } catch (final IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    private boolean shouldIgnore(final String sourceName) {
-        return ignorePatterns != null && Iterables.any(ignorePatterns, new Predicate<Pattern>() {
-            @Override
-            public boolean apply(final Pattern input) {
-                return input.matcher(sourceName).matches();
-            }
-        });
-    }
-
-    public List<ScriptData> getScriptDataList() {
-        return scriptDataList;
-    }
-
-    public void setIgnorePatterns(final Collection<Pattern> ignorePatterns) {
-        this.ignorePatterns = ignorePatterns;
-    }
-
-    public void setInstrumentedFileDirectory(final File instrumentedFileDirectory) {
-        this.instrumentedFileDirectory = instrumentedFileDirectory;
-    }
+    List<ScriptData> getScriptDataList();
 
 }

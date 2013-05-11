@@ -81,7 +81,7 @@ public final class UriUtil {
     }
 
     public static String getPath(final URI uri) {
-        return isFileUri(uri) ? uri.getPath() : uri.toString();
+        return isFileUri(uri) ? uri.getPath() : uri.toASCIIString();
     }
 
 }

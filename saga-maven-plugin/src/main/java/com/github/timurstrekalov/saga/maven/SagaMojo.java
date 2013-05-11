@@ -1,10 +1,11 @@
 package com.github.timurstrekalov.saga.maven;
 
 import java.io.File;
+import java.util.Map;
 
-import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
 import com.github.timurstrekalov.saga.core.CoverageGeneratorFactory;
+import com.github.timurstrekalov.saga.core.cfg.Config;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -102,7 +103,7 @@ public class SagaMojo extends AbstractMojo {
     /**
      * Encoding to use when preloading sources.
      */
-    @Parameter(defaultValue = "UTF-8")
+    @Parameter(defaultValue = Config.DEFAULT_SOURCES_TO_PRELOAD_ENCODING)
     private String sourcesToPreloadEncoding;
 
     /**
@@ -152,6 +153,27 @@ public class SagaMojo extends AbstractMojo {
     @Parameter(property = "skipTests", defaultValue = "false")
     private boolean skipTests;
 
+    /**
+     * The {@link org.openqa.selenium.WebDriver} implementation to use - you can find the available implementations on their
+     * <a href="http://docs.seleniumhq.org/projects/webdriver/">website</a>. Note that if using any but the HtmlUnitDriver or
+     * PhantomJSDriver, you have to make sure the appropriate driver is on the classpath. Valid examples include:
+     * <ul>
+     *     <li>org.openqa.selenium.htmlunit.HtmlUnitDriver</li>
+     *     <li>org.openqa.selenium.phantomjs.PhantomJSDriver</li>
+     *     <li>org.openqa.selenium.firefox.FirefoxDriver</li>
+     *     <li>... and many others</li>
+     * </ul>
+     */
+    @Parameter(defaultValue = Config.DEFAULT_WEB_DRIVER_CLASS_NAME)
+    private String webDriverClassName;
+
+    /**
+     * Specify a map of desired capabilities to be passed to the {@link org.openqa.selenium.WebDriver} instance. When using PhantomJS,
+     * specify the "phantomjs.binary.path" property containing the path to the "phantomjs" binary if it's not on the system PATH.
+     */
+    @Parameter
+    private Map<String, String> webDriverCapabilities;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skipTests) {
@@ -178,6 +200,8 @@ public class SagaMojo extends AbstractMojo {
             config.setReportFormats(reportFormats);
             config.setSortBy(sortBy);
             config.setOrder(order);
+            config.setWebDriverCapabilities(webDriverCapabilities);
+            config.setWebDriverClassName(webDriverClassName);
 
             gen.instrumentAndGenerateReports();
         } catch (final IllegalArgumentException e) {

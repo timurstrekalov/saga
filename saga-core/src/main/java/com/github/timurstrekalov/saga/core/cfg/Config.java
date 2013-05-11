@@ -3,7 +3,9 @@ package com.github.timurstrekalov.saga.core.cfg;
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.github.timurstrekalov.saga.core.Order;
@@ -16,8 +18,6 @@ import com.google.common.collect.ImmutableSet;
  * A midway attempt at externalizing configuration
  */
 public interface Config {
-
-    String COVERAGE_VARIABLE_NAME = "__saga_coverage_data";
 
     BrowserVersion DEFAULT_BROWSER_VERSION = BrowserVersion.FIREFOX_17;
     OutputStrategy DEFAULT_OUTPUT_STRATEGY = OutputStrategy.TOTAL;
@@ -33,6 +33,9 @@ public interface Config {
 
     boolean DEFAULT_CACHE_INSTRUMENTED_CODE = true;
     boolean DEFAULT_INCLUDE_INLINE_SCRIPTS = false;
+
+    String INSTRUMENTED_FILE_DIRECTORY_NAME = "instrumented";
+    String DEFAULT_WEB_DRIVER_CLASS_NAME = "org.openqa.selenium.htmlunit.HtmlUnitDriver";
 
     // TODO stop this configuration setter madness
 
@@ -68,11 +71,17 @@ public interface Config {
 
     void setBrowserVersion(String browserVersionAsString);
 
+    void setBrowserVersion(BrowserVersion browserVersion);
+
     void setReportFormats(String reportFormatString);
 
     void setSortBy(String sortBy);
 
     void setOrder(String order);
+
+    void setWebDriverClassName(String webDriverClassName);
+
+    void setWebDriverCapabilities(Map<String, String> webDriverCapabilities);
 
     URI getBaseUri();
 
@@ -109,5 +118,13 @@ public interface Config {
     SortBy getSortBy();
 
     Order getOrder();
+
+    File getInstrumentedFileDirectory();
+
+    Collection<Pattern> getIgnorePatterns();
+
+    String getWebDriverClassName();
+
+    Map<String, String> getWebDriverCapabilities();
 
 }

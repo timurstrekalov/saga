@@ -221,7 +221,7 @@
 
 })();
 
-Class.prototype.test = function test() {
+window.Class.prototype.test = function test() {
     this.qwe = 'asd';
     var d = 111;
 

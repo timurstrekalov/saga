@@ -281,7 +281,7 @@ class InstrumentingNodeVisitor implements NodeVisitor {
         outer.setTarget(inner);
 
         final Name covDataVar = new Name();
-        covDataVar.setIdentifier(Config.COVERAGE_VARIABLE_NAME);
+        covDataVar.setIdentifier(ScriptInstrumenter.COVERAGE_VARIABLE_NAME);
 
         inner.setTarget(covDataVar);
 

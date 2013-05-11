@@ -3,7 +3,9 @@ package com.github.timurstrekalov.saga.core.cfg;
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.github.timurstrekalov.saga.core.Order;
@@ -15,8 +17,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +55,8 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     private SortBy sortBy = Config.DEFAULT_SORT_BY;
     private Order order = Config.DEFAULT_ORDER;
+    private String webDriverClassName = Config.DEFAULT_WEB_DRIVER_CLASS_NAME;
+    private Map<String, String> webDriverCapabilities = Maps.newHashMap();
 
     @Override
     public void setBaseDir(final String baseDir) {
@@ -157,12 +163,17 @@ public class InstanceFieldPerPropertyConfig implements Config {
             try {
                 logger.info("Setting {} as browser version", browserVersion);
 
-                this.browserVersion = (BrowserVersion) BrowserVersion.class.getField(browserVersion).get(BrowserVersion.class);
+                setBrowserVersion((BrowserVersion) BrowserVersion.class.getField(browserVersion).get(BrowserVersion.class));
             } catch (final Exception e) {
                 logger.error("Invalid browser version: {}", browserVersion);
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Override
+    public void setBrowserVersion(final BrowserVersion browserVersion) {
+        this.browserVersion = browserVersion;
     }
 
     @Override
@@ -293,6 +304,49 @@ public class InstanceFieldPerPropertyConfig implements Config {
     @Override
     public Order getOrder() {
         return order;
+    }
+
+    @Override
+    public void setWebDriverClassName(final String webDriverClassName) {
+        if (webDriverClassName == null) {
+            return;
+        }
+
+        this.webDriverClassName = webDriverClassName;
+    }
+
+    @Override
+    public String getWebDriverClassName() {
+        return webDriverClassName;
+    }
+
+    @Override
+    public File getInstrumentedFileDirectory() {
+        return new File(outputDir, INSTRUMENTED_FILE_DIRECTORY_NAME);
+    }
+
+    @Override
+    public Collection<Pattern> getIgnorePatterns() {
+        return Collections2.transform(getNoInstrumentPatterns(), new Function<String, Pattern>() {
+            @Override
+            public Pattern apply(final String input) {
+                return Pattern.compile(input);
+            }
+        });
+    }
+
+    @Override
+    public void setWebDriverCapabilities(final Map<String, String> webDriverCapabilities) {
+        if (webDriverCapabilities == null) {
+            return;
+        }
+
+        this.webDriverCapabilities = webDriverCapabilities;
+    }
+
+    @Override
+    public Map<String, String> getWebDriverCapabilities() {
+        return webDriverCapabilities;
     }
 
 }
