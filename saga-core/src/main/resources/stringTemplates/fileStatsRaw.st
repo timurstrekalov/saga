@@ -1,5 +1,5 @@
 fileStatsRaw(fileStats) ::= <<
-SF:$fileStats.fullName$
+SF:$fileStats.relativeName$
 $fileStats.executableLineCoverageRecords:lineCoverageDataRaw(); separator="\n"$
 end_of_record
 >>

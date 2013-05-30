@@ -1,16 +1,22 @@
 package com.github.timurstrekalov.saga.core;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.github.timurstrekalov.saga.core.cfg.InstanceFieldPerPropertyConfig;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
+import com.google.common.io.InputSupplier;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -28,7 +34,7 @@ public class DefaultCoverageGeneratorIT {
         config = new InstanceFieldPerPropertyConfig();
         config.setBaseDir(new File(getClass().getResource("/tests").toURI()).getAbsolutePath());
         config.setOutputDir(new File(Data.getProperty("build.directory") + "/coverage-htmlunit"));
-        config.setIncludes("**/*Test.html");
+        config.setIncludes("**/*Test*.html");
         config.setBackgroundJavaScriptTimeout(5000L);
 
         generator = new DefaultCoverageGenerator(config);
@@ -45,7 +51,20 @@ public class DefaultCoverageGeneratorIT {
         assertThat(Integer.parseInt(m.group(1)), greaterThanOrEqualTo(85));
 
         assertThat(html.exists(), is(true));
-        assertThat(new File(config.getOutputDir(), "total-coverage.dat").exists(), is(true));
+
+        final File lcov = new File(config.getOutputDir(), "total-coverage.dat");
+        assertThat(lcov.exists(), is(true));
+
+        final List<String> lcovLines = CharStreams.readLines(new InputSupplier<FileReader>() {
+
+            @Override
+            public FileReader getInput() throws IOException {
+                return new FileReader(lcov);
+            }
+        });
+
+        assertThat(lcovLines.get(0), is(equalTo("SF:ClassTest.js")));
+        assertThat(lcovLines.get(4), is(equalTo("SF:pkg/ClassTest2.js")));
     }
 
     @Test

@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class FileStatsTest {
+public class ScriptCoverageStatisticsTest {
 
     private static final String USER_DIR = System.getProperty("user.dir");
 
