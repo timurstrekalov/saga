@@ -17,6 +17,7 @@ import com.github.timurstrekalov.saga.core.model.TestRunCoverageStatistics;
 import com.github.timurstrekalov.saga.core.sourcepreloader.FileSystemSourcePreloader;
 import com.github.timurstrekalov.saga.core.testfetcher.TestFetcher;
 import com.github.timurstrekalov.saga.core.testfetcher.TestFetcherFactory;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
@@ -67,7 +68,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         }
 
         if (!config.getNoInstrumentPatterns().isEmpty()) {
-            logger.info("Using the following no-instrument patterns:\n\t{}", StringUtils.join(config.getNoInstrumentPatterns(), "\n\t"));
+            logger.info("Using the following no-instrument patterns:\n\t{}", Joiner.on("\n\t").join(config.getNoInstrumentPatterns()));
         }
 
         final File outputDir = config.getOutputDir();
@@ -94,16 +95,16 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         }
 
         final List<TestRunCoverageStatistics> allRunStats = Lists.newLinkedList();
+        final int submittedTasks = tests.size();
 
         try {
-            for (final URI test : tests) {
+            for (int i = 0; i < submittedTasks; i++) {
                 try {
                     final Future<TestRunCoverageStatistics> future = completionService.take();
                     final TestRunCoverageStatistics runStats = future.get();
 
                     allRunStats.add(runStats);
                 } catch (final Exception e) {
-                    logger.warn("Error running test {}: {}", test.toString(), e.getMessage());
                     logger.debug(e.getMessage(), e);
                 }
             }

@@ -32,7 +32,7 @@ public class DefaultCoverageGeneratorIT {
     @Test
     public void test_instrumentAndGenerateReports() throws Exception {
         config = new InstanceFieldPerPropertyConfig();
-        config.setBaseDir(new File(getClass().getResource("/tests").toURI()).getAbsolutePath());
+        config.setBaseDir(getClass().getResource("/tests").toURI().toASCIIString());
         config.setOutputDir(new File(Data.getProperty("build.directory") + "/coverage-htmlunit"));
         config.setIncludes("**/*Test*.html");
         config.setBackgroundJavaScriptTimeout(5000L);
@@ -70,7 +70,7 @@ public class DefaultCoverageGeneratorIT {
     @Test
     @Ignore
     public void test_instrumentAndGenerateReports_with_phantomjs() throws Exception {
-        final FileServer fileServer = new FileServer(new File(getClass().getResource("/tests").toURI()).getAbsolutePath());
+        final FileServer fileServer = new FileServer(getClass().getResource("/tests").toURI().toASCIIString());
         final int fileServerPort = fileServer.start();
 
         config = new InstanceFieldPerPropertyConfig();

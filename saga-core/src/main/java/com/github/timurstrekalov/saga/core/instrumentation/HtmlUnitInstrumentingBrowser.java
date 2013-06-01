@@ -79,6 +79,10 @@ public final class HtmlUnitInstrumentingBrowser implements InstrumentingBrowser 
             final Map<String, Map<Long, Long>> data = (Map<String, Map<Long, Long>>) driver.executeScript(
                     "return window." + ScriptInstrumenter.COVERAGE_VARIABLE_NAME);
 
+            if (data == null) {
+                return null;
+            }
+
             return Maps.transformValues(data, new Function<Map<Long, Long>, Map<String, Long>>() {
                 @Override
                 public Map<String, Long> apply(final java.util.Map<Long, Long> input) {

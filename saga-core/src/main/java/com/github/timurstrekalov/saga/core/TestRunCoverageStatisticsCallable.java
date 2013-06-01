@@ -51,6 +51,9 @@ class TestRunCoverageStatisticsCallable implements Callable<TestRunCoverageStati
                 return runStats;
             } catch (final IOException e) {
                 return TestRunCoverageStatistics.EMPTY;
+            } catch (final RuntimeException e) {
+                logger.warn("Error running test {}: {}", test.toString(), e.getMessage());
+                throw e;
             }
         } finally {
             if (localBrowser.get() != null) {
