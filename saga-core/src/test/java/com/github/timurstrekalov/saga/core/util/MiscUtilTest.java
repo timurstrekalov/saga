@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.File;
 import java.net.URL;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -27,8 +28,11 @@ public class MiscUtilTest {
 
         final String sourceName = "file:/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js?_dc=1351820085178";
         final String fullSourcePath = MiscUtil.getFullSourcePath(htmlPage, sourceName);
-
-        assertThat(fullSourcePath, equalTo("/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js"));
+        if (File.separatorChar == '/') {
+        	assertThat(fullSourcePath, equalTo("/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js"));
+        } else {
+        	assertThat(fullSourcePath, equalTo("D:\\repos\\git\\ops\\ops-ext4\\target\\jasmine\\src\\app\\utils\\FieldLayout.js"));
+        }
     }
 
     @Test
@@ -40,7 +44,11 @@ public class MiscUtilTest {
         final String sourceName = "src/app/utils/FieldLayout.js?_dc=1351820085178";
         final String fullSourcePath = MiscUtil.getFullSourcePath(htmlPage, sourceName);
 
-        assertThat(fullSourcePath, equalTo("/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js"));
+        if (File.separatorChar == '/') {
+        	assertThat(fullSourcePath, equalTo("/D:/repos/git/ops/ops-ext4/target/jasmine/src/app/utils/FieldLayout.js"));
+        } else {
+        	assertThat(fullSourcePath, equalTo("D:\\repos\\git\\ops\\ops-ext4\\target\\jasmine\\src\\app\\utils\\FieldLayout.js"));
+        }
     }
 
 }

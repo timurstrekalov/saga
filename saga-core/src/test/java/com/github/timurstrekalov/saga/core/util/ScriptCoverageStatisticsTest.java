@@ -17,13 +17,13 @@ public class ScriptCoverageStatisticsTest {
     @Test
     public void getParentName_file() {
         assertEquals("test/path/bla", new ScriptCoverageStatistics(new File(USER_DIR).toURI(), new File(USER_DIR + "/test/path/bla/file.js").toURI(),
-                Lists.<LineCoverageRecord>newLinkedList(), true).getParentName());
+                Lists.<LineCoverageRecord>newLinkedList(), true).getParentName().replace('\\', '/'));
     }
 
     @Test
     public void getParentName_http() {
         assertEquals("test/path/bla", new ScriptCoverageStatistics(URI.create("http://localhost:8234"), URI.create("http://localhost:8234/test/path/bla/file.js"),
-                Lists.<LineCoverageRecord>newLinkedList(), true).getParentName());
+                Lists.<LineCoverageRecord>newLinkedList(), true).getParentName().replace('\\', '/'));
     }
 
 }
