@@ -33,10 +33,10 @@ public class UriUtilTest {
     private static final URI HTTPS_URI = create(HTTPS);
 
     private static final String FILE_ABS = Joiner.on(File.separatorChar).join("", "home", "user", "asd");
-    private static final URI FILE_ABS_URI = toUri(FILE_ABS);
+    private static final URI FILE_ABS_URI = toUri(FILE_ABS.replace('\\', '/'));
 
     private static final String FILE_REL = Joiner.on(File.separatorChar).join("..", "qweasd");
-    private static final URI FILE_REL_URI = toUri(FILE_REL);
+    private static final URI FILE_REL_URI = toUri(FILE_REL.replace('\\', '/'));
 
     @Test
     public void test_toUri_http() throws Exception {
@@ -50,7 +50,8 @@ public class UriUtilTest {
 
     @Test
     public void test_toUri_file_absolute() throws Exception {
-        assertThat(FILE_ABS_URI, equalTo(create("file:" + FILE_ABS)));
+        assertThat(new File(FILE_ABS_URI).getAbsolutePath(), 
+        		equalTo(new File(create("file:" + FILE_ABS.replace('\\', '/'))).getAbsolutePath()));
     }
 
     @Test
@@ -95,8 +96,9 @@ public class UriUtilTest {
         assertThat(getParent(create("http://localhost:8080/")), equalTo("/"));
 
         assertThat(getParent(HTTP_WITH_PATH_URI), equalTo("/some/file"));
-        assertThat(getParent(FILE_ABS_URI), equalTo("/home/user"));
-        assertThat(getParent(FILE_REL_URI), equalTo(PWD_PARENT));
+        assertThat(new File(getParent(FILE_ABS_URI)).getAbsolutePath(), 
+        		equalTo(new File(File.separator + "home" + File.separator + "user").getAbsolutePath()));
+        assertThat(new File(getParent(FILE_REL_URI)).getAbsolutePath(), equalTo(new File(PWD_PARENT).getAbsolutePath()));
     }
 
     @Test
