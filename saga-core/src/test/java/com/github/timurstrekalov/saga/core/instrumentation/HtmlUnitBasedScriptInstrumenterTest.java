@@ -19,6 +19,10 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class HtmlUnitBasedScriptInstrumenterTest {
 
+	private void assertEqualsIgnoreCRLF(String left, String right) {
+		assertEquals(left.replace("\r\n", "\n"), right.replace("\r\n", "\n"));
+	}
+	
     private static final AtomicInteger evalCounter = new AtomicInteger();
 
     @Mock
@@ -46,7 +50,7 @@ public class HtmlUnitBasedScriptInstrumenterTest {
         assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
         assertEquals(5, classJsData.getLineNumberOfFirstStatement());
         assertEquals(114, classJsData.getNumberOfStatements());
-        assertEquals(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
+        assertEqualsIgnoreCRLF(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
     }
 
     @Test
@@ -63,7 +67,7 @@ public class HtmlUnitBasedScriptInstrumenterTest {
         assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
         assertEquals(5, classJsData.getLineNumberOfFirstStatement());
         assertEquals(114, classJsData.getNumberOfStatements());
-        assertEquals(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
+        assertEqualsIgnoreCRLF(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
     }
 
     @Test
@@ -81,7 +85,7 @@ public class HtmlUnitBasedScriptInstrumenterTest {
         assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
         assertEquals(5, classJsData.getLineNumberOfFirstStatement());
         assertEquals(114, classJsData.getNumberOfStatements());
-        assertEquals(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
+        assertEqualsIgnoreCRLF(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
     }
 
     @Test
@@ -98,7 +102,7 @@ public class HtmlUnitBasedScriptInstrumenterTest {
         assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
         assertEquals(5, classJsData.getLineNumberOfFirstStatement());
         assertEquals(114, classJsData.getNumberOfStatements());
-        assertEquals(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
+        assertEqualsIgnoreCRLF(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
     }
 
 }
