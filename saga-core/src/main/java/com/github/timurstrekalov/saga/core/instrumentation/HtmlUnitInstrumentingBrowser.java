@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.github.timurstrekalov.saga.core.cfg.Config;
@@ -15,20 +18,30 @@ import com.github.timurstrekalov.saga.core.htmlunit.WebClientFactory;
 import com.github.timurstrekalov.saga.core.model.ScriptData;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 public final class HtmlUnitInstrumentingBrowser implements InstrumentingBrowser {
 
     private final Config config;
-    private final Driver driver;
-    private final ScriptInstrumenter instrumenter;
-    private final InstrumentingPreProcessor preProcessor;
+    private Driver driver;
+    private ScriptInstrumenter instrumenter;
+    private InstrumentingPreProcessor preProcessor;
+    private boolean initialized = false;
 
     public HtmlUnitInstrumentingBrowser(final Config config) {
         this.config = config;
+        this.driver = new Driver(config.getBrowserVersion());
+        initialize();
+    }
 
-        driver = new Driver(config.getBrowserVersion());
-
+    public HtmlUnitInstrumentingBrowser(final Config config, Driver driver) {
+        // This version of the constructor is for external test runners that want to instantiate
+        // the web driver themselves.  Since the config object may not yet be fully initialized,
+        // defer initialization until first use.
+        this.config = config;
+        this.driver = driver;
+    }
+    
+    private void initialize() {
         instrumenter = new HtmlUnitBasedScriptInstrumenter(config);
         instrumenter.setIgnorePatterns(config.getIgnorePatterns());
 
@@ -37,9 +50,11 @@ public final class HtmlUnitInstrumentingBrowser implements InstrumentingBrowser 
         }
 
         preProcessor = new InstrumentingPreProcessor(instrumenter);
+        driver.init(config, preProcessor);
         driver.enableInstrumentation();
+        initialized = true;
     }
-
+    
     @Override
     public String instrument(final String sourceCode, final String sourceName, final int lineNumber) {
         return instrumenter.instrument(sourceCode, sourceName, lineNumber);
@@ -62,6 +77,9 @@ public final class HtmlUnitInstrumentingBrowser implements InstrumentingBrowser 
 
     @Override
     public void get(final String url) {
+        if (!initialized) {
+            initialize();
+        }
         driver.get(url);
     }
 
@@ -99,22 +117,35 @@ public final class HtmlUnitInstrumentingBrowser implements InstrumentingBrowser 
         }
     }
 
-    private final class Driver extends HtmlUnitDriver {
+    public static class Driver extends HtmlUnitDriver {
+        private Config config;
+        private InstrumentingPreProcessor preProcessor;
 
         public Driver(final BrowserVersion browserVersion) {
             super(browserVersion);
             setJavascriptEnabled(true);
         }
-
+        
+        public Driver(final Capabilities caps) {
+            super(caps);
+            setJavascriptEnabled(true);
+        }
+        
+        private void init(Config config, InstrumentingPreProcessor preProcessor) {
+            this.config = config;
+            this.preProcessor = preProcessor;
+        }
+        
         @Override
         protected WebClient newWebClient(final BrowserVersion version) {
-            return WebClientFactory.newInstance(config);
+            return WebClientFactory.newInstance(version);
         }
 
         @Override
         protected void get(final URL fullUrl) {
             super.get(fullUrl);
-            getWebClient().waitForBackgroundJavaScript(config.getBackgroundJavaScriptTimeout());
+            getWebClient().waitForBackgroundJavaScript(
+                    config != null ? config.getBackgroundJavaScriptTimeout() : Config.DEFAULT_BACKGROUND_JAVASCRIPT_TIMEOUT);
         }
 
         public void enableInstrumentation() {
