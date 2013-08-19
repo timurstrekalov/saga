@@ -12,6 +12,7 @@ import com.github.timurstrekalov.saga.core.Order;
 import com.github.timurstrekalov.saga.core.OutputStrategy;
 import com.github.timurstrekalov.saga.core.ReportFormat;
 import com.github.timurstrekalov.saga.core.SortBy;
+import com.github.timurstrekalov.saga.core.instrumentation.InstrumentingBrowser;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -80,6 +81,8 @@ public interface Config {
     void setOrder(String order);
 
     void setWebDriverClassName(String webDriverClassName);
+    
+    void setInstrumentingBrowser(InstrumentingBrowser browser);
 
     void setWebDriverCapabilities(Map<String, String> webDriverCapabilities);
 
@@ -124,6 +127,8 @@ public interface Config {
     Collection<Pattern> getIgnorePatterns();
 
     String getWebDriverClassName();
+    
+    InstrumentingBrowser getInstrumentingBrowser();
 
     Map<String, String> getWebDriverCapabilities();
 
