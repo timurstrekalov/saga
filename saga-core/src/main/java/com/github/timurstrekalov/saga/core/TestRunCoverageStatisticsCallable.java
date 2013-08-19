@@ -56,7 +56,9 @@ class TestRunCoverageStatisticsCallable implements Callable<TestRunCoverageStati
                 throw e;
             }
         } finally {
-            if (localBrowser.get() != null) {
+        	// If browser was provided by external test runner, then
+        	// keep browser open so that test results can be read
+            if (localBrowser.get() != null && config.getInstrumentingBrowser() == null) {
                 logger.info("Quitting browser");
                 localBrowser.get().quit();
             }
@@ -99,11 +101,15 @@ class TestRunCoverageStatisticsCallable implements Callable<TestRunCoverageStati
     }
 
     private InstrumentingBrowser getLocalBrowser() {
-        if (localBrowser.get() == null) {
-            localBrowser.set(InstrumentingBrowserFactory.newInstance(config));
+    	if (config.getInstrumentingBrowser() != null) {
+    		// Browser is provided by external test runner
+    		return config.getInstrumentingBrowser();
+    	} else {
+    		if (localBrowser.get() == null) {
+        		localBrowser.set(InstrumentingBrowserFactory.newInstance(config));
+        	}
+            return localBrowser.get();
         }
-
-        return localBrowser.get();
     }
 
 }

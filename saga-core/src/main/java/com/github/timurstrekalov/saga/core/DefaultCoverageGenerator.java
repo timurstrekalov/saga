@@ -65,6 +65,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
             config.getNoInstrumentPatterns().add(INLINE_SCRIPT_RE);
             config.getNoInstrumentPatterns().add(".+JavaScriptStringJob");
             config.getNoInstrumentPatterns().add(".+#\\d+\\(eval\\)\\(\\d+\\)");
+            config.getNoInstrumentPatterns().add("injected script");
         }
 
         if (!config.getNoInstrumentPatterns().isEmpty()) {

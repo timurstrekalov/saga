@@ -12,6 +12,7 @@ import com.github.timurstrekalov.saga.core.Order;
 import com.github.timurstrekalov.saga.core.OutputStrategy;
 import com.github.timurstrekalov.saga.core.ReportFormat;
 import com.github.timurstrekalov.saga.core.SortBy;
+import com.github.timurstrekalov.saga.core.instrumentation.InstrumentingBrowser;
 import com.github.timurstrekalov.saga.core.util.UriUtil;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -56,6 +57,7 @@ public class InstanceFieldPerPropertyConfig implements Config {
     private SortBy sortBy = Config.DEFAULT_SORT_BY;
     private Order order = Config.DEFAULT_ORDER;
     private String webDriverClassName = Config.DEFAULT_WEB_DRIVER_CLASS_NAME;
+    private InstrumentingBrowser browser = null;
     private Map<String, String> webDriverCapabilities = Maps.newHashMap();
 
     @Override
@@ -314,10 +316,20 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
         this.webDriverClassName = webDriverClassName;
     }
+    
+    @Override
+    public void setInstrumentingBrowser(final InstrumentingBrowser browser) {
+    	this.browser = browser;
+    }
 
     @Override
     public String getWebDriverClassName() {
         return webDriverClassName;
+    }
+    
+    @Override
+    public InstrumentingBrowser getInstrumentingBrowser() {
+    	return browser;
     }
 
     @Override

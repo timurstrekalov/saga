@@ -2,6 +2,7 @@ package com.github.timurstrekalov.saga.core.htmlunit;
 
 import java.io.IOException;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.HttpWebConnection;
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
@@ -30,8 +31,15 @@ public final class WebClientFactory {
         throw new UnsupportedOperationException("Factory class");
     }
 
+    // Legacy version of newInstance method
     public static WebClient newInstance(final Config config) {
-        final WebClient client = new WebClient(config.getBrowserVersion()) {
+    	return newInstance(config.getBrowserVersion());
+    }
+    
+    // New version allows for creation of web drivers without the need for a config object
+    // which may not be readily available if the driver is created by third-party code.
+    public static WebClient newInstance(final BrowserVersion version) {
+        final WebClient client = new WebClient(version) {
             @Override
             public WebResponse loadWebResponse(final WebRequest webRequest) throws IOException {
                 return new WebResponseProxy(super.loadWebResponse(webRequest));
