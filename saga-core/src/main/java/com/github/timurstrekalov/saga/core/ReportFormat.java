@@ -16,7 +16,18 @@ public enum ReportFormat {
         }
     },
     CSV,
-    PDF;
+    PDF, 
+    COBERTURA {
+    	@Override
+    	public String getSuffix() {
+    		return "coverage";
+    	}
+
+    	@Override
+    	public String getExtension() {
+    		return "xml";
+    	}
+    };
 
     public String getSuffix() {
         return "report";

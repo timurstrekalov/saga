@@ -1,6 +1,7 @@
 package com.github.timurstrekalov.saga.maven;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
@@ -130,9 +131,10 @@ public class SagaMojo extends AbstractMojo {
      *     <li>RAW</li>
      *     <li>CSV</li>
      *     <li>PDF</li>
+     *     <li>COBERTURA</li>
      * </ul>
      */
-    @Parameter(defaultValue = "HTML, RAW")
+    @Parameter(defaultValue = "HTML, RAW, COBERTURA")
     private String reportFormats;
 
     /**
@@ -174,6 +176,12 @@ public class SagaMojo extends AbstractMojo {
     @Parameter
     private Map<String, String> webDriverCapabilities;
 
+    /**
+     * Absolute path to the sources.  This is used when generating COBERTURA style reports.
+     */
+    @Parameter
+    private List<String> sourceDirs;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skipTests) {
@@ -202,6 +210,7 @@ public class SagaMojo extends AbstractMojo {
             config.setOrder(order);
             config.setWebDriverCapabilities(webDriverCapabilities);
             config.setWebDriverClassName(webDriverClassName);
+            config.setSourceDir(sourceDirs);
 
             gen.instrumentAndGenerateReports();
         } catch (final IllegalArgumentException e) {

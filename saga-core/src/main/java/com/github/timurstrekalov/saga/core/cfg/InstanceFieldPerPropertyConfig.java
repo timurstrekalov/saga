@@ -3,6 +3,7 @@ package com.github.timurstrekalov.saga.core.cfg;
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -59,6 +60,8 @@ public class InstanceFieldPerPropertyConfig implements Config {
     private String webDriverClassName = Config.DEFAULT_WEB_DRIVER_CLASS_NAME;
     private InstrumentingBrowser browser = null;
     private Map<String, String> webDriverCapabilities = Maps.newHashMap();
+
+    private List<String> sourceDirs;
 
     @Override
     public void setBaseDir(final String baseDir) {
@@ -359,6 +362,16 @@ public class InstanceFieldPerPropertyConfig implements Config {
     @Override
     public Map<String, String> getWebDriverCapabilities() {
         return webDriverCapabilities;
+    }
+
+    @Override
+    public void setSourceDir(List<String> sourceDirs) {
+        this.sourceDirs = sourceDirs;
+    }
+
+    @Override
+    public List<String> getSourceDirs() {
+        return sourceDirs;
     }
 
 }
