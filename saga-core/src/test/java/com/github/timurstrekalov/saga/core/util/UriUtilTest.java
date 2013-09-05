@@ -15,6 +15,7 @@ import static com.github.timurstrekalov.saga.core.util.UriUtil.toUri;
 import static java.net.URI.create;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class UriUtilTest {
@@ -38,6 +39,8 @@ public class UriUtilTest {
     private static final String FILE_REL = Joiner.on(File.separatorChar).join("..", "qweasd");
     private static final URI FILE_REL_URI = toUri(FILE_REL.replace('\\', '/'));
 
+    private static final String WINDOWS_DIRECTORY = "C:/some/directory";
+
     @Test
     public void test_toUri_http() throws Exception {
         assertThat(HTTP_URI, equalTo(create(HTTP)));
@@ -59,9 +62,9 @@ public class UriUtilTest {
         assertThat(FILE_REL_URI, equalTo(create(PWD_PARENT_URI.toString() + "qweasd")));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_toUri_unsupported_scheme() throws Exception {
-        toUri("afp://someserver/file/path");
+    @Test
+    public void test_toUri_converts_windows_path_to_uri() throws Exception {
+        assertEquals("file:/C:/some/directory", toUri(WINDOWS_DIRECTORY).toString());
     }
 
     @Test
