@@ -33,6 +33,8 @@ public final class TestRunCoverageStatistics implements Iterable<ScriptCoverageS
 
     private final Map<URI, ScriptCoverageStatistics> fileStatsMap = Maps.newTreeMap();
 
+    private List<String> sourceDirs;
+
     public TestRunCoverageStatistics(final URI test) {
         this(test, String.format("Coverage report for \"%s\"", test));
     }
@@ -103,6 +105,10 @@ public final class TestRunCoverageStatistics implements Iterable<ScriptCoverageS
         return MiscUtil.toCoverage(getTotalStatements(), getTotalExecuted());
     }
 
+    public double getTotalCoverageRate() {
+        return MiscUtil.toCoverageRate(getTotalStatements(), getTotalExecuted());
+    }
+
     public boolean getHasStatements() {
         return getTotalStatements() > 0;
     }
@@ -134,6 +140,14 @@ public final class TestRunCoverageStatistics implements Iterable<ScriptCoverageS
 
     public Order getOrder() {
         return order;
+    }
+
+    public void setSourceDirs(List<String> sourceDirs) {
+        this.sourceDirs = sourceDirs;
+    }
+
+    public List<String> getSourceDirs(){
+        return sourceDirs;
     }
 
 }

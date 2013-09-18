@@ -82,6 +82,10 @@ public final class ScriptCoverageStatistics {
         return MiscUtil.toCoverage(getStatements(), getExecuted());
     }
 
+    public double getCoverageRate() {
+        return MiscUtil.toCoverageRate(getStatements(), getExecuted());
+    }
+
     public boolean getHasStatements() {
         return getStatements() > 0;
     }
