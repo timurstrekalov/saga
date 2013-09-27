@@ -82,6 +82,7 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
         final TestRunCoverageStatistics totalStats = new TestRunCoverageStatistics(baseUri.relativize(URI.create(TOTAL_REPORT_NAME)), "Total coverage report");
         totalStats.setSortBy(config.getSortBy());
         totalStats.setOrder(config.getOrder());
+        totalStats.setSourceDirs(config.getSourceDirs());
 
         maybePreloadSources(totalStats);
         runTests(tests, actualThreadCount, outputStrategy, totalStats);

@@ -12,6 +12,7 @@ public final class ReporterFactory {
             .put(ReportFormat.RAW, RawReporter.class)
             .put(ReportFormat.CSV, CsvReporter.class)
             .put(ReportFormat.PDF, PdfReporter.class)
+            .put(ReportFormat.COBERTURA, CoberturaReporter.class)
             .build();
 
     private ReporterFactory() {

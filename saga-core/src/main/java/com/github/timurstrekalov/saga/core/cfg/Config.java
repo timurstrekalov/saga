@@ -3,6 +3,7 @@ package com.github.timurstrekalov.saga.core.cfg;
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -25,7 +26,7 @@ public interface Config {
     SortBy DEFAULT_SORT_BY = SortBy.COVERAGE;
     Order DEFAULT_ORDER = Order.DESC;
 
-    Set<ReportFormat> DEFAULT_REPORT_FORMATS = ImmutableSet.of(ReportFormat.HTML, ReportFormat.RAW);
+    Set<ReportFormat> DEFAULT_REPORT_FORMATS = ImmutableSet.of(ReportFormat.HTML, ReportFormat.RAW, ReportFormat.COBERTURA);
 
     String DEFAULT_SOURCES_TO_PRELOAD_ENCODING = "UTF-8";
 
@@ -131,5 +132,9 @@ public interface Config {
     InstrumentingBrowser getInstrumentingBrowser();
 
     Map<String, String> getWebDriverCapabilities();
+
+    void setSourceDir(List<String> sourceDirs);
+
+    List<String> getSourceDirs();
 
 }

@@ -19,7 +19,11 @@ public final class MiscUtil {
     }
 
     public static int toCoverage(final int totalStatements, final int totalExecuted) {
-        return (int) ((double) totalExecuted / totalStatements * 100);
+        return (int) toCoverageRate(totalStatements, totalExecuted) * 100;
+    }
+
+    public static double toCoverageRate(final int totalStatements, final int totalExecuted) {
+        return (double) totalExecuted / totalStatements;
     }
 
     public static <T> int sum(final Iterable<T> objects, final Function<T, Integer> transformer) {
