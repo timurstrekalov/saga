@@ -7,6 +7,8 @@ import java.util.Map;
 import com.github.timurstrekalov.saga.core.CoverageGenerator;
 import com.github.timurstrekalov.saga.core.CoverageGeneratorFactory;
 import com.github.timurstrekalov.saga.core.cfg.Config;
+import com.google.common.collect.Lists;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -182,6 +184,13 @@ public class SagaMojo extends AbstractMojo {
     @Parameter
     private List<String> sourceDirs;
 
+    /**
+     * This parameter must be used instead of using a defaultValue on the "sourceDirs" parameter in
+     * order to overcome http://jira.codehaus.org/browse/MNG-5440
+     */
+    @Parameter(defaultValue = "${basedir}", readonly = true)
+    private String defaultSourceDir;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skipTests) {
@@ -210,6 +219,12 @@ public class SagaMojo extends AbstractMojo {
             config.setOrder(order);
             config.setWebDriverCapabilities(webDriverCapabilities);
             config.setWebDriverClassName(webDriverClassName);
+
+            if (sourceDirs == null) {
+              sourceDirs = Lists.newArrayList(defaultSourceDir);
+            } else if (sourceDirs.isEmpty()) {
+              sourceDirs.add(defaultSourceDir);
+            }
             config.setSourceDir(sourceDirs);
 
             gen.instrumentAndGenerateReports();
