@@ -37,7 +37,7 @@ repositories {
 
 dependencies {
     compile gradleApi()
-    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.0.1'
+    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.9'
 
     compile group: 'com.github.timurstrekalov', name: 'saga-core', version: projectVersion
 }
