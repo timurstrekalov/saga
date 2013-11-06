@@ -110,7 +110,7 @@ public class GenericInstrumentingBrowser implements InstrumentingBrowser {
         final Proxy proxy = new Proxy()
                 .setProxyType(Proxy.ProxyType.MANUAL)
                 .setHttpProxy(proxyUrl)
-                .setHttpsProxy(proxyUrl);
+                .setSslProxy(proxyUrl);
 
         final DesiredCapabilities desiredCapabilities = new DesiredCapabilities(config.getWebDriverCapabilities());
         desiredCapabilities.setCapability(CapabilityType.PROXY, proxy);

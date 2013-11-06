@@ -11,8 +11,8 @@
     <artifactId>saga-core</artifactId>
 
     <properties>
-        <jetty.version>8.1.10.v20130312</jetty.version>
-        <selenium.version>2.32.0</selenium.version>
+        <jetty.version>8.1.14.v20131031</jetty.version>
+        <selenium.version>2.37.1</selenium.version>
     </properties>
 
     <build>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
-            <version>2.12</version>
+            <version>2.13</version>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
-            <version>5.4.0</version>
+            <version>5.4.4</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>com.github.detro.ghostdriver</groupId>
             <artifactId>phantomjsdriver</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
         </dependency>
     </dependencies>
 
@@ -123,7 +123,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>cobertura-maven-plugin</artifactId>
-                        <version>2.5.2</version>
+                        <version>2.6</version>
                         <configuration>
                             <instrumentation>
                                 <excludes>

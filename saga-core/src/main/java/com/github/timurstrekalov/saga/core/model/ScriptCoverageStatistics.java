@@ -2,6 +2,7 @@ package com.github.timurstrekalov.saga.core.model;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public final class ScriptCoverageStatistics {
     }
 
     private String generateId() {
-        return Hashing.md5().hashString(fileUri.toString()).toString();
+        return Hashing.md5().hashString(fileUri.toString(), Charset.defaultCharset()).toString();
     }
 
     public List<LineCoverageRecord> getLineCoverageRecords() {

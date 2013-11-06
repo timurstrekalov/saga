@@ -44,7 +44,7 @@ public class InstrumentingProxyServerIT {
         final Proxy proxy = new Proxy()
                 .setProxyType(Proxy.ProxyType.MANUAL)
                 .setHttpProxy(proxyUrl)
-                .setHttpsProxy(proxyUrl);
+                .setSslProxy(proxyUrl);
 
         final DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
         desiredCapabilities.setCapability(CapabilityType.PROXY, proxy);
