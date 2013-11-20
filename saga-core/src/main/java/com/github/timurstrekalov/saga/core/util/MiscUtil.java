@@ -1,11 +1,11 @@
 package com.github.timurstrekalov.saga.core.util;
 
-import java.io.File;
-import java.net.URI;
-
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+
+import java.io.File;
+import java.net.URI;
 
 // TODO split the functionality and move it to the corresponding classes/packages
 public final class MiscUtil {
@@ -19,7 +19,7 @@ public final class MiscUtil {
     }
 
     public static int toCoverage(final int totalStatements, final int totalExecuted) {
-        return (int) toCoverageRate(totalStatements, totalExecuted) * 100;
+        return (int) (toCoverageRate(totalStatements, totalExecuted) * 100.0);
     }
 
     public static double toCoverageRate(final int totalStatements, final int totalExecuted) {
