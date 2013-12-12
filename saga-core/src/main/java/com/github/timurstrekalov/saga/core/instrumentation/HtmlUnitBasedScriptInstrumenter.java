@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public final class HtmlUnitBasedScriptInstrumenter implements ScriptInstrumenter {
 
     private static final String INITIALIZING_CODE = String.format("%s = window.%s || {};%n", COVERAGE_VARIABLE_NAME, COVERAGE_VARIABLE_NAME);
-    private static final String ARRAY_INITIALIZER = String.format("%s['%%s'][%%d] = 0;%n", COVERAGE_VARIABLE_NAME);
+    private static final String ARRAY_INITIALIZER = String.format("    %s['%%s'][%%d] = 0;%n", COVERAGE_VARIABLE_NAME);
     private static final String TIMEOUT_INSTRUMENTER;
 
     private static final AtomicInteger evalCounter = new AtomicInteger();
@@ -107,11 +107,13 @@ public final class HtmlUnitBasedScriptInstrumenter implements ScriptInstrumenter
 
         buf.append(TIMEOUT_INSTRUMENTER);
         buf.append(INITIALIZING_CODE);
-        buf.append(String.format("%s['%s'] = {};%n", COVERAGE_VARIABLE_NAME, sourceUriAsString));
+        buf.append(String.format("if(!%s['%s']) {%n", COVERAGE_VARIABLE_NAME, sourceUriAsString));
+        buf.append(String.format("    %s['%s'] = {};%n", COVERAGE_VARIABLE_NAME, sourceUriAsString));
 
         for (final Integer i : data.getLineNumbersOfAllStatements()) {
             buf.append(String.format(ARRAY_INITIALIZER, sourceUriAsString, i));
         }
+        buf.append(String.format("}%n"));
 
         buf.append(treeSource);
 
