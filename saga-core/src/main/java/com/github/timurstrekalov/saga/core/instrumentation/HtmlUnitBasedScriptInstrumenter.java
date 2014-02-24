@@ -57,6 +57,7 @@ public final class HtmlUnitBasedScriptInstrumenter implements ScriptInstrumenter
 
     public HtmlUnitBasedScriptInstrumenter(final Config config) {
         this.config = config;
+        setIgnorePatterns(config.getIgnorePatterns());
     }
 
     @Override
