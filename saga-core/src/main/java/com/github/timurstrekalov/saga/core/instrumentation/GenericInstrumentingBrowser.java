@@ -41,29 +41,21 @@ public class GenericInstrumentingBrowser implements InstrumentingBrowser {
         driver = newDriver(getWebDriverClass());
     }
 
-    private String completionExpression() {
-        if (config.getCompletionExpression() == null) {
-            return String.format("window.%s.length === 0", TIMEOUTS_VARIABLE_NAME);
-        } else {
-            return config.getCompletionExpression();
-        }
-    }
-
     @Override
     public void get(final String url) {
         driver.get(url);
 
         final JavascriptExecutor js = (JavascriptExecutor) driver;
 
-        WebDriverUtils.waitForWindowJavaScriptVariableToBePresent(js, TIMEOUTS_VARIABLE_NAME);
+        WebDriverUtils.waitForWindowJavaScriptVariableToBePresent(js, SAGA_NAMESPACE);
 
         new SafeJavascriptWait(js)
                 .withTimeout(config.getBackgroundJavaScriptTimeout(), TimeUnit.MILLISECONDS)
                 .until(new Predicate<JavascriptExecutor>() {
                     @Override
                     public boolean apply(final JavascriptExecutor input) {
-                        logger.debug("Waiting for background JavaScript jobs to stop...");
-                        return Boolean.TRUE.equals(input.executeScript("return " + completionExpression()));
+                        logger.debug("Waiting for test runner to finish");
+                        return Boolean.TRUE.equals(input.executeScript("return " + SAGA_NAMESPACE + ".completed()"));
                     }
                 });
     }

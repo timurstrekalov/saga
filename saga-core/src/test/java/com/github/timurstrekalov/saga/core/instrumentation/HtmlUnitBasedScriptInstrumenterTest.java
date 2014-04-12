@@ -36,11 +36,7 @@ public class HtmlUnitBasedScriptInstrumenterTest {
         when(factory.enterContext()).thenReturn(context);
     }
 
-    @Test
-    public void preProcess() {
-        final String sourceName = "script in Class.js from (6, 13) to (6, 28)";
-        final String expectedSourceName = "Class.js__from_6_13_to_6_28";
-
+    private void verifyClassJsData(String sourceName, String expectedSourceName) {
         final ScriptInstrumenter instrumenter = new HtmlUnitBasedScriptInstrumenter(new InstanceFieldPerPropertyConfig());
         instrumenter.instrument(Data.getClassJsSourceCode(), sourceName, 1);
 
@@ -54,20 +50,19 @@ public class HtmlUnitBasedScriptInstrumenterTest {
     }
 
     @Test
+    public void preProcess() {
+        final String sourceName = "script in Class.js from (6, 13) to (6, 28)";
+        final String expectedSourceName = "Class.js__from_6_13_to_6_28";
+
+        verifyClassJsData(sourceName, expectedSourceName);
+    }
+
+    @Test
     public void preProcess_eval() {
         final String sourceName = "http://localhost:59743/src/element_mover.js#23(eval)";
         final String expectedSourceName = "http://localhost:59743/src/element_mover.js#23(eval)(" + evalCounter.getAndIncrement() + ")";
 
-        final ScriptInstrumenter instrumenter = new HtmlUnitBasedScriptInstrumenter(new InstanceFieldPerPropertyConfig());
-        instrumenter.instrument(Data.getClassJsSourceCode(), sourceName, 1);
-
-        assertEquals(1, instrumenter.getScriptDataList().size());
-
-        final ScriptData classJsData = instrumenter.getScriptDataList().get(0);
-        assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
-        assertEquals(5, classJsData.getLineNumberOfFirstStatement());
-        assertEquals(114, classJsData.getNumberOfStatements());
-        assertEqualsIgnoreCRLF(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
+        verifyClassJsData(sourceName, expectedSourceName);
     }
 
     @Test
@@ -76,16 +71,7 @@ public class HtmlUnitBasedScriptInstrumenterTest {
         final String expectedSourceName = "http://localhost:59664/spec/resources/dojo-release-1.8.3/dojo/dojo.js#222(Function)%231(eval)("
                 + evalCounter.getAndIncrement() + ")";
 
-        final ScriptInstrumenter instrumenter = new HtmlUnitBasedScriptInstrumenter(new InstanceFieldPerPropertyConfig());
-        instrumenter.instrument(Data.getClassJsSourceCode(), sourceName, 1);
-
-        assertEquals(1, instrumenter.getScriptDataList().size());
-
-        final ScriptData classJsData = instrumenter.getScriptDataList().get(0);
-        assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
-        assertEquals(5, classJsData.getLineNumberOfFirstStatement());
-        assertEquals(114, classJsData.getNumberOfStatements());
-        assertEqualsIgnoreCRLF(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
+        verifyClassJsData(sourceName, expectedSourceName);
     }
 
     @Test
@@ -93,16 +79,7 @@ public class HtmlUnitBasedScriptInstrumenterTest {
         final String sourceName = "http://localhost:59664/any.js?qwe";
         final String expectedSourceName = "http://localhost:59664/any.js?qwe";
 
-        final ScriptInstrumenter instrumenter = new HtmlUnitBasedScriptInstrumenter(new InstanceFieldPerPropertyConfig());
-        instrumenter.instrument(Data.getClassJsSourceCode(), sourceName, 1);
-
-        assertEquals(1, instrumenter.getScriptDataList().size());
-
-        final ScriptData classJsData = instrumenter.getScriptDataList().get(0);
-        assertEquals(expectedSourceName, classJsData.getSourceUriAsString());
-        assertEquals(5, classJsData.getLineNumberOfFirstStatement());
-        assertEquals(114, classJsData.getNumberOfStatements());
-        assertEqualsIgnoreCRLF(Data.getClassJsInstrumented(expectedSourceName), classJsData.getInstrumentedSourceCode());
+        verifyClassJsData(sourceName, expectedSourceName);
     }
 
 }
