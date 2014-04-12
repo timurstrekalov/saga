@@ -1,13 +1,5 @@
 package com.github.timurstrekalov.saga.core.cfg;
 
-import java.io.File;
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.github.timurstrekalov.saga.core.Order;
 import com.github.timurstrekalov.saga.core.OutputStrategy;
@@ -15,6 +7,14 @@ import com.github.timurstrekalov.saga.core.ReportFormat;
 import com.github.timurstrekalov.saga.core.SortBy;
 import com.github.timurstrekalov.saga.core.instrumentation.InstrumentingBrowser;
 import com.google.common.collect.ImmutableSet;
+
+import java.io.File;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * A midway attempt at externalizing configuration
@@ -137,4 +137,12 @@ public interface Config {
 
     List<String> getSourceDirs();
 
+    /**
+     * A JavaScript expression that evaluates to a JS boolean to determine whether the tests have completed running.
+     * <p/>
+     * Only used by GenericInstrumentingBrowser (typically PhantomJSDriver).
+     */
+    String getCompletionExpression();
+
+    void setCompletionExpression(String completionExpression);
 }

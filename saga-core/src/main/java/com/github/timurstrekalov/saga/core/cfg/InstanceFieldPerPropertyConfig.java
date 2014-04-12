@@ -1,13 +1,5 @@
 package com.github.timurstrekalov.saga.core.cfg;
 
-import java.io.File;
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.github.timurstrekalov.saga.core.Order;
 import com.github.timurstrekalov.saga.core.OutputStrategy;
@@ -26,6 +18,14 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class InstanceFieldPerPropertyConfig implements Config {
 
@@ -62,6 +62,7 @@ public class InstanceFieldPerPropertyConfig implements Config {
     private Map<String, String> webDriverCapabilities = Maps.newHashMap();
 
     private List<String> sourceDirs;
+    private String completionExpression;
 
     @Override
     public void setBaseDir(final String baseDir) {
@@ -372,6 +373,16 @@ public class InstanceFieldPerPropertyConfig implements Config {
     @Override
     public List<String> getSourceDirs() {
         return sourceDirs;
+    }
+
+    @Override
+    public String getCompletionExpression() {
+        return completionExpression;
+    }
+
+    @Override
+    public void setCompletionExpression(String completionExpression) {
+        this.completionExpression = completionExpression;
     }
 
 }
