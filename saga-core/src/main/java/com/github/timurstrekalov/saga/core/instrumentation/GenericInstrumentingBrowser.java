@@ -1,5 +1,12 @@
 package com.github.timurstrekalov.saga.core.instrumentation;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
 import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.model.ScriptData;
 import com.github.timurstrekalov.saga.core.server.InstrumentingProxyServer;
@@ -14,13 +21,6 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 public class GenericInstrumentingBrowser implements InstrumentingBrowser {
 
