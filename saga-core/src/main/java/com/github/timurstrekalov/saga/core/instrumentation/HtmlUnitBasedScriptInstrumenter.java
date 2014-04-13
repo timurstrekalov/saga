@@ -37,7 +37,7 @@ public final class HtmlUnitBasedScriptInstrumenter implements ScriptInstrumenter
 
     private static final String INITIALIZING_CODE = String.format("%s = window.%s || {};%n", COVERAGE_VARIABLE_NAME, COVERAGE_VARIABLE_NAME);
     private static final String ARRAY_INITIALIZER = String.format("    %s['%%s'][%%d] = 0;%n", COVERAGE_VARIABLE_NAME);
-    private static final String TIMEOUT_INSTRUMENTER;
+    public static final String COMPLETION_MONITOR;
 
     private static final AtomicInteger evalCounter = new AtomicInteger();
 
@@ -106,7 +106,7 @@ public final class HtmlUnitBasedScriptInstrumenter implements ScriptInstrumenter
                 data.getNumberOfStatements() * ARRAY_INITIALIZER.length() +
                 treeSource.length());
 
-        buf.append(TIMEOUT_INSTRUMENTER);
+        buf.append(COMPLETION_MONITOR);
         buf.append(INITIALIZING_CODE);
         buf.append(String.format("if(!%s['%s']) {%n", COVERAGE_VARIABLE_NAME, sourceUriAsString));
         buf.append(String.format("    %s['%s'] = {};%n", COVERAGE_VARIABLE_NAME, sourceUriAsString));
@@ -233,11 +233,11 @@ public final class HtmlUnitBasedScriptInstrumenter implements ScriptInstrumenter
 
     static {
         try {
-            TIMEOUT_INSTRUMENTER = CharStreams.toString(new InputSupplier<Reader>() {
+            COMPLETION_MONITOR = CharStreams.toString(new InputSupplier<Reader>() {
 
                 @Override
                 public Reader getInput() throws IOException {
-                    return new InputStreamReader(HtmlUnitBasedScriptInstrumenter.class.getResourceAsStream("/timeout_instrumenter.js"),
+                    return new InputStreamReader(HtmlUnitBasedScriptInstrumenter.class.getResourceAsStream("/completion_monitor.js"),
                             Charset.forName("UTF-8"));
                 }
             });

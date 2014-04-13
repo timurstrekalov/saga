@@ -13,8 +13,8 @@ import com.github.timurstrekalov.saga.core.model.ScriptData;
  */
 public interface ScriptInstrumenter {
 
-    String COVERAGE_VARIABLE_NAME = "__saga_coverage_data";
-    String TIMEOUTS_VARIABLE_NAME = "__saga_timeouts";
+    String SAGA_NAMESPACE = "__saga";
+    String COVERAGE_VARIABLE_NAME = SAGA_NAMESPACE + "_coverage_data";
 
     /**
      * Instruments the given source code.

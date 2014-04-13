@@ -47,15 +47,15 @@ public class GenericInstrumentingBrowser implements InstrumentingBrowser {
 
         final JavascriptExecutor js = (JavascriptExecutor) driver;
 
-        WebDriverUtils.waitForWindowJavaScriptVariableToBePresent(js, TIMEOUTS_VARIABLE_NAME);
+        WebDriverUtils.waitForWindowJavaScriptVariableToBePresent(js, SAGA_NAMESPACE);
 
         new SafeJavascriptWait(js)
                 .withTimeout(config.getBackgroundJavaScriptTimeout(), TimeUnit.MILLISECONDS)
                 .until(new Predicate<JavascriptExecutor>() {
                     @Override
                     public boolean apply(final JavascriptExecutor input) {
-                        logger.debug("Waiting for background JavaScript jobs to stop...");
-                        return (Boolean) input.executeScript(String.format("return window.%s.length === 0", TIMEOUTS_VARIABLE_NAME));
+                        logger.debug("Waiting for test runner to finish");
+                        return Boolean.TRUE.equals(input.executeScript("return " + SAGA_NAMESPACE + ".completed()"));
                     }
                 });
     }

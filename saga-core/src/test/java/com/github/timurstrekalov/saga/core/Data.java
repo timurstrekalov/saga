@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import com.github.timurstrekalov.saga.core.instrumentation.HtmlUnitBasedScriptInstrumenter;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 
@@ -25,7 +26,8 @@ public class Data {
     }
 
     public static String getClassJsInstrumented(final String sourceName) {
-        return lazyLoad("/pregen/Class.instrumented.js").replaceAll("<SOURCE_PLACEHOLDER>", sourceName);
+        String body = lazyLoad("/pregen/Class.instrumented.js").replaceAll("<SOURCE_PLACEHOLDER>", sourceName);
+        return HtmlUnitBasedScriptInstrumenter.COMPLETION_MONITOR + body;
     }
 
     private static String lazyLoad(final String name) {
