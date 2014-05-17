@@ -1,7 +1,9 @@
 package com.github.timurstrekalov.saga.core.util;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,15 +22,21 @@ public final class UriUtil {
     }
 
     public static URI toUri(final String s) {
-        final URI uri = URI.create(s);
-
+        final URI uri;
+        try {
+            uri = new File(s).toURI().toURL().toURI().normalize();
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
         if (uri.getScheme() != null) {
             final Matcher matcher = supportedUriSchemeRe.matcher(uri.getScheme());
             Preconditions.checkArgument(matcher.find(), "Supported URI schemes are: http, https and file");
             return uri;
         }
 
-        return new File(s).toURI().normalize();
+        return uri;
     }
 
     public static boolean isFileUri(final URI uri) {
