@@ -10,6 +10,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.codehaus.plexus.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.timurstrekalov.saga.core.cfg.Config;
 import com.github.timurstrekalov.saga.core.cfg.InstanceFieldPerPropertyConfig;
 import com.github.timurstrekalov.saga.core.model.ScriptCoverageStatistics;
@@ -20,10 +24,6 @@ import com.github.timurstrekalov.saga.core.testfetcher.TestFetcherFactory;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.plexus.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 final class DefaultCoverageGenerator implements CoverageGenerator {
 
@@ -70,6 +70,15 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
 
         if (!config.getNoInstrumentPatterns().isEmpty()) {
             logger.info("Using the following no-instrument patterns:\n\t{}", Joiner.on("\n\t").join(config.getNoInstrumentPatterns()));
+        }
+        
+        if (config.getMinCoveragePercentage() > 100) {
+            logger.error("Coverage can not be greater than {}", config.getMinCoveragePercentage());
+            throw new IOException("Invalid coverage specified");
+        }
+        
+        if (config.getMinCoveragePercentage() != 0) {
+            logger.info("Minimum coverage should be " + config.getMinCoveragePercentage());
         }
 
         final File outputDir = config.getOutputDir();
@@ -126,9 +135,29 @@ final class DefaultCoverageGenerator implements CoverageGenerator {
             }
 
             new WritesStatistics().write(config, totalStats);
+            
+            testMinimumCoverage(totalStats, allRunStats);
         }
     }
 
+    private void testMinimumCoverage(final TestRunCoverageStatistics totalStats, final List<TestRunCoverageStatistics> allRunStats) throws IOException {
+        int totalExecuted = 0;
+        int totalAvailable = 0;
+        for (final TestRunCoverageStatistics runStats : allRunStats) {
+            if (runStats != TestRunCoverageStatistics.EMPTY) {
+                for (final ScriptCoverageStatistics scriptCoverageStatistics : runStats) {
+                    totalExecuted += scriptCoverageStatistics.getExecuted();
+                    totalAvailable += scriptCoverageStatistics.getStatements();
+                }
+            }
+        }
+        if (totalAvailable != 0) {
+            if ( totalExecuted*100.0/totalAvailable < config.getMinCoveragePercentage() ) {
+                throw new RuntimeException("Code coverage less than " + config.getMinCoveragePercentage() + "%");
+            }
+        }
+    }
+    
     private void maybePreloadSources(final TestRunCoverageStatistics totalStats) throws IOException {
         new FileSystemSourcePreloader().preloadSources(config, totalStats);
     }

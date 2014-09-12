@@ -63,6 +63,8 @@ public class InstanceFieldPerPropertyConfig implements Config {
 
     private List<String> sourceDirs;
 
+    private int minCoveragePercentage;
+
     @Override
     public void setBaseDir(final String baseDir) {
         this.baseDir = baseDir;
@@ -222,6 +224,11 @@ public class InstanceFieldPerPropertyConfig implements Config {
     }
 
     @Override
+    public void setMinCoveragePercentage(int minCoveragePercentage) {
+        this.minCoveragePercentage = minCoveragePercentage;
+    }
+    
+    @Override
     public URI getBaseUri() {
         return baseUri;
     }
@@ -372,6 +379,11 @@ public class InstanceFieldPerPropertyConfig implements Config {
     @Override
     public List<String> getSourceDirs() {
         return sourceDirs;
+    }
+
+    @Override
+    public int getMinCoveragePercentage() {
+        return minCoveragePercentage;
     }
 
 }

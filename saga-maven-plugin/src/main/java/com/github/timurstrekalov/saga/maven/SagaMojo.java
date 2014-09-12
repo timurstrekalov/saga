@@ -156,6 +156,12 @@ public class SagaMojo extends AbstractMojo {
      */
     @Parameter(property = "skipTests", defaultValue = "false")
     private boolean skipTests;
+    
+    /**
+     * Below this percentage, test will not pass
+     */
+    @Parameter(property = "minCoveragePercentage", defaultValue = "0")
+    private int minCoveragePercentage;
 
     /**
      * The {@link org.openqa.selenium.WebDriver} implementation to use - you can find the available implementations on their
@@ -198,6 +204,10 @@ public class SagaMojo extends AbstractMojo {
             return;
         }
 
+        if(System.getProperty("minCoveragePercentage") != null) {
+            minCoveragePercentage = Integer.parseInt(System.getProperty("minCoveragePercentage"));
+        }
+        
         try {
             final CoverageGenerator gen = CoverageGeneratorFactory.newInstance(baseDir, outputDir);
             final Config config = gen.getConfig();
@@ -219,6 +229,7 @@ public class SagaMojo extends AbstractMojo {
             config.setOrder(order);
             config.setWebDriverCapabilities(webDriverCapabilities);
             config.setWebDriverClassName(webDriverClassName);
+            config.setMinCoveragePercentage(minCoveragePercentage);
 
             if (sourceDirs == null) {
               sourceDirs = Lists.newArrayList(defaultSourceDir);
