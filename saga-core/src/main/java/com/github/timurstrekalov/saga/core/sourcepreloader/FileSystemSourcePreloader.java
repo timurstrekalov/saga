@@ -3,6 +3,7 @@ package com.github.timurstrekalov.saga.core.sourcepreloader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -31,22 +32,40 @@ public class FileSystemSourcePreloader implements SourcePreloader {
         final String sourcesToPreload = config.getSourcesToPreload();
         final URI baseUri = config.getBaseUri();
 
-        if (sourcesToPreload == null || !config.getOutputStrategy().contains(OutputStrategy.TOTAL) || !UriUtil.isFileUri(baseUri)) {
+        if (sourcesToPreload == null || !config.getOutputStrategy().contains(OutputStrategy.TOTAL)) {
             return;
+        }
+        
+        URI baseDir;
+        if (UriUtil.isFileUri(baseUri)) {
+        	baseDir = baseUri;
+        } else {
+            try {
+				baseDir = new URI("file:" + config.getSourceDirs().get(0));
+			} catch (URISyntaxException e) {
+				logger.error("Excetion when creating baseDir ({}):{}", config.getSourceDirs().get(0), e.toString());
+				return;
+			}
         }
 
         final String sourcesToPreloadEncoding = config.getSourcesToPreloadEncoding();
-        logger.info("Using {} to preload sources", sourcesToPreloadEncoding);
+        logger.info("Using {} to preload sources, from: {}", sourcesToPreloadEncoding, baseDir);
 
-        final List<File> filesToPreload = FileUtils.getFiles(new File(baseUri), sourcesToPreload, null);
+        final List<File> filesToPreload = FileUtils.getFiles(new File(baseDir), sourcesToPreload, null);
 
         logger.info("Preloading {} files", filesToPreload.size());
 
         for (final File file : filesToPreload) {
-            logger.debug("Preloading {}", file);
+            //logger.debug("Preloading {}", file);
 
             final String source = CharStreams.toString(Files.newReaderSupplier(file, Charset.forName(sourcesToPreloadEncoding)));
-            instrumenter.instrument(source, file.toURI().toString(), 0);
+            String baseFileUrl = file.toURI().toString();
+            if (!UriUtil.isFileUri(baseUri)) {
+            	baseFileUrl = baseUri.toString() + "/" + file.toURI().toString().replaceFirst(baseDir.toString(), "");
+            	
+            }
+            logger.debug("Preloading {}, baseFileUrl: {}, {}, {}", file, baseFileUrl, file.toURI().toString(), baseDir.toString());
+            instrumenter.instrument(source, baseFileUrl, 0);
         }
 
         for (final ScriptData data : instrumenter.getScriptDataList()) {
