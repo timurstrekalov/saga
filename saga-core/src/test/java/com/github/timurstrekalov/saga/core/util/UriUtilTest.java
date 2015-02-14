@@ -1,12 +1,5 @@
 package com.github.timurstrekalov.saga.core.util;
 
-import java.io.File;
-import java.net.URI;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import org.junit.Test;
-
 import static com.github.timurstrekalov.saga.core.util.UriUtil.getLastSegment;
 import static com.github.timurstrekalov.saga.core.util.UriUtil.getParent;
 import static com.github.timurstrekalov.saga.core.util.UriUtil.getPath;
@@ -16,6 +9,14 @@ import static java.net.URI.create;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+
+import java.io.File;
+import java.net.URI;
+
+import org.junit.Test;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 
 public class UriUtilTest {
 
@@ -50,8 +51,8 @@ public class UriUtilTest {
 
     @Test
     public void test_toUri_file_absolute() throws Exception {
-        assertThat(new File(FILE_ABS_URI).getAbsolutePath(), 
-        		equalTo(new File(create("file:" + FILE_ABS.replace('\\', '/'))).getAbsolutePath()));
+        assertThat(new File(FILE_ABS_URI).getAbsolutePath(),
+                equalTo(new File(create("file:" + FILE_ABS.replace('\\', '/'))).getAbsolutePath()));
     }
 
     @Test
@@ -75,9 +76,9 @@ public class UriUtilTest {
 
     @Test
     public void test_getLastSegment() throws Exception {
-        assertThat(getLastSegment(HTTP_URI), equalTo(Optional.<String>absent()));
+        assertThat(getLastSegment(HTTP_URI), equalTo(Optional.<String> absent()));
         assertThat(getLastSegment(HTTP_WITH_PATH_URI), equalTo(Optional.of("here")));
-        assertThat(getLastSegment(HTTPS_URI), equalTo(Optional.<String>absent()));
+        assertThat(getLastSegment(HTTPS_URI), equalTo(Optional.<String> absent()));
 
         assertThat(getLastSegment(FILE_ABS_URI), equalTo(Optional.of("asd")));
         assertThat(getLastSegment(FILE_REL_URI), equalTo(Optional.of("qweasd")));
@@ -96,8 +97,8 @@ public class UriUtilTest {
         assertThat(getParent(create("http://localhost:8080/")), equalTo("/"));
 
         assertThat(getParent(HTTP_WITH_PATH_URI), equalTo("/some/file"));
-        assertThat(new File(getParent(FILE_ABS_URI)).getAbsolutePath(), 
-        		equalTo(new File(File.separator + "home" + File.separator + "user").getAbsolutePath()));
+        assertThat(new File(getParent(FILE_ABS_URI)).getAbsolutePath(),
+                equalTo(new File(File.separator + "home" + File.separator + "user").getAbsolutePath()));
         assertThat(new File(getParent(FILE_REL_URI)).getAbsolutePath(), equalTo(new File(PWD_PARENT).getAbsolutePath()));
     }
 
@@ -110,6 +111,12 @@ public class UriUtilTest {
     @Test
     public void test_getPath_http_uri_with_query() throws Exception {
         assertThat(getPath(URI.create("http://localhost/Class.js?123")), equalTo("http://localhost/Class.js?123"));
+    }
+
+    @Test
+    public void test_toUri_with_windows_filepath() throws Exception {
+        URI uri = UriUtil.toUri("c:\\Users\\timur\\workspace\\saga");
+        assertThat(uri.toString(), equalTo("file:/c:/Users/timur/workspace/saga"));
     }
 
 }

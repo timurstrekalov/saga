@@ -5,11 +5,12 @@ import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import org.apache.commons.lang.StringUtils;
 
 public final class UriUtil {
 
@@ -20,7 +21,7 @@ public final class UriUtil {
     }
 
     public static URI toUri(final String s) {
-        final URI uri = URI.create(s);
+        URI uri = createURI(s);
 
         if (uri.getScheme() != null) {
             final Matcher matcher = supportedUriSchemeRe.matcher(uri.getScheme());
@@ -29,6 +30,17 @@ public final class UriUtil {
         }
 
         return new File(s).toURI().normalize();
+    }
+
+    private static URI createURI(final String s) {
+        URI uri;
+        if (s.contains("\\")) {
+            // Windows path
+            uri = URI.create("file:/" + s.replace("\\", "/"));
+        } else {
+            uri = URI.create(s);
+        }
+        return uri;
     }
 
     public static boolean isFileUri(final URI uri) {
@@ -46,10 +58,7 @@ public final class UriUtil {
             return Optional.absent();
         }
 
-        final Iterable<String> parts = Splitter.on('/').
-                omitEmptyStrings().
-                trimResults().
-                split(path);
+        final Iterable<String> parts = Splitter.on('/').omitEmptyStrings().trimResults().split(path);
 
         final int size = Iterables.size(parts);
         final int actualIndex = index < 0 ? size + index : index;
