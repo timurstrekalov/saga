@@ -27,6 +27,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
+import java.util.Collections;
 import net.sourceforge.htmlunit.corejs.javascript.Parser;
 import net.sourceforge.htmlunit.corejs.javascript.ast.AstRoot;
 import org.codehaus.plexus.util.FileUtils;
@@ -51,7 +52,7 @@ public final class HtmlUnitBasedScriptInstrumenter implements ScriptInstrumenter
     private static final Set<URI> writtenToDisk = Sets.newHashSet();
 
     private final Config config;
-    private final List<ScriptData> scriptDataList = Lists.newLinkedList();
+    private final List<ScriptData> scriptDataList = Collections.synchronizedList( Lists.<ScriptData>newLinkedList() );
     private Collection<Pattern> ignorePatterns;
     private File instrumentedFileDirectory;
 
