@@ -4,7 +4,8 @@
     if (!saga.completed) {
         saga.completed = function() {
             function detectJasmineCompletion() {
-                return window.reporter && window.reporter.finished;
+                return (window.reporter && window.reporter.finished) ||
+                    (window.jsApiReporter && window.jsApiReporter.finished);
             }
 
             // this space reserved for detecting completeness for other frameworks
