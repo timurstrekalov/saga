@@ -86,6 +86,8 @@ public interface Config {
     void setInstrumentingBrowser(InstrumentingBrowser browser);
 
     void setWebDriverCapabilities(Map<String, String> webDriverCapabilities);
+    
+    void setMinCoveragePercentage(int minCoveragePercentage);
 
     URI getBaseUri();
 
@@ -136,5 +138,7 @@ public interface Config {
     void setSourceDir(List<String> sourceDirs);
 
     List<String> getSourceDirs();
+    
+    int getMinCoveragePercentage();
 
 }
