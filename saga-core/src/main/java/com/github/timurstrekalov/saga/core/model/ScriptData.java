@@ -92,7 +92,7 @@ public final class ScriptData {
             for (int lineNr = getLineNumberOfFirstStatement(); in.hasNext(); lineNr++) {
                 final String line = in.nextLine();
 
-                final Long coverageEntry = coverageData.get(String.valueOf(lineNr));
+                final Long coverageEntry = (coverageData==null ? null : coverageData.get(String.valueOf(lineNr)));
                 final int timesLineExecuted;
 
                 if (coverageEntry == null) {

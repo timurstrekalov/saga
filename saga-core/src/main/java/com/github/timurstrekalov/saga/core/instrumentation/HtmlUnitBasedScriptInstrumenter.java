@@ -62,7 +62,7 @@ public final class HtmlUnitBasedScriptInstrumenter implements ScriptInstrumenter
     }
 
     @Override
-    public String instrument(final String sourceCode, final String sourceName, final int lineNumber) {
+    synchronized public String instrument(final String sourceCode, final String sourceName, final int lineNumber) {
         try {
             final String normalizedSourceName = handleEvals(handleInvalidUriChars(handleInlineScripts(sourceName)));
 
