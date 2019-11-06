@@ -11,7 +11,7 @@
     <artifactId>saga-core</artifactId>
 
     <properties>
-        <jetty.version>8.1.14.v20131031</jetty.version>
+        <jetty.version>9.4.22.v20191022</jetty.version>
         <selenium.version>2.37.1</selenium.version>
     </properties>
 
